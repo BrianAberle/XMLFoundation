@@ -1,0 +1,70 @@
+ART_IDL_INCLUDE_DIR=    /opt/iona/orbix_art/1.2/idl
+IDL=                    /opt/iona/orbix_art/1.2/bin/sparcv9/idl
+ART_LIB_DIR=			/opt/iona/orbix_art/1.2/cxx/lib/sparcv9
+ART_CXX_INCLUDE_DIR=	/opt/iona/orbix_art/1.2/cxx/include
+IT_PRODUCT_SHLIB_DIR=	/opt/iona/shlib/sparcv9
+IT_PRODUCT_DEF_SHLIB_DIR= /opt/iona/shlib/default/sparcv9
+
+CXX=				/opt/SUNWspro/bin/CC
+
+RM=				rm -f
+
+CXXFLAGS=			-I$(ART_CXX_INCLUDE_DIR)	\
+				-g -xs +p -xarch=v9  -mt -D_REENTRANT		\
+				$(EXTRA_CXXFLAGS)		\
+				$(CXXLOCAL_DEFINES)
+
+CXXLDFLAGS=			$(CXXFLAGS) -xildoff -R $(IT_PRODUCT_SHLIB_DIR):$(IT_PRODUCT_DEF_SHLIB_DIR)
+
+
+CLEAN_TEMPL_REPOSITORY=         CCadmin -clean
+
+CXXSHLIBFLAGS=			$(CXXFLAGS) -PIC
+
+SHLIBLDFLAGS=			-G
+
+LDLIBS=				-L$(ART_LIB_DIR)		\
+				-L$(IT_PRODUCT_SHLIB_DIR)	\
+				-L$(IT_PRODUCT_DEF_SHLIB_DIR) $(EXTRA_LIB_PATH) \
+				$(LINK_WITH)  
+
+#ORACLE_BIN_DIR=                 $(ORACLE_HOME)/bin
+#ORACLE_LIB_DIR=                 $(ORACLE_HOME)/lib64
+#ORACLE_INCLUDES=                -I$(ORACLE_HOME)/precomp/public
+#PRO_CXX_FLAGS=                  
+#PROC_INCLUDES=                  include=/usr/include include=`which CC`/../WS6U1/include/CC include=`which CC`/../WS6U1/include/CC/Cstd include=$(ART_CXX_INCLUDE_DIR)
+
+
+OBJS=				$(SOURCES:.cxx=.o)
+
+.SUFFIXES:			.pc .cxx
+
+#.pc.cxx:
+#	$(ORACLE_BIN_DIR)/proc $< code=cpp lines=yes parse=partial cpp_suffix=cxx threads=no define=IT_PROC $(PROC_INCLUDES) 
+
+.cxx.o:
+	$(RM) $@
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+
+#############################################3
+
+LINK_WITH=		-lit_art  -lit_ifc -lCstd -lCrun -lc
+
+SOURCES=		client.cxx ExCORBAC.cxx 
+
+all:			client
+
+client:		$(SOURCES) $(OBJS)
+			$(RM) $@
+			$(CXX) -o $@ $(CXXLDFLAGS) $(OBJS) $(LDLIBS)
+
+$(SOURCES):		ExCORBA.hh
+
+ExCORBA.hh:		../idl/ExCORBA.idl
+			$(IDL) -base -I$(ART_IDL_INCLUDE_DIR) ../idl/ExCORBA.idl
+
+clean:
+			$(RM) $(TARGET) *.o core ExCORBA.hh ExCORBAC.cxx
+			$(CLEAN_TEMPL_REPOSITORY)
+

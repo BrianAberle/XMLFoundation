@@ -1,0 +1,79 @@
+CCC = g++
+CPPFLAGS = -O3 -w -c -D_LINUX
+INCDIR = -I../../../Library/inc  -I./Python-2.1/Include -I./Python-2.1
+COPY = cp
+
+PythonDriver: \
+	clear \
+	DriverPython.o \
+
+	Base64.o \
+	TwoFish.o \
+	GBTree.o \
+	SHA256.o \
+	GStringList.o \
+	GException.o \
+	GDirectory.o \
+	GStringList.o \
+	GProfile.o \
+	GList.o \
+	GString.o \
+	InterfaceParser.o \
+	IntegrationPython.o 
+	
+
+	$(CCC) -shared -o PythonDriver.so \
+		-L./Python-2.1 \
+        DriverPython.o Base64.o TwoFish.o GBTree.o SHA256.o GList.o GString.o \
+		GProfile.o GStringList.o GDirectory.o GException.o InterfaceParser.o IntegrationPython.o\
+        -lm -ldl -lnsl -lpython2.1 -lc -lutil
+	  
+	
+	$(COPY) PythonDriver.so ../../../Bin/Drivers/.
+
+
+DriverPython.o: ./DriverPython.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./DriverPython.cpp
+
+Base64.o: ../../../Library/src/Utils/Base64.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Base64.cpp
+
+TwoFish.o: ../../../Library/src/Utils/TwoFish.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/TwoFish.cpp
+
+GBTree.o: ../../../Library/src/Utils/GBTree.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GBTree.cpp
+
+SHA256.o: ../../../Library/src/Utils/SHA256.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/SHA256.cpp
+
+GList.o: ../../../Library/src/Utils/GList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GList.cpp
+
+GString.o: ../../../Library/src/Utils/GString.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GString.cpp
+
+Profile.o: ../../../Library/src/Utils/GProfile.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GProfile.cpp
+
+GStringList.o: ../../../Library/src/Utils/GStringList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GStringList.cpp
+
+GDirectory.o: ../../../Library/src/Utils/GDirectory.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GDirectory.cpp
+
+GException.o: ../../../Library/src/Utils/GException.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GException.cpp
+
+InterfaceParser.o: ../../../Library/src/InterfaceParser.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/InterfaceParser.cpp
+
+IntegrationPython.o: ./IntegrationPython.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./IntegrationPython.cpp
+
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

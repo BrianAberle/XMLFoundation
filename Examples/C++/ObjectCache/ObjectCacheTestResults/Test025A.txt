@@ -1,0 +1,118 @@
+
+Object Instance name: PointsInTime
+{
+	Object container type	
+	--------------------------------
+	Type  :List<XMLObject *>
+	Tag   :AnyObject
+	
+	Contains:6 items
+	Object Instance name: AnyObject
+	{
+		string	OID = 1
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :One
+		Value :1
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :Two
+		Value :1
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: AnyObject
+	{
+		string	OID = 2
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :One
+		Value :2
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :Two
+		Value :2
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: AnyObject
+	{
+		string	OID = 3
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :One
+		Value :3
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :Two
+		Value :3
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: AnyObject
+	{
+		string	OID = 1
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :One
+		Value :1
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :Two
+		Value :111
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: AnyObject
+	{
+		string	OID = 2
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :One
+		Value :2
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :Two
+		Value :222
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: AnyObject
+	{
+		string	OID = 3
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :One
+		Value :3
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :Two
+		Value :333
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+}

@@ -1,0 +1,37 @@
+
+Object Instance name: MyDataExample
+{
+	string	OID = 
+	string	UpdateTime = 
+			References = 1	
+	--------------------------------
+	Type  :string
+	Tag   :String1
+	Value :Value of First String
+	State :(Dirty | Valid | Uncached)
+	Kind  :Mapped Attribute
+	--------------------------------
+	Type  :string
+	Tag   :UnmappedAttribute
+	Value :UnmappedAttribute value
+	State :(No state tracking)
+	Kind  :Un-mapped attribute
+	--------------------------------
+	Type  :string
+	Tag   :--None--
+	Value :This is the object Value
+	State :(No state tracking)
+	Kind  :Object Value
+	--------------------------------
+	Type  :string
+	Tag   :String2
+	Value :Second String
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :UnmappedMember
+	Value :UnmappedMember Value
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+}

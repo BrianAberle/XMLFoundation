@@ -1,0 +1,4 @@
+<AttributeExample String1="Value of First String">
+	<String2>Second String</String2>
+	<UnmappedMember>UnmappedMember Value</UnmappedMember>
+</AttributeExample>

@@ -1,0 +1,44 @@
+#---------------------------------------------------------------------
+#
+# makefile.nt.weblogic
+#
+# NT makefile for the ExCORBA sample application
+#
+#---------------------------------------------------------------------
+
+TUXDIR	=C:\bea\tuxedo8.0
+IDL		=C:\bea\tuxedo8.0\bin\idl
+PATH=c:\bea\tuxedo8.0\lib;c:\bea\tuxedo8.0\bin;c:\bea\tuxedo8.0\lib;c:\bea\tuxedo8.0\bin;C:\Oracle\Ora81\Apache\Perl\5.00503\bin\mswin32-x86;C:\Oracle\Ora81\bin;C:\Oracle\Ora81\Apache\Perl\5.00503\bin\mswin32-x86;C:\Program Files\Oracle\jre\1.1.7\bin;C:\DevTools\ibmcpp\runtime;c:\devtools\Perl\bin;C:\WINNT\system32;C:\WINNT;C:\WINNT\system32\WBEM;C:\Program Files\Rational\common;C:\MSSQL7\BINN;C:\IMNNQ_NT;C:\Program Files\DB2\BIN;C:\Program Files\DB2\FUNCTION;C:\Program Files\DB2\SAMPLES\REPL;C:\Program Files\DB2\HELP;C:\DevTools\cygwin118\home\postgresql-7.1.1\pgsql\bin;C:\DevTools\msdev\Tools\WinNT;C:\DevTools\msdev\MSDev98\Bin;C:\DevTools\msdev\Tools;C:\DevTools\VC98\bin;C:\Program Files\Common Files\InstallShield\;C:\Program Files\DB2\bin
+LIB=C:\DevTools\VC98\mfc\lib;C:\DevTools\VC98\lib;..\..\..\..\Library\Build\ReleaseClient
+
+REMOVE=-del /Q
+RMDIR=-rmdir /S /Q
+CPPFLAGS= -DWIN32 -D___OBJECTBROKER___ -I $(TUXDIR)/include -I../../../../Library/inc 
+
+#---------------------------------------------------------------------
+# Main build rules
+#---------------------------------------------------------------------
+
+
+#---------------------------------------------------------------------
+# C++ Client
+#---------------------------------------------------------------------
+
+CLIENT_SRCS = client.cxx ExCORBA_c.cpp
+
+client.exe: $(CLIENT_SRCS)
+	buildobjclient -v -o $@ -f "$(CLIENT_SRCS) $(CPPFLAGS)"
+
+#----------------------------------------------------------------------
+# C++ IDL files
+#----------------------------------------------------------------------
+
+ExCORBA_c.cpp ExCORBA_c.h ExCORBA_s.cpp ExCORBA_s.h : ..\idl\ExCORBA.idl
+	$(IDL) ..\idl\ExCORBA.idl
+
+#---------------------------------------------------------------------
+# C++ File Dependencies
+#---------------------------------------------------------------------
+
+client.cpp  : ExCORBA_c.h
+

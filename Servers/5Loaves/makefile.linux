@@ -1,0 +1,21 @@
+CC = g++
+CPPFLAGS = -maccumulate-outgoing-args -w -c -D_INTEL -D_LINUX -D_NO_EXCEPT -I../../Libraries/XMLFoundation/inc
+COPY = cp
+
+TransactXML: \
+	clear \
+	Console.o 
+	 
+	$(CC) \
+		-o 5Loaves \
+		-L../../Libraries/XMLFoundation/Build \
+		Console.o \
+		-lpthread -lnsl -ldl -lXMLFoundation
+
+SocketServer.o: ./Console.cpp
+	$(CC) $(CPPFLAGS) ./Console.cpp -o ./Console.o
+
+
+clear:
+	clear
+

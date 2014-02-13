@@ -1,0 +1,26 @@
+CC = /opt2/SUNWspro/bin/CC
+#CC = g++
+
+CPPFLAGS =  -w -c -O3 -D__sun 
+INCDIR = -I../../Library/inc 
+COPY = cp
+
+5Loaves: \
+	clear \
+	SocketServer.o 
+	 
+	$(CC) \
+		-lc -lgen \
+		-o 5Loaves \
+		-L../../Library/Build \
+		-L/usr/local/lib \
+		SocketServer.o \
+		-lposix4 -lthread -liberty -lnsl -lsocket -lXMLFoundationC 
+
+SocketServer.o: ./SocketServer.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./SocketServer.cpp -o ./SocketServer.o
+
+
+clear:
+	clear
+

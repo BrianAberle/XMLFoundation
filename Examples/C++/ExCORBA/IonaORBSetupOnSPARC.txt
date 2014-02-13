@@ -1,0 +1,131 @@
+========== 1. Build the XMLFoundation ====================
+Configure the makefile to use sun's CC.   I added the same 
+build flags used by IONA for binary consistencey. Open 
+makefile.client.sun and add:
+
+-mt -D_REENTRANT -xarch=v9 
+
+to CPPFLAGS. - and be sure to set the compiler to CC.
+save the makefile and build it:
+
+make -f makefile.client.sun
+
+=========================================================
+
+build the client and the server:
+make -f makefile.sun
+
+in both the client and server directories
+
+=========================================================
+
+
+logon with enough authority(root)
+
+
+set your environment according to (/opt/iona/bin/orbix2000_env)
+==============================================================
+PATH=/opt/iona/bin:$PATH; export PATH
+: ${LD_LIBRARY_PATH:=""}
+: ${LD_LIBRARY_PATH_64:=""}
+LD_LIBRARY_PATH=/opt/iona/shlib:/opt/iona/shlib/default:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+LD_LIBRARY_PATH_64=/opt/iona/shlib/sparcv9:/opt/iona/shlib/default/sparcv9:$LD_LIBRARY_PATH_64; export LD_LIBRARY_PATH_64
+IT_PRODUCT_DIR=/opt/iona; export IT_PRODUCT_DIR
+IT_CONFIG_DOMAINS_DIR=/etc/opt/iona/domains; export IT_CONFIG_DOMAINS_DIR
+IT_DOMAIN_NAME=orbix2000; export IT_DOMAIN_NAME
+
+
+
+start the Orbix services:
+==============================================================
+/opt/iona/bin/start_orbix2000_services
+
+
+run the server in a text terminal window:
+
+
+run the client in another.  The following is the output from the client:
+========================================================================
+# ./client
+Initializing ORB
+1.  Setting object state through native IIOP
+2. getting object state in XML
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>Root</CustomerName>
+</MyCORBAImpl>
+3. setting object state through XML
+4. view the modified object state in XML
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>SuperUser</CustomerName>
+</MyCORBAImpl>
+5. Add CORBA Sub-Objects through XML
+6. view new object state in XML
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>SuperUser</CustomerName>
+        <MyCORBAImpl>
+                <CustomerID>123</CustomerID>
+                <CustomerName>Al Gore</CustomerName>
+        </MyCORBAImpl>
+        <MyCORBAImpl>
+                <CustomerID>456</CustomerID>
+                <CustomerName>George Bush Jr.</CustomerName>
+        </MyCORBAImpl>
+</MyCORBAImpl>
+8. use an IOR of an object created in step 5
+<MyCORBAImpl>
+        <CustomerID>456</CustomerID>
+        <CustomerName>George Bush Jr.</CustomerName>
+</MyCORBAImpl>
+9. Add a Sub-Object without using XML
+10. use an IOR of an object created in step 9
+<MyCORBAImpl>
+        <CustomerID>1475</CustomerID>
+        <CustomerName>Michelangelo</CustomerName>
+</MyCORBAImpl>
+11. Deleting Sub objects
+12. write out the state in XML (now without the sub-objects)
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>SuperUser</CustomerName>
+</MyCORBAImpl>
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

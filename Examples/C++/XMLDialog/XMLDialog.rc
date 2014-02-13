@@ -1,0 +1,203 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\XMLDialog.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\XMLDialog.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_XMLDIALOG_DIALOG DIALOGEX 0, 0, 474, 324
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "XMLFoundation Dialog Sample"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,330,307,50,14
+    CONTROL         "",IDC_RICHEDIT_XML,"RICHEDIT",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_BORDER | WS_TABSTOP,
+                    0,0,232,309
+    GROUPBOX        "Customer Object",IDC_STATIC,261,31,195,58
+    LTEXT           "Name",IDC_STATIC,290,45,20,8
+    LTEXT           "City",IDC_STATIC,294,60,12,8
+    LTEXT           "Country",IDC_STATIC,288,71,25,8
+    EDITTEXT        IDC_EDT_NAME,316,41,108,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDT_CITY,316,56,108,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDT_COUNTRY,316,71,108,14,ES_AUTOHSCROLL
+    CONTROL         "List1",IDC_LIST_ORDERS,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | 
+                    WS_TABSTOP,271,99,178,66
+    PUSHBUTTON      ">>",IDC_BTN_LOADGUI,231,55,22,14
+    PUSHBUTTON      "<<",IDC_BTN_MAKEXML,232,134,22,14
+    GROUPBOX        "Order Objects",IDC_STATIC,261,90,196,80
+    GROUPBOX        "Selected Line Item Object",IDC_STATIC,259,230,192,75
+    LTEXT           "Product ID",IDC_STATIC,269,245,35,8
+    LTEXT           "Unit Price",IDC_STATIC,272,258,32,8
+    LTEXT           "Description",IDC_STATIC,268,272,36,8
+    EDITTEXT        IDC_EDT_PROD_ID,312,242,85,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDT_PRICE,311,256,87,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDT_DESC,311,270,86,14,ES_AUTOHSCROLL
+    GROUPBOX        "Line Item Objects",IDC_STATIC,259,170,194,58
+    CONTROL         "List1",IDC_LIST_LI,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | 
+                    WS_TABSTOP,272,177,174,47
+    LTEXT           "First press "">>"", then change some  'Customer Object' values",
+                    IDC_STATIC,264,2,193,8
+    LTEXT           "and some ""Selected Line Item"" values, then press ""<<""",
+                    IDC_STATIC,263,12,175,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,243,25,223,1
+    PUSHBUTTON      "Add Line Item to GUI",IDC_BTN_ADD,293,287,143,14
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "XMLDialog MFC Application\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "XMLDialog\0"
+            VALUE "LegalCopyright", "Copyright (C) 2009\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "XMLDialog.EXE\0"
+            VALUE "ProductName", "XMLDialog Application\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_XMLDIALOG_DIALOG, DIALOG
+    BEGIN
+        RIGHTMARGIN, 466
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\XMLDialog.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

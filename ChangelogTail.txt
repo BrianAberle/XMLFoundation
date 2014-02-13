@@ -1,0 +1,24 @@
+
+Current Version: 2014 Version 211
+
+
+Known bugs as of Feb 11, 2014
+-----------------------------
+none.
+
+
+
+This is the tail end of XMLFoundation\changelog.txt since 2014's Version 211 (released on February 11)
+----------------------------------------------------------------------
+none.
+
+
+
+
+
+
+Bugs fixed since 2014's Version 111 (released on Jan 11)
+---------------------------------------------------------
+possibly in a rare case with an app using compression a bug was fixed in GZip by upgrading XMLFoundation to the current zlib source
+changed the default value of nGrowByAllocationSize from 1024 to -1 in GString.h - a major performance fix for BigData
+XML reserved byte escaping in GString::AppendEscapeXMLReserved() is now correct by the W3C XML1.0/1.1 spec + custom overrides.

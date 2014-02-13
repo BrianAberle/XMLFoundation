@@ -1,0 +1,16 @@
+add all the files under XMlFoundation/src
+EXCPEPT
+
+WinCERuntimeC.cpp 
+src/Utils/EnglishErrors.cpp 
+WinINetHTTPDataSource.cpp (unless you arre on Windows and you plan to use it and link wininet also)
+and do not add any source from /src/Win32PThreads1998
+
+link to wsock32.lib (if you are on Windows)
+
+
+On Windows: I turned off precompiled headers because VC++ will otherwise want #include "stdafx.h" in every source file from XMLFoundation source that you put into your project.
+
+
+
+

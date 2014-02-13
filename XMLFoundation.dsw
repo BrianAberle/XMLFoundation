@@ -1,0 +1,317 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "5Loaves"=.\Servers\5Loaves\5Loaves.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "5LoavesActivex"=.\Servers\5LoavesActivex\5LoavesActivex.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "5LoavesDLL"=.\Servers\5LoavesDLL\5LoavesDLL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "5LoavesSvc"=.\Servers\5Loaves\5LoavesSvc.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "BigData"=".\Examples\C++\BigData\BigData.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ExATLCOM"=".\Examples\C++\ExATLCOM\ExATLCOM.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ExIndexObjects"=".\Examples\C++\ExIndexObjects\ExIndexObjects.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ExObjsFromXML"=".\Examples\C++\ExObjsFromXML\ExObjsFromXML.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "FilePoster"=".\Examples\C++\FilePoster\FilePoster.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "LexTest"=".\Examples\C++\LexTest\LexTest.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "MFCTypesFromXML"=".\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXML.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "NoLibraryLink"=".\Examples\C++\NoLibraryLink\NoLibraryLink.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ObjectCache"=".\Examples\C++\ObjectCache\ObjectCache.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "PluginExample"=".\Examples\C++\PluginExample\PluginExample.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "RareUseExamples"=".\Examples\C++\RareUseExamples\RareUseExamples.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "STL"=".\Examples\C++\STL\STL.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "StartHere"=".\Examples\C++\StartHere\StartHere.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "StartHere0"=".\Examples\C++\StartHere0\StartHere0.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "TranslatingXML"=".\Examples\C++\TranslatingXML\TranslatingXML.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "WebServerService"=.\Servers\WebServerService\WebServerService.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "XMLDialog"=".\Examples\C++\XMLDialog\XMLDialog.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "XMLFoundationLib"=.\Libraries\XMLFoundation\Build\XMLFoundationLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

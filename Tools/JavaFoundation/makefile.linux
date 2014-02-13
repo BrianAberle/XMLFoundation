@@ -1,0 +1,26 @@
+CC=g++
+CPPFLAGS = -O3 -w -c -D_LINUX
+INCDIR = -I../../Library/inc -I../../Library/inc/Server -I/JDK/j2sdk1.4.0/include -I/JDK/j2sdk1.4.0/include/linux
+COPY = cp
+
+JavaXMLFoundation: \
+	clear \
+	JavaFoundation.o 
+	
+
+
+	g++ -shared -o libJavaXMLFoundation.so \
+        JavaFoundation.o \
+		-L../../Library/Build \
+        -lm -ldl -lnsl -lXMLFoundation
+	  
+
+
+JavaFoundation.o: ./JavaFoundation.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./JavaFoundation.cpp
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

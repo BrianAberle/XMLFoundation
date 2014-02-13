@@ -1,0 +1,8 @@
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******

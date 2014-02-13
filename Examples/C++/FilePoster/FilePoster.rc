@@ -1,0 +1,228 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\FilePoster.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\FilePoster.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_FILEPOSTER_DIALOG DIALOGEX 0, 0, 326, 299
+STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "FilePoster  v1.4"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Send",IDC_BTN_SEND,135,222,50,14
+    DEFPUSHBUTTON   "Close",IDOK,135,275,50,14
+    GROUPBOX        "Local network settings",IDC_STATIC,23,22,253,47
+    CONTROL         "Use Proxy",IDC_CHK_PROXY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,29,34,48,10
+    EDITTEXT        IDC_EDT_PROXY_SRV,82,32,117,14,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,204,34,16,8
+    EDITTEXT        IDC_EDT_PROXY_PORT,224,31,39,14,ES_AUTOHSCROLL
+    LTEXT           "SwitchBoardServer:",IDC_STATIC,32,81,64,8
+    EDITTEXT        IDC_EDT_SB_SERVER,99,77,117,14,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,221,80,16,8
+    EDITTEXT        IDC_EDT_SB_PORT,239,77,29,14,ES_AUTOHSCROLL
+    LTEXT           "SwitchBoard Path:",IDC_STATIC,34,97,60,8
+    EDITTEXT        IDC_EDT_SB_PATH,99,93,169,14,ES_AUTOHSCROLL
+    GROUPBOX        "Where to meet",IDC_STATIC,24,70,251,43
+    GROUPBOX        "Identification",IDC_STATIC,24,116,251,48
+    LTEXT           "Connect-Name:",IDC_STATIC,31,127,50,8
+    EDITTEXT        IDC_EDT_CONNECT_NAME,83,124,175,14,ES_AUTOHSCROLL
+    LTEXT           "Your Name:",IDC_STATIC,44,145,38,8
+    EDITTEXT        IDC_EDT_USER_NAME,83,142,84,14,ES_AUTOHSCROLL
+    GROUPBOX        "What to send",IDC_STATIC,24,168,251,48
+    LTEXT           "Local File:",IDC_STATIC,30,180,33,8
+    EDITTEXT        IDC_EDT_LOCAL_FILE,67,177,182,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDT_REMOTE_FILE,67,197,198,14,ES_AUTOHSCROLL
+    LTEXT           "Title:",IDC_STATIC,44,201,16,8
+    EDITTEXT        IDC_EDT_RESULTS,27,248,265,18,ES_AUTOHSCROLL
+    LTEXT           "Results: ('Waiting To Send' may count to several hundred... be patient)",
+                    IDC_STATIC,27,239,223,8
+    PUSHBUTTON      "...",IDC_BTN_DIR_PICK,252,177,17,14
+    PUSHBUTTON      "?",IDC_BTN_PROXY_HELP,281,37,25,14
+    PUSHBUTTON      "?",IDC_BTN_MEET_HELP,281,83,25,14
+    PUSHBUTTON      "?",IDC_BTN_ID_HELP,281,133,25,14
+    PUSHBUTTON      "?",IDC_BTN_LOC_HELP,282,184,25,14
+    CONTROL         "Use HTTP Basic Authentication",IDC_CHK_AUTH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,29,52,117,10
+    EDITTEXT        IDC_EDT_STR_AUTH,151,49,112,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Read Me 1st",IDC_BUTTON1,119,7,50,14
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "United Business Technologies\0"
+            VALUE "FileDescription", "FilePoster UBT Application\0"
+            VALUE "FileVersion", "1, 3, 0, 0\0"
+            VALUE "InternalName", "FilePoster\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003\0"
+            VALUE "LegalTrademarks", "All Rights Reserved.\0"
+            VALUE "OriginalFilename", "FilePoster.EXE\0"
+            VALUE "ProductName", "FilePoster\0"
+            VALUE "ProductVersion", "1, 3, 0, 0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_FILEPOSTER_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 317
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 292
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// README
+//
+
+IDR_README1             README  DISCARDABLE     "ReadMe.txt"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDP_SOCKETS_INIT_FAILED "Windows sockets initialization failed."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\FilePoster.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

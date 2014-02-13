@@ -1,0 +1,70 @@
+#include ../../stdmk
+######################################################################
+### Solaris Makefile definitions 
+### 
+### Environment Variables:
+### 
+### VBROKERDIR (required)	: set to base directory of VisiBroker  
+###				: for C++ installation.
+### Uncomment appropriate lines to switch between multi-threaded
+### and single threaded builds and or debug vs non-debug builds.
+######################################################################
+
+
+### Platform specific compiler definitions (multi-threaded)
+CC         = /opt/SUNWspro/bin/CC -mt -xarch=v9 -D___VISIBROKER___  -DTHREAD -DSOLARIS -DSOLARIS2_7 -DBITS64
+
+### Platform specific compiler definitions (debug build)
+DEBUG      = -g -xs 
+### Platform specific compiler definitions (non-debug build)
+##DEBUG      = 
+
+STDCC_LIBS = -lsocket -lnsl -ldl -lposix4
+
+### VisiBroker directory locations
+ORBCC      = $(VBROKERDIR)/bin/idl2cpp
+LIBPATH    = -L$(VBROKERDIR)/lib
+CCINCLUDES = -I. -I$(VBROKERDIR)/include -I$(VBROKERDIR)/include/stubs
+
+### Multi-threaded ORB library
+LIBORB     = -lorb64_r -lvport64_r -lcosnm64_r -lcosev64_r
+
+### Compiler flags for debug
+CCFLAGS    = $(CCINCLUDES) $(DEBUG)
+
+
+### Standard build rules for .C (user code) and .cc (generated code) files
+
+.SUFFIXES: .C .o .h .hh .cc .java .class
+
+.C.o:
+	$(CC) $(CCFLAGS) -c -o $@ $<
+ 
+.cc.o:
+	$(CC) $(CCFLAGS) -c -o $@ $<
+
+
+#########################################################################
+EXE = Client 
+
+
+all: $(EXE)
+
+clean:
+	-rm -f core *.o *.hh *.cc $(EXE) 
+	-rm -rf SunWS_cache
+
+
+ExCORBA_c.cpp: ../idl/ExCORBA.idl
+	$(ORBCC) ../idl/ExCORBA.idl
+
+ExCORBA_s.cpp: ../idl/ExCORBA.idl
+	$(ORBCC) ../idl/ExCORBA.idl
+
+Client: ExCORBA_c.o Client.o 
+	$(CC) -o Client ExCORBA_c.o Client.o  \
+		$(LIBPATH) $(LIBORB) $(STDCC_LIBS)
+
+#Server: ExCORBA_s.o ExCORBA_c.o ServerVisiBroker.o ExCORBA_impl.o
+#	$(CC) -o Server ServerVisiBroker.o ExCORBA_c.o ExCORBA_s.o ExCORBA_impl.o \
+#		$(LIBPATH) $(LIBORB) $(STDCC_LIBS)

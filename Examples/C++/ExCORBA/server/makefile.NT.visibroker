@@ -1,0 +1,88 @@
+VBROKERDIR=c:\inprise\vbroker
+#DEBUG = 1
+
+
+!IFDEF DEBUG 
+CC_MODEL = /MDd /DTHREAD
+DEBUG = /Zi
+LDFLAGS  = /DEBUG:FULL
+!ELSE
+CC_MODEL = /MD /DTHREAD
+DEBUG =
+LDFLAGS  = 
+!ENDIF
+
+
+### Platform specific compiler definitions 
+CC         = CL /nologo $(CC_MODEL) -D___VISIBROKER___ -DWIN32 /GX /DSTRICT /DALIGNED
+CC_EXE_TARGET  = /Fo
+LINK_DLL   = LINK /nologo $(LDFLAGS) /DLL
+LINK_DLL_TARGET = /OUT:
+LINK_EXE   = LINK $(LDFLAGS)
+LINK_EXE_TARGET = /OUT:
+STDCC_LIBS = 
+CCDEFS     =
+
+### VisiBroker directory locations
+ORBCC      = $(VBROKERDIR)\bin\idl2cpp -src_suffix cpp 
+LIBDIR     = $(VBROKERDIR)\lib
+CCINCLUDES = -I. -I$(VBROKERDIR)\include -I$(VBROKERDIR)\include\stubs -I../../../../Library/inc
+
+### ORB library
+LIBORB     = /LIBPATH:$(LIBDIR)
+
+### Compiler flags
+CCFLAGS    = $(CCINCLUDES) $(DEBUG) $(CCDEFS) 
+
+### Standard build rules for .cpp files
+
+.SUFFIXES: .cxx .CPP .C .obj .h .hh .java .class
+
+.C.obj:
+	$(CC) $(CCFLAGS) -c /Tp $< 
+
+.CPP.obj:
+	$(CC) $(CCFLAGS) -c /Tp $< 
+
+.cxx.obj:
+	$(CC) $(CCFLAGS) -c /Tp $< 
+
+
+
+
+
+# Client.exe
+EXE = Server.exe 
+
+all: $(EXE)
+
+clean:
+	del *.obj
+	del *.exe
+	del *_c.cpp
+	del *_s.cpp
+	del *.hh
+	del *.log
+	del *.out
+	del *.ilk
+	del *.pdb
+
+#
+# "Bank" specific make rules
+#
+
+ExCORBA_c.cpp: ../idl/ExCORBA.idl
+	$(ORBCC) ../idl/ExCORBA.idl
+
+ExCORBA_s.cpp: ../idl/ExCORBA.idl
+	$(ORBCC) ../idl/ExCORBA.idl
+
+
+#Client.exe: Bank_c.obj Client.obj 
+#	$(LINK_EXE) /out:Client.exe Client.obj \
+#	Bank_c.obj $(LIBORB) $(STDCC_LIBS)
+
+Server.exe: ExCORBA_s.obj ExCORBA_c.obj ServerVisiBroker.obj ExCORBA_impl.obj
+	$(LINK_EXE) /out:Server.exe ServerVisiBroker.obj \
+	..\..\..\..\Library\Build\ReleaseClient\XMLFoundationClient.lib \
+	ExCORBA_impl.obj ExCORBA_s.obj ExCORBA_c.obj $(LIBORB) $(STDCC_LIBS)

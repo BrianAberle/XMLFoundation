@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+BigData: \
+	clear \
+	BigData.o
+	 
+	$(CC) \
+		-o BigData \
+		-L../../../Libraries/XMLFoundation/Build \
+		BigData.o \
+		-lnsl -lXMLFoundation -ldl
+
+BigData.o: ./BigData.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./BigData.cpp -o ./BigData.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

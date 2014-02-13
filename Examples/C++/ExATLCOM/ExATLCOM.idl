@@ -1,0 +1,48 @@
+// ExATLCOM.idl : IDL source for ExATLCOM.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ExATLCOM.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	[
+		object,
+		uuid(49B53179-A937-4560-A006-64142A62ED4F),
+		dual,
+		helpstring("IMyATLObj Interface"),
+		pointer_default(unique)
+	]
+	interface IMyATLObj : IDispatch
+	{
+		[propget, id(1), helpstring("property TheCount")] HRESULT TheCount([out, retval] long *pVal);
+		[propput, id(1), helpstring("property TheCount")] HRESULT TheCount([in] long newVal);
+		[propget, id(4), helpstring("property XMLState")] HRESULT XMLState([out, retval] BSTR *pVal);
+		[propput, id(4), helpstring("property XMLState")] HRESULT XMLState([in] BSTR newVal);
+		[id(5), helpstring("method SetValues")] HRESULT SetValues([in] long lValue, [in] BSTR strValue);
+		[propget, id(6), helpstring("property TheString")] HRESULT TheString([out, retval] BSTR *pVal);
+		[propput, id(6), helpstring("property TheString")] HRESULT TheString([in] BSTR newVal);
+		[id(8), helpstring("method GetMyInterface")] HRESULT GetMyInterface([in] long Key, [out, retval] IUnknown **pI);
+		[propget, id(9), helpstring("property Dump")] HRESULT Dump([out, retval] BSTR *pVal);
+		[id(10), helpstring("method RemoveSubObjects")] HRESULT RemoveSubObjects();
+	};
+
+[
+	uuid(945B8ABD-7BAD-4C02-9BDF-25641F84C279),
+	version(1.0),
+	helpstring("ExATLCOM 1.0 Type Library")
+]
+library EXATLCOMLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(7373BC84-8181-47CC-B4CF-532D55E4B828),
+		helpstring("MyATLObj Class")
+	]
+	coclass MyATLObj
+	{
+		[default] interface IMyATLObj;
+	};
+};

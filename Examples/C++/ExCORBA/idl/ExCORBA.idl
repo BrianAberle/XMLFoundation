@@ -1,0 +1,29 @@
+#ifndef _ExCORBA_IDL_INCLUDE
+#define _ExCORBA_IDL_INCLUDE
+
+module ExCORBA
+{
+    interface MyCORBAObject
+    {
+		// statefull implementation
+		void getXMLState(out string s);
+		void setXMLState(in string s);
+		void setState(in string s, in long l);
+		void addSubObject(in string s, in long l);
+		void delSubObjects();
+		MyCORBAObject getSubObjectIOR(in long l);
+		void dumpState(out string s);
+
+		// stateless implementation
+		void getXMLState2(			  in long h, out string s);
+		void setXMLState2(			  in long h, in string s);
+		void setState2(				  in long h, in string s, in long l);
+		void addSubObject2(			  in long h, in string s, in long l);
+		void delSubObjects2(		  in long h);
+		MyCORBAObject getSubObjectIOR2(in long h, in long l);
+		void dumpState2(				  in long h, out string s);
+    };
+};
+
+
+#endif  

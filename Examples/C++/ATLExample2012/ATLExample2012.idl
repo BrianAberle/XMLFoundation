@@ -1,0 +1,82 @@
+// ATLExample2012.idl : IDL source for ATLExample2012
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ATLExample2012.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(D337309F-5308-4592-B7E9-50D48F04D3C7),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface ICustomer : IDispatch{
+};
+[
+	object,
+	uuid(0AAA5725-A22D-4519-922E-7F78B322B71B),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IAddress : IDispatch{
+};
+[
+	object,
+	uuid(BD0971CB-34C3-4B7B-BB5F-24D0D2216A8E),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IOrder : IDispatch{
+};
+[
+	object,
+	uuid(8BDC2E69-E5E7-4720-995D-5CB90FE4F03D),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface ILineItem : IDispatch{
+};
+[
+	uuid(5DF1117B-73BE-4CB4-9516-F10208C5AC87),
+	version(1.0),
+]
+library ATLExample2012Lib
+{
+	importlib("stdole2.tlb");
+	[		
+		uuid(A3ABB036-B85F-4F80-BFFF-0E5F848D6FED)		
+	]
+	coclass Customer
+	{
+		[default] interface ICustomer;
+	};
+	[		
+		uuid(E64952BE-1E0C-474A-914A-56DD94F54750)		
+	]
+	coclass Address
+	{
+		[default] interface IAddress;
+	};
+	[		
+		uuid(71536243-68E6-4E0F-896B-5117C800557E)		
+	]
+	coclass Order
+	{
+		[default] interface IOrder;
+	};
+	[		
+		uuid(8380C58C-B9CF-4700-881D-5F336F8785F3)		
+	]
+	coclass LineItem
+	{
+		[default] interface ILineItem;
+	};
+};
+

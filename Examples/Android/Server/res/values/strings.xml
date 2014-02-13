@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Server</string>
+    <string name="log_text_box_1_do_nothing_text">Do nothing</string>
+    <string name="log_text_box_1_add_text">Add</string>
+</resources>

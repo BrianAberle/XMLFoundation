@@ -1,0 +1,52 @@
+ART_IDL_INCLUDE_DIR=    	/opt/iona/orbix_art/1.2/idl
+IDL=                    	/opt/iona/orbix_art/1.2/bin/idl
+ART_LIB_DIR=				/opt/iona/orbix_art/1.2/cxx/lib/sparcv9
+IT_PRODUCT_SHLIB_DIR=		/opt/iona/shlib/sparcv9
+IT_PRODUCT_DEF_SHLIB_DIR=   /opt/iona/shlib/default/sparcv9
+CXX_IDL=                    /opt/iona/orbix_art/1.2/bin/sparcv9/idl
+
+CXX=				/opt/SUNWspro/bin/CC
+
+
+RM=				rm -f
+
+
+CXXFLAGS= -I../../../../Library/inc -I/opt/iona/orbix_art/1.2/cxx/include \
+	    -g -xs +p -xarch=v9  -mt -D_REENTRANT -D---ORBIX---
+
+CXXLDFLAGS=			$(CXXFLAGS) -xildoff -R $(IT_PRODUCT_SHLIB_DIR):$(IT_PRODUCT_DEF_SHLIB_DIR)
+
+
+LDLIBS=				-L$(ART_LIB_DIR)		\
+				-L$(IT_PRODUCT_SHLIB_DIR)	\
+				-L$(IT_PRODUCT_DEF_SHLIB_DIR) $(EXTRA_LIB_PATH) \
+				$(LINK_WITH)  
+
+
+OBJS=				$(SOURCES:.cxx=.o)
+
+.SUFFIXES:			.pc .cxx
+
+
+.cxx.o:
+	$(RM) $@
+	$(CXX) -c $(CXXFLAGS) -o $@ $< 
+
+
+
+
+LINK_WITH=		../../../../Library/Build/libXMLFoundationC.a  -lit_poa  -lit_art  -lit_ifc -lCstd -lCrun -lc
+
+SOURCES=		server.cxx   ExCORBA_impl.cxx ExCORBAC.cxx   ExCORBAS.cxx 
+
+all:			server
+
+server:		$(SOURCES) $(OBJS)
+			$(RM) $@
+			$(CXX) -o $@ $(CXXLDFLAGS) $(OBJS) $(LDLIBS)
+
+$(SOURCES):		ExCORBA.hh
+
+ExCORBA.hh:		../idl/ExCORBA.idl
+			$(CXX_IDL) -base -poa:-xTIE -I$(ART_IDL_INCLUDE_DIR) ../idl/ExCORBA.idl
+

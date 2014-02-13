@@ -1,0 +1,240 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\MFCTypesFromXML.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\MFCTypesFromXML.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MFCTYPESFROMXML_DIALOG DIALOGEX 0, 0, 637, 389
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "MFCTypesFromXML"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,289,364,50,14
+    CONTROL         "",IDC_RICHEDIT_XML,"RICHEDIT",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | 
+                    WS_BORDER | WS_VSCROLL | WS_TABSTOP,0,50,207,331
+    LTEXT           "CString:",IDC_STATIC,230,115,26,8
+    LTEXT           "CStringList:",IDC_STATIC,230,65,36,8
+    LISTBOX         IDC_LIST1,229,75,54,36,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDT_CSTR,258,113,146,14,ES_AUTOHSCROLL
+    LTEXT           "DWordArray:",IDC_STATIC,291,65,42,8
+    LISTBOX         IDC_LIST2,288,75,54,36,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Create XML from Data Structures",IDC_TOXML,258,339,118,
+                    17
+    LTEXT           "XXXX:",IDC_CPTR_OBJS,238,183,22,8
+    LTEXT           "-----     CPtrlist     -----",IDC_STATIC,269,183,62,8
+    LTEXT           "XXXX:",IDC_GLST_OBJS,238,252,22,8
+    LTEXT           "-----     GList     -----",IDC_STATIC,269,252,57,8
+    PUSHBUTTON      "View 1st",IDC_BTN_FIRST_CPTR,332,180,36,14
+    PUSHBUTTON      "View Last",IDC_BTN_LAST_GLIST,332,248,36,14
+    LTEXT           "XXXX:",IDC_ARR_OBJS,238,206,22,8
+    LTEXT           "-----     CArray     -----",IDC_STATIC,268,205,62,8
+    PUSHBUTTON      "View All",IDC_BTN_VIEW_CARRAY,332,203,36,14
+    LTEXT           "CStringArray:",IDC_STATIC,350,65,42,8
+    LISTBOX         IDC_LIST3,348,75,54,36,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "-----   CPtrArray  -----",IDC_STATIC,268,229,60,8
+    LTEXT           "XXXX:",IDC_ARR_OBJS2,238,229,22,8
+    PUSHBUTTON      "View All",IDC_BTN_VIEW_ARR2,332,226,36,14
+    PUSHBUTTON      "Search",IDC_BTN_HASH_SEARCH,360,307,50,14
+    LTEXT           "----------     GHash     ----------",IDC_STATIC,270,311,
+                    83,8
+    LTEXT           "XXXX:",IDC_GHSH_OBJS,238,311,22,8
+    LTEXT           "----------     CMapStringToPtr ",IDC_STATIC,270,294,87,
+                    8
+    LTEXT           "XXXX:",IDC_MAP2PTR_OBJS,238,294,22,8
+    PUSHBUTTON      "Search",IDC_BTN_SEARCH_MAP,360,290,50,14
+    LTEXT           "Instance Count",IDC_STATIC,221,152,49,8
+    LTEXT           "Data Structure",IDC_STATIC,293,151,47,8
+    LTEXT           "Object Access",IDC_STATIC,360,150,47,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,219,162,187,1
+    GROUPBOX        "Sequential Access",IDC_STATIC,223,168,192,107
+    GROUPBOX        "Indexed Access (Must map OID for this feature)",
+                    IDC_STATIC,223,280,192,45
+    GROUPBOX        "Common MFC Types",IDC_STATIC,217,51,205,82
+    PUSHBUTTON      "Start",IDC_BTN_XML1,3,15,22,14
+    PUSHBUTTON      "2 of All",IDC_BTN_XML2,29,15,29,14
+    PUSHBUTTON      "~=xml",IDC_BTN_XML3,61,15,26,14
+    PUSHBUTTON      "CPtrList",IDC_BTN_XML4,93,15,31,14
+    PUSHBUTTON      "GList",IDC_BTN_XML5,128,14,22,14
+    PUSHBUTTON      "CMap",IDC_BTN_XML6,152,15,24,14
+    PUSHBUTTON      "GHash",IDC_BTN_XML7,179,15,28,14
+    GROUPBOX        "XMLObject Types",IDC_STATIC,215,138,207,193
+    LTEXT           "-------------------------------------------------------------------------------------------",
+                    IDC_COMPLETE_MSG,227,29,191,8
+    LTEXT           "-------------------------------------------------------------------------------------------",
+                    IDC_COMPLETE_MSG2,227,41,191,8
+    LTEXT           "-------------------------------------------------------------------------------------------",
+                    IDC_COMPLETE_MSG3,429,31,185,8
+    PUSHBUTTON      "Edit the XML manually then press this",
+                    IDC_BTN_CUSTOM_XML,2,34,202,14
+    CONTROL         "",IDC_RICHEDIT_XML2,"RICHEDIT",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | 
+                    WS_BORDER | WS_VSCROLL | WS_TABSTOP,426,42,207,334
+    PUSHBUTTON      "Del 1st",IDC_BTN_DEL,372,180,32,14
+    PUSHBUTTON      "Del All",IDC_BTN_DEL2,373,203,32,14
+    PUSHBUTTON      "Del 1st",IDC_BTN_DEL3,374,226,32,14
+    PUSHBUTTON      "Del 1st",IDC_BTN_DEL4,374,248,32,14
+    GROUPBOX        "(these are slow under a debugger)",IDC_STATIC,91,4,121,
+                    27
+    GROUPBOX        "Equivalent",IDC_STATIC,27,4,62,27
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "MFCTypesFromXML MFC Application\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "MFCTypesFromXML\0"
+            VALUE "LegalCopyright", "Copyright (C) 2009\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "MFCTypesFromXML.EXE\0"
+            VALUE "ProductName", "MFCTypesFromXML Application\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MFCTYPESFROMXML_DIALOG, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 386
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\MFCTypesFromXML.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

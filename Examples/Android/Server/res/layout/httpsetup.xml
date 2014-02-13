@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+ 
+    <TextView
+        android:id="@+id/lblEnableHTTP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enable HTTP Server"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+ 
+    <EditText
+        android:id="@+id/txtEnableHTTP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="no"
+         >
+        <requestFocus />
+    </EditText>
+ 
+
+    <TextView
+        android:id="@+id/lblHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="HTTP Home Folder"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+ 
+    <EditText
+        android:id="@+id/txHTTPHome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+         >
+        <requestFocus />
+    </EditText>
+
+    
+    
+   <TextView
+        android:id="@+id/lblHTTPIndex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="html file to serve as Index"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+ 
+    <EditText
+        android:id="@+id/txtHTMLIndex"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+         >
+ 
+        <requestFocus />
+    </EditText>
+    
+    
+     <TextView
+        android:id="@+id/lblServerLogFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Server Log File"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+ 
+    <EditText
+        android:id="@+id/txtServerLogFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+         >
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save" />
+ 
+</LinearLayout>
+

@@ -1,0 +1,11 @@
+LIBRARY   5LOAVES
+DESCRIPTION "5Loaves"
+EXPORTS
+	SetConfigEntry		@1
+	SetConfigFile		@2
+	ServerStart			@3
+	ServerStop			@4
+	GetLast5LoavesError	@5
+
+
+ 

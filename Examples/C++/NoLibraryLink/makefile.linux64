@@ -1,0 +1,238 @@
+CC = g++
+
+CPPFLAGS = -c -O3 -w -D_LINUX -D_LINUX64 -I../../../Libraries/XMLFoundation/inc
+
+NoLibraryLink: \
+	clear \
+	NoLibraryLink.o \
+	GSocketHelpers.o \
+	GArray.o \
+	GBTree.o \
+	GException.o \
+	GHash.o \
+	GList.o \
+	GProfile.o \
+	GStack.o \
+	GString.o \
+	GStringList.o \
+	GDirectory.o \
+	GPerformanceTimer.o \
+	GHTTPMultiPartPOST.o \
+	PluginBuilderLowLevelStatic.o \
+	TwoFish.o \
+	SHA256.o \
+	BZip.o \
+	GZip.o \
+	Base64.o \
+	AttributeList.o \
+	CacheManager.o \
+	FactoryManager.o \
+	FrameworkAuditLog.o \
+	MemberDescriptor.o \
+	FileDataSource.o \
+	ObjQueryParameter.o \
+	ProcedureCall.o \
+	Schema.o \
+	SocketHTTPDataSource.o \
+	StackFrameCheck.o \
+	xmlAttribute.o \
+	xmlDataSource.o \
+	xmlElement.o \
+	xmlElementTree.o \
+	XMLException.o \
+	xmlLex.o \
+	xmlObject.o \
+	xmlObjectFactory.o \
+	XMLProcedureDescriptor.o \
+	SwitchBoard.o \
+	DynamicLibrary.o \
+	IntegrationBase.o \
+	IntegrationLanguages.o 
+
+	 
+	$(CC) 	\
+		-o NoLibraryLink \
+		NoLibraryLink.o \
+		GSocketHelpers.o \
+		GArray.o \
+		GBTree.o \
+		GException.o \
+		GHash.o \
+		GList.o \
+		GProfile.o \
+		GStack.o \
+		GString.o \
+		GStringList.o \
+		GDirectory.o \
+		GPerformanceTimer.o \
+		GHTTPMultiPartPOST.o \
+		PluginBuilderLowLevelStatic.o \
+		TwoFish.o \
+		SHA256.o \
+		BZip.o \
+		GZip.o \
+		Base64.o \
+		AttributeList.o \
+		CacheManager.o \
+		FactoryManager.o \
+		FrameworkAuditLog.o \
+		MemberDescriptor.o \
+		FileDataSource.o \
+		ObjQueryParameter.o \
+		ProcedureCall.o \
+		Schema.o \
+		SocketHTTPDataSource.o \
+		StackFrameCheck.o \
+		xmlAttribute.o \
+		xmlDataSource.o \
+		xmlElement.o \
+		xmlElementTree.o \
+		XMLException.o \
+		xmlLex.o \
+		xmlObject.o \
+		xmlObjectFactory.o \
+		XMLProcedureDescriptor.o \
+		SwitchBoard.o \
+		DynamicLibrary.o \
+		IntegrationBase.o \
+		IntegrationLanguages.o \
+		-lnsl -ldl
+
+NoLibraryLink.o: ./NoLibraryLink.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./NoLibraryLink.cpp -o ./NoLibraryLink.o
+
+GSocketHelpers.o: ../../../Libraries/XMLFoundation/src/Utils/GSocketHelpers.cpp
+	$(CC) $(INCDIR) $(CPPFLAGS) ../../../Libraries/XMLFoundation/src/Utils/GSocketHelpers.cpp -o ./GSocketHelpers.o
+
+GArray.o: ../../../Libraries/XMLFoundation/src/Utils/GArray.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GArray.cpp -o ./GArray.o
+
+GBTree.o: ../../../Libraries/XMLFoundation/src/Utils/GBTree.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GBTree.cpp -o ./GBTree.o
+
+GException.o: ../../../Libraries/XMLFoundation/src/Utils/GException.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GException.cpp -o ./GException.o
+
+GHash.o: ../../../Libraries/XMLFoundation/src/Utils/GHash.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GHash.cpp -o ./GHash.o
+
+GList.o: ../../../Libraries/XMLFoundation/src/Utils/GList.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GList.cpp -o ./GList.o
+
+GProfile.o: ../../../Libraries/XMLFoundation/src/Utils/GProfile.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GProfile.cpp -o ./GProfile.o
+
+GStack.o: ../../../Libraries/XMLFoundation/src/Utils/GStack.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GStack.cpp -o ./GStack.o
+
+GString.o: ../../../Libraries/XMLFoundation/src/Utils/GString.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GString.cpp -o ./GString.o
+
+GStringList.o: ../../../Libraries/XMLFoundation/src/Utils/GStringList.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GStringList.cpp -o ./GStringList.o
+
+GDirectory.o: ../../../Libraries/XMLFoundation/src/Utils/GDirectory.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GDirectory.cpp -o ./GDirectory.o
+
+GPerformanceTimer.o: ../../../Libraries/XMLFoundation/src/Utils/GPerformanceTimer.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GPerformanceTimer.cpp -o ./GPerformanceTimer.o
+
+GHTTPMultiPartPOST.o: ../../../Libraries/XMLFoundation/src/Utils/GHTTPMultiPartPOST.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GHTTPMultiPartPOST.cpp -o ./GHTTPMultiPartPOST.o
+
+PluginBuilderLowLevelStatic.o: ../../../Libraries/XMLFoundation/src/Utils/PluginBuilderLowLevelStatic.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/PluginBuilderLowLevelStatic.cpp -o ./PluginBuilderLowLevelStatic.o
+
+TwoFish.o: ../../../Libraries/XMLFoundation/src/Utils/TwoFish.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/TwoFish.cpp -o ./TwoFish.o
+
+SHA256.o: ../../../Libraries/XMLFoundation/src/Utils/SHA256.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/SHA256.cpp -o ./SHA256.o
+
+BZip.o: ../../../Libraries/XMLFoundation/src/Utils/BZip.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/BZip.cpp -o ./BZip.o
+
+GZip.o: ../../../Libraries/XMLFoundation/src/Utils/GZip.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GZip.cpp -o ./GZip.o
+
+Base64.o: ../../../Libraries/XMLFoundation/src/Utils/Base64.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/Base64.cpp -o ./Base64.o
+
+AttributeList.o: ../../../Libraries/XMLFoundation/src/AttributeList.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/AttributeList.cpp -o ./AttributeList.o
+
+CacheManager.o: ../../../Libraries/XMLFoundation/src/CacheManager.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/CacheManager.cpp -o ./CacheManager.o
+
+FactoryManager.o: ../../../Libraries/XMLFoundation/src/FactoryManager.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/FactoryManager.cpp -o ./FactoryManager.o
+
+FrameworkAuditLog.o: ../../../Libraries/XMLFoundation/src/FrameworkAuditLog.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/FrameworkAuditLog.cpp -o ./FrameworkAuditLog.o
+
+MemberDescriptor.o: ../../../Libraries/XMLFoundation/src/MemberDescriptor.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/MemberDescriptor.cpp -o ./MemberDescriptor.o
+
+FileDataSource.o: ../../../Libraries/XMLFoundation/src/FileDataSource.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/FileDataSource.cpp -o ./FileDataSource.o
+
+ObjQueryParameter.o: ../../../Libraries/XMLFoundation/src/ObjQueryParameter.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/ObjQueryParameter.cpp -o ./ObjQueryParameter.o
+
+ProcedureCall.o: ../../../Libraries/XMLFoundation/src/ProcedureCall.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/ProcedureCall.cpp -o ./ProcedureCall.o
+
+Schema.o: ../../../Libraries/XMLFoundation/src/Schema.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Schema.cpp -o ./Schema.o
+
+SocketHTTPDataSource.o: ../../../Libraries/XMLFoundation/src/SocketHTTPDataSource.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/SocketHTTPDataSource.cpp -o ./SocketHTTPDataSource.o
+
+StackFrameCheck.o: ../../../Libraries/XMLFoundation/src/StackFrameCheck.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/StackFrameCheck.cpp -o ./StackFrameCheck.o
+
+xmlAttribute.o: ../../../Libraries/XMLFoundation/src/xmlAttribute.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlAttribute.cpp -o ./xmlAttribute.o
+
+xmlDataSource.o: ../../../Libraries/XMLFoundation/src/xmlDataSource.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlDataSource.cpp -o ./xmlDataSource.o
+
+xmlElement.o: ../../../Libraries/XMLFoundation/src/xmlElement.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlElement.cpp -o ./xmlElement.o
+
+xmlElementTree.o: ../../../Libraries/XMLFoundation/src/xmlElementTree.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlElementTree.cpp -o ./xmlElementTree.o
+
+XMLException.o: ../../../Libraries/XMLFoundation/src/XMLException.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/XMLException.cpp -o ./XMLException.o
+
+xmlLex.o: ../../../Libraries/XMLFoundation/src/xmlLex.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlLex.cpp -o ./xmlLex.o
+
+xmlObject.o: ../../../Libraries/XMLFoundation/src/xmlObject.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlObject.cpp -o ./xmlObject.o
+
+xmlObjectFactory.o: ../../../Libraries/XMLFoundation/src/xmlObjectFactory.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/xmlObjectFactory.cpp -o ./xmlObjectFactory.o
+
+XMLProcedureDescriptor.o: ../../../Libraries/XMLFoundation/src/XMLProcedureDescriptor.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/XMLProcedureDescriptor.cpp -o ./XMLProcedureDescriptor.o
+
+SwitchBoard.o: ../../../Libraries/XMLFoundation/src/SwitchBoard.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/SwitchBoard.cpp -o ./SwitchBoard.o
+
+DynamicLibrary.o: ../../../Libraries/XMLFoundation/src/DynamicLibrary.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/DynamicLibrary.cpp -o ./DynamicLibrary.o
+
+IntegrationBase.o: ../../../Libraries/XMLFoundation/src/IntegrationBase.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/IntegrationBase.cpp -o ./IntegrationBase.o
+
+IntegrationLanguages.o: ../../../Libraries/XMLFoundation/src/IntegrationLanguages.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/IntegrationLanguages.cpp -o ./IntegrationLanguages.o
+
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

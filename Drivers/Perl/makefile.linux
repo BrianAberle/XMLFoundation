@@ -1,0 +1,91 @@
+CCC = g++
+################################# notes
+#-I./nsPerl5.005_03_linux/lib/i686-linux/CORE
+#-L./nsPerl5.005_03_linux/lib/i686-linux/CORE \
+#######
+#-I/ActivePerl-5.6.0.623_linux/perl/lib/5.6.0/i686-linux-thread-multi/CORE
+#-L./ActivePerl-5.6.0.623_linux/perl/lib/5.6.0/i686-linux-thread-multi/CORE
+#######
+# 
+# You will need to set the folder paths for yourself in this make file 
+# depending on on wich perl runtime you ues and where you have it.  
+# It has been tested with several
+# also be sure to get you load library path correctly configured for example:
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubt/opt/ActivePerl-5.10/lib/CORE
+
+
+CPPFLAGS = -O3 -w -c -D_LINUX
+INCDIR = -I../../Libraries/XMLFoundation/inc -I/home/ubt/opt/ActivePerl-5.10/lib/CORE
+COPY = cp
+
+PerlDriver: \
+	clear \
+	DriverPerl.o \
+	Base64.o \
+	TwoFish.o \
+	GBTree.o \
+	SHA256.o \
+	GException.o \
+	GDirectory.o \
+	GStringList.o \
+	GProfile.o \
+	GList.o \
+	GString.o \
+	InterfaceParser.o \
+	IntegrationPerl.o 
+	
+
+	$(CCC) -shared -o PerlAP510.so \
+		-L/home/ubt/opt/ActivePerl-5.10/lib/CORE \
+        DriverPerl.o Base64.o TwoFish.o GBTree.o SHA256.o GList.o GString.o \
+		GProfile.o GStringList.o GDirectory.o GException.o InterfaceParser.o IntegrationPerl.o\
+         -lm -ldl -lnsl -lperl -lcrypt
+	  
+	$(COPY) PerlAP510.so ../.
+
+
+DriverPerl.o: ./DriverPerl.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./DriverPerl.cpp
+
+Base64.o: ../../Libraries/XMLFoundation/src/Utils/Base64.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/Base64.cpp
+
+TwoFish.o: ../../Libraries/XMLFoundation/src/Utils/TwoFish.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/TwoFish.cpp
+
+GBTree.o: ../../Libraries/XMLFoundation/src/Utils/GBTree.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GBTree.cpp
+
+SHA256.o: ../../Libraries/XMLFoundation/src/Utils/SHA256.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/SHA256.cpp
+
+GList.o: ../../Libraries/XMLFoundation/src/Utils/GList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GList.cpp
+
+GString.o: ../../Libraries/XMLFoundation/src/Utils/GString.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GString.cpp
+
+GStringList.o: ../../Libraries/XMLFoundation/src/Utils/GStringList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GStringList.cpp
+
+GProfile.o: ../../Libraries/XMLFoundation/src/Utils/GProfile.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GProfile.cpp
+
+GDirectory.o: ../../Libraries/XMLFoundation/src/Utils/GDirectory.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GDirectory.cpp
+
+GException.o: ../../Libraries/XMLFoundation/src/Utils/GException.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/Utils/GException.cpp
+
+InterfaceParser.o: ../../Libraries/XMLFoundation/src/InterfaceParser.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../Libraries/XMLFoundation/src/InterfaceParser.cpp
+
+IntegrationPerl.o: ./IntegrationPerl.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./IntegrationPerl.cpp
+
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

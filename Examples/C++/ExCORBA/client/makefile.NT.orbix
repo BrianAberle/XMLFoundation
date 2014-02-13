@@ -1,0 +1,34 @@
+ART_CXX_INCLUDE_DIR=	"C:\Program Files\iona\orbix_art\1.2\cxx\include"
+ART_LIB_DIR=			"C:\Program Files\iona\orbix_art\1.2\cxx\lib"
+CXX_IDL=				"C:\Program Files\iona\orbix_art\1.2\bin\idl"
+
+CXX=				cl
+RM=					del
+CXXFLAGS=			-I$(ART_CXX_INCLUDE_DIR)  -Zi -nologo -W3 -GX -GR -Zm200  -MD  -D___ORBIX___
+LINK=				link
+LDFLAGS=			/DEBUG
+LDLIBS=				/LIBPATH:$(ART_LIB_DIR) $(LINK_WITH) msvcrt.lib kernel32.lib ws2_32.lib advapi32.lib user32.lib
+OBJS=				$(SOURCES:.cxx=.obj)
+
+.cxx.obj:
+				if exist $@ $(RM) $@
+				$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+
+
+
+LINK_WITH=		it_art.lib  it_ifc.lib 
+
+SOURCES=		client.cxx ExCORBAC.cxx 
+
+all:			client.exe
+
+client.exe:		$(SOURCES) $(OBJS)
+			if exist $@ $(RM) $@
+			$(LINK) /out:$@ $(LDFLAGS) $(OBJS) $(LDLIBS)
+
+$(SOURCES):		ExCORBA.hh
+
+ExCORBA.hh:		..\idl\ExCORBA.idl
+			$(CXX_IDL) -base ..\idl\ExCORBA.idl
+

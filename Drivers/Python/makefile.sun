@@ -1,0 +1,61 @@
+CCC = g++
+CPPFLAGS = -O3 -w -c -D__sun
+INCDIR = -I../../../Library/inc  -I./Python-2.1/Include -I./Python-2.1
+COPY = cp
+
+PythonDriver: \
+	clear \
+	DriverPython.o \
+	GException.o \
+	Directory.o \
+	GStringList.o \
+	Profile.o \
+	GList.o \
+	GString.o \
+	InterfaceParser.o \
+	IntegrationPython.o 
+	
+
+	$(CCC) -G -o PythonDriver.so \
+		-L./Python-2.1 \
+        DriverPython.o GList.o GString.o \
+		Profile.o GStringList.o Directory.o GException.o InterfaceParser.o IntegrationPython.o\
+        -lm -ldl -lnsl -lpython2.1 -lc 
+	  
+	
+	$(COPY) PythonDriver.so ../../../Bin/Drivers/.
+
+
+DriverPython.o: ./DriverPython.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./DriverPython.cpp
+
+GList.o: ../../../Library/src/Utils/GList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GList.cpp
+
+GString.o: ../../../Library/src/Utils/GString.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GString.cpp
+
+Profile.o: ../../../Library/src/Utils/Profile.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Profile.cpp
+
+GStringList.o: ../../../Library/src/Utils/GStringList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GStringList.cpp
+
+Directory.o: ../../../Library/src/Utils/Directory.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Directory.cpp
+
+GException.o: ../../../Library/src/Utils/GException.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GException.cpp
+
+InterfaceParser.o: ../../../Library/src/InterfaceParser.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/InterfaceParser.cpp
+
+IntegrationPython.o: ./IntegrationPython.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./IntegrationPython.cpp
+
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

@@ -1,0 +1,1 @@
+javah -cp src -d jni com.server.app.Server

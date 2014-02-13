@@ -1,0 +1,4 @@
+<AttributeExample UnmappedAttribute="UnmappedAttribute value" String1="Value of First String">
+	This is the object Value
+	<UnmappedMember>UnmappedMember Value</UnmappedMember>
+</AttributeExample>

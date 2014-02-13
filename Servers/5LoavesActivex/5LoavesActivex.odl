@@ -1,0 +1,66 @@
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(5BA3D9A8-546C-4F0B-8631-777950353525), version(1.0),
+  helpfile("5LoavesActivex.hlp"),
+  helpstring("5Loaves ActiveX Control module"),
+  control ]
+library FiveLOAVESLib
+{
+	importlib(STDOLE_TLB);
+	importlib(STDTYPE_TLB);
+
+	//  Primary dispatch interface for C5LoavesCtrl
+
+	[ uuid(C947F177-CAA4-4A05-ABCC-94B0B4CE3E3A),
+	  helpstring("Dispatch interface for 5Loaves Control"), hidden ]
+	dispinterface _D5Loaves
+	{
+		properties:
+			// NOTE - ClassWizard will maintain property information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_PROP(C5LoavesCtrl)
+			//}}AFX_ODL_PROP
+
+		methods:
+			// NOTE - ClassWizard will maintain method information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_METHOD(C5LoavesCtrl)
+			[id(1)] long StartServer();
+			[id(2)] long StopServer();
+			[id(3)] long SetConfigFile(BSTR StartConfigFile);
+			[id(4)] long SetConfigEntry(BSTR Section, BSTR Entry, BSTR Value);
+			[id(5)] BSTR GetLast5LoavesError();
+			//}}AFX_ODL_METHOD
+	};
+
+	//  Event dispatch interface for C5LoavesCtrl
+
+	[ uuid(C55CB491-48F6-4161-ADDE-C0CE8B30B9E3),
+	  helpstring("Event interface for 5Loaves Control") ]
+	dispinterface _D5LoavesEvents
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+			// NOTE - ClassWizard will maintain event information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_EVENT(C5LoavesCtrl)
+			//}}AFX_ODL_EVENT
+	};
+
+	//  Class information for C5LoavesCtrl
+
+	[ uuid(3F917A51-066B-4AD7-99D2-95349DA3C176),
+	  helpstring("5Loaves Control"), control ]
+	coclass FiveLoaves
+	{
+		[default] dispinterface _D5Loaves;
+		[default, source] dispinterface _D5LoavesEvents;
+	};
+
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};

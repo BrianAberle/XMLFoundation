@@ -1,0 +1,7 @@
+[Debug]
+CallStackInException=1
+MultiMapWarnings=1	
+
+
+[Settings]
+Errors=C:\SRC\UBT\XMLFoundation\Bin\errors\english\errors.txt

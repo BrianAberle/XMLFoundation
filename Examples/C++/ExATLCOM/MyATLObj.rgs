@@ -1,0 +1,26 @@
+HKCR
+{
+	ExATLCOM.MyATLObj.1 = s 'MyATLObj Class'
+	{
+		CLSID = s '{7373BC84-8181-47CC-B4CF-532D55E4B828}'
+	}
+	ExATLCOM.MyATLObj = s 'MyATLObj Class'
+	{
+		CLSID = s '{7373BC84-8181-47CC-B4CF-532D55E4B828}'
+		CurVer = s 'ExATLCOM.MyATLObj.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {7373BC84-8181-47CC-B4CF-532D55E4B828} = s 'MyATLObj Class'
+		{
+			ProgID = s 'ExATLCOM.MyATLObj.1'
+			VersionIndependentProgID = s 'ExATLCOM.MyATLObj'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{945B8ABD-7BAD-4C02-9BDF-25641F84C279}'
+		}
+	}
+}

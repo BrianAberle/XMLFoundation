@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+STL: \
+	clear \
+	STL.o
+	 
+	$(CC) \
+		-o STL \
+		-L../../../Libraries/XMLFoundation/Build \
+		STL.o \
+		-lnsl -lXMLFoundation -ldl
+
+STL.o: ./STL.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./STL.cpp -o ./STL.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

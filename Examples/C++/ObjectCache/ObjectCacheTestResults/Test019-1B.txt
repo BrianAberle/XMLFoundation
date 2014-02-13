@@ -1,0 +1,42 @@
+<Customer>
+	<ContactName>New Dude</ContactName>
+	<City>Chocolate City</City>
+	<Country>Hipville</Country>
+	<Order>
+		<ShippedDate>1997-09-02</ShippedDate>
+		<OrderDate>Far out</OrderDate>
+		<LineItem>
+			<UnitPrice>45.6000</UnitPrice>
+			<ProductID>28</ProductID>
+			<Description/>
+		</LineItem>
+		<LineItem>
+			<UnitPrice>18.0000</UnitPrice>
+			<ProductID>39</ProductID>
+			<Description/>
+		</LineItem>
+		<LineItem>
+			<UnitPrice>12.0000</UnitPrice>
+			<ProductID>46</ProductID>
+			<Description/>
+		</LineItem>
+	</Order>
+	<Order>
+		<ShippedDate>1997-10-13</ShippedDate>
+		<OrderDate>1997-10-03</OrderDate>
+		<LineItem>
+			<UnitPrice>43.9000</UnitPrice>
+			<ProductID>63</ProductID>
+			<Description/>
+		</LineItem>
+	</Order>
+	<Order>
+		<ShippedDate>Futuristic</ShippedDate>
+		<OrderDate>Tomorrow</OrderDate>
+		<LineItem>
+			<UnitPrice>1234567.77</UnitPrice>
+			<ProductID>1234567</ProductID>
+			<Description/>
+		</LineItem>
+	</Order>
+</Customer>

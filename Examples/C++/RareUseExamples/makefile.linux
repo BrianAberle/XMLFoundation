@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+RareUseExamples: \
+	clear \
+	RareUseExamples.o
+	 
+	$(CC) \
+		-o RareUseExamples \
+		-L../../../Libraries/XMLFoundation/Build \
+		RareUseExamples.o \
+		-lnsl -lXMLFoundation -ldl
+
+RareUseExamples.o: ./RareUseExamples.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./RareUseExamples.cpp -o ./RareUseExamples.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

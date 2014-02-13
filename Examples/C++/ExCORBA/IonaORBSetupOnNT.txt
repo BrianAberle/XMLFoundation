@@ -1,0 +1,129 @@
+========== 1. Build the XMLFoundation ====================
+
+By default the XMLFoundation uses the static Multi Threaded 
+C Run time (LIBCMT.lib).  Orbix kernel files are built
+using MSVCRT.lib, so for binary consistency compile the
+XMLFoundation in the Release configuration using the
+Multi Threaded C Runtime in a DLL.  
+
+To do this: Open the VCppUseThis.dsw located in the 
+\XMLIntegrationSRC\XMLFoundation directory.  Right click
+the XMLFoundationClient project and select "Settings".
+on the "c/C++" tab set the category to "Code Generation",
+then set the run-time library to "Multithreaded DLL"
+
+
+make a release build of the XMLFoundation.
+
+=========================================================
+
+build the client and the server from the command line.
+1. from "Start" select "Run".  type "cmd" and press enter.
+
+
+2. locate your bin directory in your VCPP installation.
+by default it's "C:\Program Files\Microsoft Visual Studio\VC98\Bin"
+
+3. run a batch file from your bin dir called vcvars32.bat
+c:\>"C:\Program Files\Microsoft Visual Studio\VC98\Bin\vcvars32.bat"
+   - be sure to put quotes around the command if there are spaces
+     in the path.
+   - you will see this message:
+     Setting environment for using Microsoft Visual C++ tools.
+
+
+in both the client and server directories type:
+
+nmake -f makefile.NT
+
+=========================================================
+
+
+run the server in a text terminal window:
+
+
+run the client in another.  The following is the output from the client:
+========================================================================
+# ./client
+Initializing ORB
+1.  Setting object state through native IIOP
+2. getting object state in XML
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>Root</CustomerName>
+</MyCORBAImpl>
+3. setting object state through XML
+4. view the modified object state in XML
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>SuperUser</CustomerName>
+</MyCORBAImpl>
+5. Add CORBA Sub-Objects through XML
+6. view new object state in XML
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>SuperUser</CustomerName>
+        <MyCORBAImpl>
+                <CustomerID>123</CustomerID>
+                <CustomerName>Al Gore</CustomerName>
+        </MyCORBAImpl>
+        <MyCORBAImpl>
+                <CustomerID>456</CustomerID>
+                <CustomerName>George Bush Jr.</CustomerName>
+        </MyCORBAImpl>
+</MyCORBAImpl>
+8. use an IOR of an object created in step 5
+<MyCORBAImpl>
+        <CustomerID>456</CustomerID>
+        <CustomerName>George Bush Jr.</CustomerName>
+</MyCORBAImpl>
+9. Add a Sub-Object without using XML
+10. use an IOR of an object created in step 9
+<MyCORBAImpl>
+        <CustomerID>1475</CustomerID>
+        <CustomerName>Michelangelo</CustomerName>
+</MyCORBAImpl>
+11. Deleting Sub objects
+12. write out the state in XML (now without the sub-objects)
+<MyCORBAImpl>
+        <CustomerID>777</CustomerID>
+        <CustomerName>SuperUser</CustomerName>
+</MyCORBAImpl>
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -w -c -D_INTEL -D_LINUX -D_NO_EXCEPT -I../../../Libraries/XMLFoundation/inc -I/home/ubt/opt/ActivePerl-5.10/lib/CORE
+COPY = cp
+
+TransactXML: \
+	clear \
+	PerlTest.o 
+	 
+	$(CC) \
+		-o PerlTest \
+		-L../../../Libraries/XMLFoundation/Build \
+		-L/home/ubt/opt/ActivePerl-5.10/lib/CORE \
+		PerlTest.o \
+		-lperl -lpthread -lnsl -ldl -lXMLFoundation 
+
+PerlTest.o: ./PerlTest.cpp
+	$(CC) $(CPPFLAGS) ./PerlTest.cpp -o ./PerlTest.o
+
+
+clear:
+	clear
+

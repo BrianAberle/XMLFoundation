@@ -1,0 +1,28 @@
+#CC = g++
+CC = /opt/SUNWspro/bin/CC
+CPPFLAGS = -c -O3 -w -D__sun 
+INCDIR = -I../../../Library/inc 
+
+ObjectsFromXML: \
+	clear \
+	Main.o \
+	ObjectModel.o
+	 
+	$(CC) \
+		-o ObjectsFromXML \
+		-L../../../Library/Build \
+		-L/usr/local/lib \
+		Main.o ObjectModel.o \
+		-liberty -lnsl -lsocket -lXMLFoundationC -ldl 
+
+
+Main.o: ./Main.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./Main.cpp -o ./Main.o
+
+ObjectModel.o: ./ObjectModel.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./ObjectModel.cpp -o ./ObjectModel.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear

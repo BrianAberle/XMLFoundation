@@ -1,0 +1,54 @@
+CC=g++
+CPPFLAGS = -O3 -w -c -D_LINUX
+INCDIR = -I../../../Library/inc -I../../../Library/inc/Server
+COPY = cp
+
+CStdCallDriver: \
+	clear \
+	IntegrationCStdCall.o \
+	DriverCStdCall.o \
+	GException.o \
+	Directory.o \
+	GStringList.o \
+	Profile.o \
+	GList.o \
+	GString.o 
+	
+
+		g++ -shared -o CStdCall.so \
+        IntegrationCStdCall.o DriverCStdCall.o GList.o GString.o \
+		Profile.o GStringList.o Directory.o GException.o \
+        -lm -ldl -lnsl 
+	  
+	$(COPY) CStdCall.so ../../../Bin/Drivers/.
+
+
+IntegrationCStdCall.o: ./IntegrationCStdCall.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./IntegrationCStdCall.cpp
+
+DriverCStdCall.o: ./DriverCStdCall.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./DriverCStdCall.cpp
+
+GList.o: ../../../Library/src/Utils/GList.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GList.cpp
+
+GString.o: ../../../Library/src/Utils/GString.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GString.cpp
+
+Profile.o: ../../../Library/src/Utils/Profile.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Profile.cpp
+
+GStringList.o: ../../../Library/src/Utils/GStringList.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GStringList.cpp
+
+Directory.o: ../../../Library/src/Utils/Directory.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Directory.cpp
+
+GException.o: ../../../Library/src/Utils/GException.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GException.cpp
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

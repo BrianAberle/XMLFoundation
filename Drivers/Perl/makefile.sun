@@ -1,0 +1,62 @@
+CCC = g++
+#CCC = /export/home0/CC/SUNWspro/bin/CC
+
+CPPFLAGS = -O3 -w -c -D__sun
+INCDIR = -I../../../Library/inc -I/usr/perl5/5.00503/sun4-solaris/CORE
+COPY = cp
+
+PerlDriver: \
+	clear \
+	InterfaceParser.o \
+	IntegrationPerl.o \
+	DriverPerl.o \
+	GException.o \
+	Directory.o \
+	GStringList.o \
+	Profile.o \
+	GList.o \
+	GString.o 
+	
+
+	$(CCC) -G -g -o Perl500503.so \
+		-L/usr/perl5/5.00503/sun4-solaris/CORE \
+        InterfaceParser.o IntegrationPerl.o DriverPerl.o GList.o GString.o \
+		Profile.o GStringList.o Directory.o GException.o \
+         -lm -ldl -lnsl -lperl
+	  
+
+	$(COPY) Perl500503.so ../../../Bin/Drivers/.
+
+
+InterfaceParser.o: ../../../Library/src/InterfaceParser.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/InterfaceParser.cpp
+
+IntegrationPerl.o: ./IntegrationPerl.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./IntegrationPerl.cpp
+
+DriverPerl.o: ./DriverPerl.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./DriverPerl.cpp
+
+GList.o: ../../../Library/src/Utils/GList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GList.cpp
+
+GString.o: ../../../Library/src/Utils/GString.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GString.cpp
+
+Profile.o: ../../../Library/src/Utils/Profile.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Profile.cpp
+
+GStringList.o: ../../../Library/src/Utils/GStringList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GStringList.cpp
+
+Directory.o: ../../../Library/src/Utils/Directory.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Directory.cpp
+
+GException.o: ../../../Library/src/Utils/GException.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GException.cpp
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

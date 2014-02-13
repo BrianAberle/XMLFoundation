@@ -1,0 +1,35 @@
+<Order>
+	<ShippedDate>1997-05-09</ShippedDate>
+	<OrderDate>1997-05-06</OrderDate>
+	<LineItem>
+		<UnitPrice>21.0000</UnitPrice>
+		<ProductID>11</ProductID>
+		<Description/>
+	</LineItem>
+	<LineItem>
+		<UnitPrice>2.5000</UnitPrice>
+		<ProductID>33</ProductID>
+		<Description/>
+	</LineItem>
+	<LineItem>
+		<UnitPrice>34.8000</UnitPrice>
+		<ProductID>72</ProductID>
+		<Description/>
+	</LineItem>
+	<SalesDetail SalesPerson="Jim">
+		<OtherSalesPersonLabel>Jim</OtherSalesPersonLabel>
+		<SalesPerson>Jim</SalesPerson>
+		<AssistedList>
+			<SalesPerson>Bob</SalesPerson>
+			<SalesPerson>Jon</SalesPerson>
+			<SalesPerson>Joe</SalesPerson>
+			<SalesPerson>Bud</SalesPerson>
+		</AssistedList>
+		<DepartmentIDsArray>
+			<id>444</id>
+			<id>555</id>
+			<id>666</id>
+			<id>777</id>
+		</DepartmentIDsArray>
+	</SalesDetail>
+</Order>

@@ -1,0 +1,175 @@
+This is based on the source code that was released on July 4, 2009.
+
+July 9 2009	 - A small change was made for compiler compatibility with Visual Studio 9.
+Sept 14 2009 - Negative integer values now map correctly.  See line 452 of MemberDescriptor.cpp
+Oct 23 2009  - 2 new hash functions added to the SHA256 source
+Oct 31 2009 - 2 new methods in XMLObject.cpp FromXMLX() and FromXMLFileX() to provide a non-exception based interface
+Nov 5 2009 - added 1 new method to GString - ReplaceChars()
+Nov 5 2009 - Replace any invalid characters in the mapped tag name <>&"'/ with an _ see XMLObject::RegisterMember()
+Nov 30 2009 - Added AppendEscapeXMLReserved() for type UserStringCollection in MemberDescriptor.cpp
+Nov 30 2009 - removed a debug dump() from Schema.cpp that was hardcoded to "d:\\"
+Nov 30 2009 - check for NULL [g_pchLogFile] in TRACE macros in FrameworkAuditlog.h
+Nov 30 2009 - Removed "GPerformanceTimer.h" from xmlObjectFramework.h
+Nov 30 2009 - Added FreeErrorDescriptions() to GException.cpp
+Dec 2 - removed FreeErrorDescriptions() put the logic into GlobalErrorLanguage::~GlobalErrorLanguage() to GException.cpp
+Dec 2 - fixed String Collection serialization bug per Nadim from codeproject discussion in MemberDescriptor.cpp
+Dec 3 - removed various unused variables and type cast warnings, added catch(...) to FromXMLX()
+Dec 21 - removed various memory leaks.  Some were not actual leaks but were reported by memory diagnostic tools because one time static heap allocations were never freed.
+Dec 27 - Updated MFC support, added new sample program MFCTypesFromXML
+Dec 28 - Fixed reference counting errors.  Verified all 65 test cases in "ObjectCache" sample.
+Dec 31 - All Sample programs updated and tested under VS2010, and g++ on Ubuntu and Fedora
+Dec 31 - XMLObject now maps to all native "G" classes.
+Dec 31 - New flag added to allow Unix style linefeeds(\n) or Windows style linefeeds(\r\n) in the output xml.
+Dec 31 - Consolidated all abstraction implementation files, 1 for MFC, 1 for Rogue Wave, 1 for all G classes.
+Apr 14 2010 - made several small syntax changes to include Borland C++ compatibility
+Apr 28 - Only attempt to load .DLL and .SO files for Language Drivers - previously it tried every file in the Drivers directory
+Apr 30 - Added GetObjectDataValue() and SetObjectDataValue() to provide an 'automatic' default XMLObjectDataHandler handler
+May 01 - Added Perl and Python Language drivers 
+May 03 - Language Driver delimiter change
+May 03 - Added new files: ServerCoreCustomHTTP.cpp  PluginBuilderLowLevelStatic.h   GHTTPMultiPartPOST.h   GHTTPMultiPartPOST.cpp  
+May 03 - removed inline code in PluginBuilder.h and Created PluginBuilder.cpp for borland compiler compatibility.
+Aug 10 - added GString::UnEscapeURL() and updated ServerCoreCustomHTTP.cpp to use it.
+Aug 10 - added xmlFoundation to the build dependencies in the VC6 project.
+Sep 29 - added support for the the C++ double data type, after heavy production testing, the code was contributed by Nadim Dakkak
+Sep 30 - removed empty values from the GetObjectDataValue() and SetObjectDataValue() support added on Apr 30
+Sep 30 - updated the remainder of the copyright notices in the comments to reflect the year 2010 - (I was a little late this year)
+Sep 30 - Added calls to BufferTerminate() in multiple places that may have been or become cumulative memory leaks.
+Nov 3 - Added 64 bit portability notes to GPerformanceTimer.cpp and documented an alternate implementation for Windows machines
+Nov 3 - In ServerCore.cpp changed source code that represented ascii 168 as '¿' to (char)168 for Chinese source compatibility.
+Nov 4 - added a 64 bit timer routine to GPerformanceTimer.cpp
+Nov 4 - Changed numbered types to an enumeration (purely a source code readability change - not a logic change) in RelationshipWrapper.h
+-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+Dec 3, 2012 Port to 64 bit under Windows.  Search for _WIN64 to see all the changes
+Dec 6, added the STL example and the file AbstractionSTD.h
+Dec 7, added virtual ~dtor to ObjectDataHandler
+Dec 7, passed the _cdata value back in the ObjectDataHandler - added case for xml::_cdata in XMLObjectFactory::receiveIntoObject()
+Dec 10, added XMLObject::GetObjectDataStorage() for more optimized method of accessing Object Data
+Dec 10, added Member maps for char, short, and char sz[n] and examples that use them
+Dec 10, added CDoubleArrayAbstraction to AbstractionsMFC.h
+Dec 11, changed Abstraction base classes to use __int64 for Size()
+Dec 11, changed GString to use __int64 for buffer size and index
+Dec 11, Updated the Linux port, built everything with the latest g++ compiler (only the STL example program is not building)
+12-12-12, added __int64 everywhere necessary so that from the XML Lex through the Object Factory XML strings are 64 bit length
+12-12-12, regression tested all functionality in 32 and 64 bit windows with VC6 and VS2012 - also verified all output in Linux
+Dec 17, fixed MemberDescriptor::SetSerializable() to properly remove flag: m_memberStateFlags &= ~DATA_SERIALIZE;
+Dec 17, added PREVENT_ATTRIB_AUTOMAP flag for XMLObject::ModifyObjectBehavior()
+Dec 17, added examples for Inheritance and for mapping to Union,Struct, and Typedef to the RareUseExamples program
+Dec 21, updated the primary HTML article in the root of the source distribution
+Feb 7, 2013 - Made several changes to fix caching while using mapped key parts.  XMLObject::CopyState() contains most of the changes.
+Feb 8 - Added a missing IncRef() into the XMLObject::CopyState() code written yesterday.
+Feb 9 - Added the DIRTY_AND_CACHED_MEMBERS_ONLY flag
+Feb 11 - added the catch (...) in ~XMLObjectCache() and added the #define DEFAULT_INITIAL_SIZE to GString.h to quickly change the size in one place
+Feb 12 - changed several "delete pBuf" to "delete[] pBuf" to clear profiler warnings. (thanks Nadim)
+May 2 - changed sscanf() to atoi() for integer conversions in MemberDescriptor.cpp because atoi() is faster.
+May 9 - fixed 3 error message displays in ServerCore.cpp
+May 16 - completed port to Android. Several small #include changes for memcpy() definition, and added pthread_cancel() to ServerCore.cpp
+May 16 - added Android.mk to the LIbrary/Build folder
+May 23 - put a define in TwoFish.h needed to get the byte ordering correct when building for Android
+May 23 - small change in TwoFish.cpp to compile correctly when using the non-optimized twofish implementation
+May 23 - GString::FormatV() added va_copy() inplace of a direct va_list asignment for Linux64
+May 23 - Completed port to 64 bit linux. Search for _LINUX64 in GSocketHelpers.cpp GlobalInclude.h GString.h XMLObject.cpp
+June 15 - Changes to Console.cpp so that the shell can also launch through a System V shell script in linux/solaris
+June 15 - Added the Android folder under Samples (A Java GUI - using JNI to host ServerCore.cpp)
+Aug 3 - completed port to iOS (iPhone/iPad/Mac OS X)  Search the source for _IOS to see the changes.
+Aug 3 - added Xi64toa() to GString.h, used in GString.cpp and MemberDescriptor.cpp (the previous code in MemberDescriptor.cpp did not port to iOS)
+Aug 4 - resolved several warnings produced by Xcode by adding extra parentheses to clarify intended operation order, also removed several variables holding unused result values.
+Aug 13 - Completed the ObjectiveObjects example for iOS - Updated the root article.
+Sep 23 - added the NoLibraryLink example.  Moved the SelfInitPThreads class definition from pthreads.h to pthreads.cpp.
+Sep 23 - added __SERVER_CORE predirective to GSocketHelpers.cpp and ServerCore.cpp
+Sep 23 - removed the Win32PThreads1998 folder under under XMlFoundation/src.  It contained the older MUCH MUCH smaller pthreads implementation that works perfectly for all the the needs of XMLFoundation.
+Sep 27 - updated the XMLDialog example program to use the newer ObjectMessage() method signature that uses an __int64 inplace of an unsigned int
+Sep 27 - removed the Win321998 folder from under Libraries/XMLFoundation/inc - it contained the .h files for Win32PThreads1998
+Oct 13 - added the bool special values "True", "Yes" and "On" to the Byte datatype.
+Oct 14 - fixed enumeration scope in example program 'RareUseExamples' - now it builds on CentOS64 with the latest g++
+Oct 14 - created the makefile.linux64 for the newest example program - NoLibraryLink - which previously built only in VC++
+Oct 14 - Look in the Disturbing Folder.
+Oct 23 - Added MapMember() overload for bool.
+Oct 24 - Removed a very old #ifdef _WIN32 from MemberDescriptor.cpp that was cutting code needed for 64 bit integers on Linux.
+11/12/13 - major update complete and tested under Windows Phone, VC6, VS2012, GCC, and Xcode
+11/12/13 - Look at example StartHere0 for the new bit mapping functionality
+11/12/13 - Look at example TranslateXML for the new translation functionality
+11/12/13 - Look at the new Windows Phone Example  search __WINPHONE to see the code changes during the port
+11/12/13 - See the top few paragraphs of the main HTML article in the root XMLFoundation folder.
+Dec 4 - change "gthread" to "pthread" in ServerCore.cpp for Android build
+Dec 4 - Created a makefile to build the Android Example in CentOS - the previous makefile was only for Windows
+Dec 4 - added "Building The Android HTTP Server on CentOS.docx" to Examples/Android
+Dec 5 - changed the free .mp3 that comes with this free software - a kind of free speech - in the 'disturbing' folder
+Dec 9 - Initially, the 64 bit widening was only applied to all methods in the callstack of ToXML/FromXML.  
+        Now there is more 64 bit interface widening such as: 
+			GString::      StartingAt() / TrimRightBytes() / TrimLeftBytes() / ComapreSub*() / + several more GString methods 
+			GProfile::     GProfile()
+			TWoFish::      EncryptMemoryToMemory/DecryptMemoryToMemory
+			SHA256Hash()
+Dec 9 - Added document "Arraignment Day" in the disturbing folder.
+Dec 10 - Added 32 bit operator [] overload to GString - in addition to the 64 bit overload
+Dec 10 - More 64 bit widening in GString / GStack  / GList / GHash  / GBTree /  GStringList  /  MemberDescriptor
+Dec 11 - More 64 bit widening in GHash  / GArray 
+Dec 11 - Ran regression tests and all example programs
+Dec 12 - more work on GHash
+Dec 12 - Updates to GPerformaceProfiler to use assembly on 32 bit, and microseconds on Unix/Linux
+Dec 12 - Major update to the example program "ExIndexObjects"
+   ~
+12/21 - 
+12/21 - Completed that Major update and included GSparseHash.h
+12/21 - Found and fixed a bug, that involved commenting out one line of code in ProcedureCall.cpp search for "This was bad"
+12/21 - There are little changes all over the place - i ran comment spell checker over it - also more 64bit widening
+12/21 - All this testing was done on the new/old GThread that came out of 11/12/13
+12/21 - There is a very interesting upgrade in the works for GString........ 
+
+Dec 26 - checked all sprintf(), GString::Format() calls for "%d"'s that could be supplied an __int64 where an int32 is expected.
+Dec 27 - wrote XMLObject::GetOIDKeyPartList() which causes only 1 Key Part list per type using OID's, no longer 1 per instance
+
+Welcome to the  year   2014 ********* 2014 ********* 2014 ********* 2014 ******* 2014
+
+January 3 2014   - Focus on fast - via less reliance on the memory manager in the operating system.
+
+This version is about 3 times FASTER at generating the disk XML document from the memory XML docment.
+It is also faster at assembling the XML memmory document.
+
+Jan 3 - changes to XML_MUTEX macro, a performance improvement for Windows to use native CRITICAL_SECTIONS many in CacheManager
+Jan 3 - Major updates to GList, namely NodeCaching, to block alloc nodes and reduce calls to new()/delete()
+Jan 3 - xmlObject now uses MemberDescriptor block allocations - same reason - reduce calls to new()/delete()
+Jan 3 - FactoryManager switched from GList to GArray
+Jan 3 - Inlining for performance - MemberDescriptor, xmlLex, and more
+Jan 3 - StackFrameCheck changed from the GList to a bare essential GStack - this one change alone DOUBLED the speed of ToXML()
+Jan 3 - Changed the OIDKeyPartList to be static per type, rather than one per instance.  Note: All objects of the same type 
+        have the same key definition - so this change eliminated many unnecessary identical GList instances.
+Jan 3 - Changed many myGString->Format("%s%s","one","two");  into  myGString << "one" << "two"; as it is about 5 times faster.
+Jan 3 - double checked alls printf/Format "%d"'s to be certain that 64 bit integers were not being put in them - (that can crash)
+Jan 5 - removed the Node 'ctor() call - replace call to new() with a cast in GListNodeCache.h
+Jan 5 - Tested IndexObjects on Centos 64, Windows 32 and 64
+Jan 7 - Several minor changes were needed to complete the recent memory managed updates so that 
+   	 - all the console example programs have been reverified, also verified the Android NDK build
+Jan 8 - finished up verifying all the example programs, the MFCTypesFromXML was updated today.
+Jan 8 - Added a base class to GString, a design change that will allow various GString sizeof() definitions.
+Jan 9 - Updated/Tested the XMLDialog sample application - added a button to add Order LineItems
+Jan 9 - removed the "5LoavesTray" example from the global project Workspace.  The example is for Windows95/98/ME.
+Jan 9 - Corrected the VS2012 Solution paths to attach the debugger/Launch with F5/Ctrl F5 for all example programs.
+Jan 9 - Ported to iOS, updated the iOS XCode project file, tested the iPhone Example - ObjectiveObjects
+Jan 9 - Ported to Windows Phone, tested the example program.
+Jan 9 - Tested every example under CentOS 64, and re-verified the Android ndk-build too.
+Jan 9 - All Examples are tested and up to date - this is version 2014 Release 1
+-----------------------------------------------------------------------------------------------------
+Jan 11 - Finalized this Build 111 - published the article update.
+Jan 15 - changed FromFile/ToFile in GString to be virtual.
+Jan 15 - added 3 new methods to XMLObject, an interface simplification with GString reuse. ToXMLFile/ToXML/FromXMLFile
+Jan 16 - changed several int to bool where the value was always 1 or 0 in GString
+Jan 23 - removed the unused GString::AppendXMLTabs()
+Jan 24 - fixed GString::AppendEscapeXMLReserved() to stop unnecessarily escaping some special chars 
+Jan 24 - updated ObjectCache regression test results accordingly
+Jan 24 - added 2 new serialize flags NO_CONTROL_CHAR_ESCAPE	   NO_0_31_CHAR_ESCAPE
+Jan 25 - added the new class GStringCipherZip in GStringCipherZip.h
+Jan 28 - more work on AppendEscapeXMLReserved(), now applies attribute ascapse rules to only attributes - not elements
+Feb 1 - major work on GZip.cpp importing the newest Zlib that includes a rare bug fix - Zlib authors recommend everyone update
+Feb 1 - removed 3 unused "using" statements from the Java example program for Android that uses ServerCore.cpp (Xfer uses compression)
+Feb 1 - added Cipher(), DeCipher(), Compress(), and DeCompress() to GString
+Feb 2 - added more overloads of the above methods in GString
+Feb 5 - changed the default value of nGrowByAllocationSize from 1024 to -1 in GString.h - a major performance fix for BigData
+Feb 5 - made a small change to GPerformanceTimer so that it can be used from a GUI as well as a console shell
+Feb 6 - added NO_OBJECT_DATA, and made various performance improvements
+Feb 6 - added the beginning of a new example program called BigData
+Feb 7 - Commented the VIRTUAL toXML in XMLObject.h, references two examples of a major previously undocumented feature
+211 - The (unexpected) Fixes and changes since v111 are enough to warrant 2014's Version 211.  Along with more documentation.
+-----------------------------------------------------------------------------------------------------
+Feb 11 - Finalized Build 211 - published the article update.

@@ -1,0 +1,480 @@
+
+Object Instance name: MyCustomer
+{
+	string	OID = 1
+	string	UpdateTime = 
+			References = 1	
+	--------------------------------
+	Type  :string
+	Tag   :City
+	Value :Antioch
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :ContactName
+	Value :Maria Anders
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :Country
+	Value :California
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :List<XMLObject *>
+	Tag   :Order
+	
+	Contains:6 items
+	Object Instance name: MyOrder
+	{
+		string	OID = 11
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:3 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 2845.6000
+			string	UpdateTime = 
+					References = 2			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :28
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :45.6000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 3918.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :39
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :18.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 4612.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :46
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :12.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		--------------------------------
+		Type  :string
+		Tag   :OrderDate
+		Value :1997-08-25
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :SalesDetail
+		
+		--------------------------------
+		Type  :string
+		Tag   :ShippedDate
+		Value :1997-09-02
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyOrder
+	{
+		string	OID = 22
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:1 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 6343.9000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :63
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :43.9000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		--------------------------------
+		Type  :string
+		Tag   :OrderDate
+		Value :1997-10-03
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :SalesDetail
+		
+		--------------------------------
+		Type  :string
+		Tag   :ShippedDate
+		Value :1997-10-13
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyOrder
+	{
+		string	OID = 33
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:2 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 310.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :3
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :10.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 7618.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :76
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :18.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		--------------------------------
+		Type  :string
+		Tag   :OrderDate
+		Value :1997-10-13
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :SalesDetail
+		
+		--------------------------------
+		Type  :string
+		Tag   :ShippedDate
+		Value :1997-10-21
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyOrder
+	{
+		string	OID = 44
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:2 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 5955.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :59
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :55.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 7713.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :77
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :13.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		--------------------------------
+		Type  :string
+		Tag   :OrderDate
+		Value :1998-01-15
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :SalesDetail
+		
+		--------------------------------
+		Type  :string
+		Tag   :ShippedDate
+		Value :1998-01-21
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyOrder
+	{
+		string	OID = 55
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:2 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 625.0000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :6
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :25.0000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 2845.6000
+			string	UpdateTime = 
+					References = 2			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :28
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :45.6000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		--------------------------------
+		Type  :string
+		Tag   :OrderDate
+		Value :1998-03-16
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :SalesDetail
+		
+		--------------------------------
+		Type  :string
+		Tag   :ShippedDate
+		Value :1998-03-24
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyOrder
+	{
+		string	OID = 66
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:2 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 5813.2500
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :58
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :13.2500
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 7121.5000
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :71
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :21.5000
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		--------------------------------
+		Type  :string
+		Tag   :OrderDate
+		Value :1998-04-09
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :SalesDetail
+		
+		--------------------------------
+		Type  :string
+		Tag   :ShippedDate
+		Value :1998-04-13
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+}

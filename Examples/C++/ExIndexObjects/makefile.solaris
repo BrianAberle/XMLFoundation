@@ -1,0 +1,30 @@
+# make sure your PATH is correctly configured to
+# contain your make, compiler, and ar.  For example:
+# PATH=/usr/sbin:/usr/bin:/usr/local/bin:/usr/ccs/bin
+
+# select a compiler
+# -----------------
+#CC = g++
+CC = /opt/SUNWspro/bin/CC
+
+CPPFLAGS = -c -O3 -w -D__sun 
+INCDIR = -I../../../Library/inc 
+
+IndexObjects: \
+	clear \
+	IndexObjects.o
+	 
+	$(CC) \
+		-o IndexObjects \
+		-L../../../Library/Build \
+		-L/usr/local/lib \
+		IndexObjects.o \
+		-liberty -lnsl -lsocket -lXMLFoundationC -ldl 
+
+IndexObjects.o: ./IndexObjects.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./IndexObjects.cpp -o ./IndexObjects.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear

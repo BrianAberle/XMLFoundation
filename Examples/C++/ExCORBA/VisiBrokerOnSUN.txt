@@ -1,0 +1,24 @@
+
+Compile the library using Sun's CC compiler
+and enable the -xarch=v9 flag.  You'll need to
+enable that flag by editing makefile.client.sun
+Open that file and read the comments.
+
+
+build the library.
+make -f makefile.client.sun
+
+
+compile the client and the server under the 
+Examples/c++/ExCORBA/
+
+Run the server, then the client.  
+
+Run osagent to allow the object to be 
+distributed on the network.
+
+
+The java client was also tested on Visibroker.
+
+
+

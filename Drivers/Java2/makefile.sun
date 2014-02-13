@@ -1,0 +1,62 @@
+CCC = g++
+#CCC = /export/home0/CC/SUNWspro/bin/CC
+CPPFLAGS = -O3 -w -c -D__sun -D_DYNAMIC_JAVA_LINK_
+INCDIR = -I../../../Library/inc -I./Sun -I../../../Library/inc/Server
+COPY = cp
+
+JavaDriver: \
+	clear \
+	IntegrationJava.o \
+	Java2.o \
+	GException.o \
+	Directory.o \
+	GStringList.o \
+	Profile.o \
+	GList.o \
+	GString.o 
+	
+#		I would think this should work with without -D_DYNAMIC_JAVA_LINK_
+#			-but it does not.
+#
+#		-L/export/home0/jdk13-2/usr/j2se/jre/lib/sparc/server \
+#		-L/export/home0/jdk13-2/usr/j2se/jre/lib/sparc/native_threads \
+#		-L/export/home0/jdk13-2/usr/j2se/jre/lib/sparc \
+#		-ljava -ljvm -lhpi
+
+	$(CCC) -G -g -o Java.so \
+        IntegrationJava.o Java2.o GList.o GString.o \
+		Profile.o GStringList.o Directory.o GException.o \
+        -lm -ldl -lnsl  
+	  
+	$(COPY) Java.so ../../../Bin/Drivers/.
+
+
+IntegrationJava.o: ./IntegrationJava.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./IntegrationJava.cpp
+
+Java2.o: ./Java2.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ./Java2.cpp
+
+GList.o: ../../../Library/src/Utils/GList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GList.cpp
+
+GString.o: ../../../Library/src/Utils/GString.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GString.cpp
+
+Profile.o: ../../../Library/src/Utils/Profile.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Profile.cpp
+
+GStringList.o: ../../../Library/src/Utils/GStringList.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GStringList.cpp
+
+Directory.o: ../../../Library/src/Utils/Directory.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/Directory.cpp
+
+GException.o: ../../../Library/src/Utils/GException.cpp
+	$(CCC) $(CPPFLAGS) $(INCDIR) ../../../Library/src/Utils/GException.cpp
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear

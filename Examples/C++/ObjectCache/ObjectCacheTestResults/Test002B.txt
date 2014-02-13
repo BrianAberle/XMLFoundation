@@ -1,0 +1,22 @@
+<SimpleContainer>
+	<List1>
+		<LineItem>
+			<UnitPrice>Simple</UnitPrice>
+			<ProductID>918</ProductID>
+			<Description/>
+		</LineItem>
+	</List1>
+	<List2>
+		<SimpleItem>
+			<SimpleMember>With OID</SimpleMember>
+		</SimpleItem>
+	</List2>
+	<List3>
+		<SimpleItem>
+			<SimpleMember>VOID of OID</SimpleMember>
+		</SimpleItem>
+		<SimpleItem>
+			<SimpleMember>VOID of OID</SimpleMember>
+		</SimpleItem>
+	</List3>
+</SimpleContainer>

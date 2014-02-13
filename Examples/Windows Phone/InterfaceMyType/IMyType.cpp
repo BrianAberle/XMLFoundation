@@ -1,0 +1,1 @@
+﻿#include "IMyType.h"

@@ -1,0 +1,26 @@
+<PointsInTime>
+	<AnyObject>
+		<One>1</One>
+		<Two>1</Two>
+	</AnyObject>
+	<AnyObject>
+		<One>2</One>
+		<Two>2</Two>
+	</AnyObject>
+	<AnyObject>
+		<One>3</One>
+		<Two>3</Two>
+	</AnyObject>
+	<AnyObject>
+		<One>1</One>
+		<Two>111</Two>
+	</AnyObject>
+	<AnyObject>
+		<One>2</One>
+		<Two>222</Two>
+	</AnyObject>
+	<AnyObject>
+		<One>3</One>
+		<Two>333</Two>
+	</AnyObject>
+</PointsInTime>

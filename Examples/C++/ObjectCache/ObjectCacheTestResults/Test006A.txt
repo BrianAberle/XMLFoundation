@@ -1,0 +1,118 @@
+
+Object Instance name: SimpleContainer
+{
+	string	OID = 
+	string	UpdateTime = 
+			References = 1	
+	--------------------------------
+	Type  :XMLObject
+	Tag   :List1
+	
+	Object Instance name: List1
+	{
+		Object container type		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :LineItem
+		
+		Contains:3 items
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 918Simple
+			string	UpdateTime = 
+					References = 2			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :Improper
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :918
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :Simple
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 777Root
+			string	UpdateTime = 
+					References = 2			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :Here is a new one
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :777
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :Root
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyOrderLineItem
+		{
+			string	OID = 123Tester
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Description
+			Value :Here is the newest one
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :int
+			Tag   :ProductID
+			Value :123
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :UnitPrice
+			Value :Tester
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+	}
+	--------------------------------
+	Type  :XMLObject
+	Tag   :List2
+	
+	Object Instance name: List2
+	{
+		Object container type		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :SimpleItem
+		
+		Contains:0 items
+	}
+	--------------------------------
+	Type  :XMLObject
+	Tag   :List3
+	
+	Object Instance name: List3
+	{
+		Object container type		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :SimpleItem
+		
+		Contains:0 items
+	}
+}

@@ -1,0 +1,13 @@
+
+
+Install Weblogic, then Tuxedo in the base dir [/bea]
+** If you do not install in [/bea] location, then
+you will have to modify the file makefile.nt.weblogic
+to use the paths specific to your install.
+
+
+
+
+Before you try to compile this example make sure you have
+an environment that can build the Weblogic CORBA examples.
+

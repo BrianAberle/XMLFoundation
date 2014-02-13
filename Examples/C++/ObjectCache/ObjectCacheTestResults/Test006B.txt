@@ -1,0 +1,19 @@
+<SimpleContainer>
+	<List1>
+		<LineItem>
+			<UnitPrice>Simple</UnitPrice>
+			<ProductID>918</ProductID>
+			<Description>Improper</Description>
+		</LineItem>
+		<LineItem>
+			<UnitPrice>Root</UnitPrice>
+			<ProductID>777</ProductID>
+			<Description>Here is a new one</Description>
+		</LineItem>
+		<LineItem>
+			<UnitPrice>Tester</UnitPrice>
+			<ProductID>123</ProductID>
+			<Description>Here is the newest one</Description>
+		</LineItem>
+	</List1>
+</SimpleContainer>

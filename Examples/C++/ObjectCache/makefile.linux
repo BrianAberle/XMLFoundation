@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+TransactXML: \
+	clear \
+	ObjectCache.o
+	 
+	$(CC) \
+		-o ObjectCache \
+		-L../../../Libraries/XMLFoundation/Build \
+		ObjectCache.o \
+		-lnsl -lXMLFoundation -ldl
+
+ObjectCache.o: ./ObjectCache.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./ObjectCache.cpp -o ./ObjectCache.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

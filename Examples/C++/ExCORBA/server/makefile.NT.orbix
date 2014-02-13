@@ -1,0 +1,36 @@
+ART_CXX_INCLUDE_DIR=	"C:\Program Files\iona\orbix_art\1.2\cxx\include"
+ART_LIB_DIR=			"C:\Program Files\iona\orbix_art\1.2\cxx\lib"
+CXX_IDL=				"C:\Program Files\iona\orbix_art\1.2\bin\idl"
+
+
+CXX=				cl
+RM=					del
+CXXFLAGS=			-I..\..\..\..\Library\inc -I$(ART_CXX_INCLUDE_DIR)  -Zi -nologo -W3 -GX -GR -Zm200  -MD  -D___ORBIX___
+LINK=				link
+LDLIBS=				/DEBUG /LIBPATH:$(ART_LIB_DIR) $(LINK_WITH) it_poa.lib  it_art.lib it_ifc.lib ws2_32.lib msvcrt.lib
+OBJS=				$(SOURCES:.cxx=.obj)
+
+.cxx.obj:
+				if exist $@ $(RM) $@
+				$(CXX) -c $(CXXFLAGS) -Fo$@ $<
+
+# 
+
+LINK_WITH=		..\..\..\..\Library\Build\ReleaseClient\XMLFoundationClient.lib  
+
+SOURCES=		server.cxx   ExCorba_impl.cxx ExCorbaC.cxx   ExCorbaS.cxx 
+
+all:			server.exe
+
+server.exe:		$(SOURCES) $(OBJS)
+			if exist $@ $(RM) $@
+			$(LINK) /out:$@ $(OBJS) $(LDLIBS)
+
+$(SOURCES):		ExCorba.hh
+
+TMP_PNAME=		../idl
+IDL_DIR=		$(TMP_PNAME:/=\)
+
+ExCorba.hh:		$(IDL_DIR)\ExCorba.idl
+			$(CXX_IDL) -base -poa:-xTIE ..\idl\ExCorba.idl
+

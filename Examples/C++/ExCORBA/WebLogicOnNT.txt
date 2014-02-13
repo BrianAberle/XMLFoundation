@@ -1,0 +1,39 @@
+Before you try to compile this example make sure you have
+an environment that can build the Weblogic CORBA examples.
+
+open 2 command windows.
+
+Do the following in both of them:
+---------------------------------
+move the current directory to
+cd C:\bea\tuxedo\samples\corba\simpapp
+
+Find you install of VC++, and run the vcvars32.bat file for example:
+...>"C:\Program Files\Microsoft Visual Studio\VC98\Bin\vcvars32"
+
+use the quotes if you have spaces in your path.
+
+type this at your command prompt
+set TUXDIR=c:\bea\tuxedo
+
+run the runme batch file:
+C:\bea\tuxedo\samples\corba\simpapp>runme
+
+
+get the example to work in both command windows.
+
+run the simple_server in one command window.
+run the simple_client in another.
+
+The server should uppercase any string you send to it.
+
+Kill the simple_Server. (Task Manager is the only way I found)
+
+
+move each command window to the \XMLFoundation\Examples\c++\ExCORBA
+directory.  Move one down to server, and the other down to client.
+in each command window:
+
+c:\>nmake -f makeifle.nt.weblogic
+
+Run the server, Run the client.

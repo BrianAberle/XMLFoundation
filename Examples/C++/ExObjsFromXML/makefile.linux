@@ -1,0 +1,26 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+TransactXML: \
+	clear \
+	Main.o \
+	ObjectModel.o
+	 
+	$(CC) \
+		-o ObjectsFromXML \
+		-L../../../Libraries/XMLFoundation/Build \
+		Main.o ObjectModel.o \
+		-lnsl -lXMLFoundation -ldl
+
+Main.o: ./Main.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./Main.cpp -o ./Main.o
+
+ObjectModel.o: ./ObjectModel.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./ObjectModel.cpp -o ./ObjectModel.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

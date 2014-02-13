@@ -1,0 +1,416 @@
+[Exception]
+SubSystem=0
+
+[Profile]
+SubSystem=1
+0=Profile key [%s.%s] not found.
+1=Profile section [%s] not found.
+
+[String]
+SubSystem=2
+0=Not enough memory for resize.
+1=Subscript out of range.
+2=Could not read file[%s].
+3=Could not write file[%s].
+
+[Data abstraction]
+SubSystem=3
+0=Null environment for driver [%s].
+1=Driver [%s] not found.
+2=Function _string_GetStringValue not found.
+3=Function _environment_GetConnection not found.
+4=Function _exception_GetErrorCode not found.
+5=Function _exception_GetErrorDescription not found.
+6=Function _record_iterator_operator_not not found.
+7=Error %d:%s
+8=Function _record_iterator_operator_plusplus not found.
+9=Function _column_iterator_operator_not not found.
+10=Function _column_iterator_operator_plusplus not found.
+11=Function _column_GetColumnName not found.
+12=Function _column_GetColumnDataType not found.
+13=Function _column_GetIoMode not found.
+14=Function _column_GetColumnLength not found.
+15=Function _record_ColumnIterator not found.
+16=Function _recordset_GetNumberOfColumns not found.
+17=Function _recordset_RecordIterator not found.
+18=Function _recordset_GetNumberOfRecords not found.
+19=Function _connection_Release not found.
+20=Function _connection_GetCommand not found.
+21=Function _connection_BeginTrans not found.
+22=Function _connection_CommitTrans not found.
+23=Function _connection_RollbackTrans not found.
+24=Function _connection_ChangeSchema not found.
+25=Function _connection_OpenConnection not found.
+26=Function _connection_CloseConnection not found.
+27=Function _command_BindParameter not found.
+28=Function _command_BindColumn not found.
+29=Function _command_Prepare not found.
+30=Function _command_Execute not found.
+31=Function _command_ExecuteEx not found.
+32=Function _command_NumResultColumns not found.
+33=Function _command_DescribeResultColumns not found.
+34=Function _command_NumParameters not found.
+35=Function _command_DescribeParameters not found.
+36=Function _command_GetProcedure not found.
+37=Function _command_DescribeProcedureColumns not found.
+38=Function _command_DescribeTableColumns not found.
+39=Function _command_GetDatabases not found.
+40=Function _command_GetTables not found.
+41=Function _command_GetProcedures not found.
+42=Function _command_Fetch not found.
+43=Function _command_Release not found.
+44=No Driver Name[%s] could be loaded from [%s].
+
+[XMLProcedureCall]
+SubSystem=4
+0=You must specify the procedure you are trying to add this parameter to.
+1=You must specify the procedure you are trying to add this attribute to.
+2=Failed to write HTML output file [%s].
+3=A procedure must be specified.
+4=[%s] returned the following error:\n%s
+5=Error during communication session.
+6=Fatal Error while factory creating objects.
+7=Nothing received from DataBroker.
+8=You must specify a Data Source before calling Execute.
+
+[Socket data soruce]
+SubSystem=5
+2000=Failed to open input file [%s].
+2001=Socket error: %d during operation [%s].
+2002=Unhandled exception sending HTML stream.
+2003=IIS Server reported the following error:\n%s
+2004=Unhandled exception reading HTML stream.
+
+[User Defined]
+SubSystem=6
+0=%s
+
+[XML Parser]
+SubSystem=7
+0=Document name not found.\nLine %ld, Position %ld
+1=Document type definition terminator not found.\nLine %ld, Position %ld
+2=Missing equals sign between attribute and attribute value.\nLine %ld, Position %ld
+3=Expected to find XML declaration end ']>'.\nLine %ld, Position %ld
+4=Expected to find processing instruction end '?>'.\nLine %ld, Position %ld
+5=Expected to find comment end '-->'.\nLine %ld, Position %ld
+6=A string literal was expected, but no opening quote character was found.\nLine %ld, Position %ld
+7=Expected to find entity terminator '>'.\nLine %ld, Position %ld
+8=Expected to find element tag terminator '>'.\nLine %ld, Position %ld
+9=Invalid entity value.\nLine %ld, Position %ld
+10=Unexpected end of file.\nLine %ld, Position %ld
+11=Expected tag name not found or invalid.\nLine %ld, Position %ld
+12=End tag '%s' does not match the start tag '%s'.\nLine %ld, Position %ld
+13=XML version not found.\nLine %ld, Position %ld
+14=XML encoding not found.\nLine %ld, Position %ld
+15=Unexpected standalone value.\nLine %ld, Position %ld
+16=Document type declaration must match the element type of the root element.\nLine %ld, Position %ld
+17=Expected element start tag not found.\nLine %ld, Position %ld
+18=The following tags were not closed: %s\nLine %ld, Position %ld
+19=Entity value not found.\nLine %ld, Position %ld
+20=Expected white-space not found.\nLine %ld, Position %ld
+21=Reference to undefined entity '%s'.\nLine %ld, Position %ld
+22=System literal not found.\nLine %ld, Position %ld
+23=Public literal not found.\nLine %ld, Position %ld
+24=Unknown token found.\nLine %ld, Position %ld
+25=& needs to be escaped with &amp;.\nLine %ld, Position %ld
+26=External markup specified but no callback registered to handle it.\nLine %ld, Position %ld
+27=XML document is not well-formed.\nLine %ld, Position %ld
+28=Expected valid end tag.\nLine %ld, Position %ld
+
+[XML Object]
+SubSystem=8
+0=Failed to open input file [%s].
+1=Failed to Serialize Object [%s].
+2=Object[%s] contains an invalid object in the [%s] mapped to [%s]
+
+[XML Object Factory]
+SubSystem=9
+0=The list mapped to tag [%s] has an invalid list handler.
+1=[%s] returned the following error:\n%s
+2=Invalid XML.  Failed to create objects.
+
+[Server Administration]
+SubSystem=10
+0=No 'user' and 'pass' were provided with this request.\nAccess denied.
+1=Administrator password incorrect.
+2=User password incorrect.
+3=[%s] has not been granted permissions.\nAsk your system administrator to add this\nuser name to Settings.xml on the server.
+4=No user name provided.\nAccess denied.
+5=Could not write file: [%s].
+6=No Object found with key [%s].
+7=use this syntax: get=c:\path\file.ext
+8=Could not open file: [%s].
+9=Prefix the file data with FileName.ext
+
+[CInterface]
+SubSystem=11
+0=Failed to obtain entry point [%s] in driver [%s]
+1=%s
+
+[XML server]
+SubSystem=12
+0=CSharedComponentManager::AddComponent() has no handler for objects of type [%s].
+1=MergeValue not supplied.
+2=Invalid parameter specified for graft operation.
+3=Invalid input parameter type for graft operation.
+4=The element [%s] cannot be used as a source to fulfill parameter[%s] of [%s::%s] in Element[%s] because its value is dynamic and could not be resolved.
+5=%s
+6=Invalid shared component reference [%s].
+7=The XML server does not support long character data as an output parameter.
+8=The XML server does not support the binary datatype.
+9=Unknown data type.
+10=Paramater list not available.  Did the parameters to a graft operation change?
+11=Parameter %s is not an output parameter.
+12=Recall not supported in this context.
+13=Recall variable [%s] not found.
+14=Specified XSL template [%s] does not exist.
+15=Cannot open [%s].
+16=%s\nDisk I/O or Permissions Error [%d] opening [%s].\nCheck the permissions settings in your Operating System or Web Server.
+17=Invalid parameter specified for graft operation.
+18=Document node not found for graft operation input.
+19=No batch execution handler for XMLDataNode/DataSource=%d.
+20=Failed to load shared library [%s] to run procedure [%s].
+21=Could not find procedure [%s] in module [%s]. \nDid you extern "C" it? \nDid you EXPORT it in the DEF file?
+22=Unhandled exception in Procedure [%s], module [%s].
+23=TransactXML server currently does not support whitespace in stored procedure names.
+24=This feature requires administrative authority.
+25=Not enough arguments supplied to InvokeMethod().
+26=Expected %d parameters - You supplied %d parameters.
+27=Directory [%s] does not exist or cannot be accessed.
+28=Failed to graft data[%s] into branch [%s] from [%s] reason [%s]
+29=No Custom Non-XML definition is specified in Rule[%s].
+30=Rule '%s' not found.
+
+[GDirectoryListing]
+0=Directory [%s] does not exist or cannot be accessed OS code[%d].
+
+
+[C runtime exception]
+SubSystem=13
+0=Access violation.
+1=Data type misalignment.
+2=Breakpoint.
+3=Single step.
+4=Array bounds exceeded.
+5=Float denormal orerand.
+6=Float divide by zero.
+7=Float inexact result.
+8=Float invalid operation.
+9=Float overflow.
+10=Float stack check.
+11=Float underflow.
+12=Integer divide by zero.
+13=Integer overflow.
+14=Priv instruction.
+15=Page error.
+16=Illegal instruction.
+17=Non-continuable exception.
+18=Stack overflow.
+19=Invalid disposition.
+20=Page guard fault.
+21=Invalid handle.
+22=C runtime exception.
+23=Interrupt detected.
+24=HUP Signal detected.
+25=Broken Pipe Interrupt detected.
+
+
+
+[JavaIntegration]
+SubSystem=14
+1=JNI_CreateJavaVM() failed. Error code[%ld]\nThis may be caused by a wrong version of java or incorrect LD_LIBRARY_PATH
+2=JavaVM - Can't attach current thread to VM
+3=JavaVM - Can't locate the [%s] class.
+4=JavaVM - Can't locate method [%s].
+
+[CStdCallIntegration]
+SubSystem=15
+1=No components at location [%s]
+2=Failed to obtain entry point [%s]
+3=Error [%s] while loading Shared Lib[%s]
+4=Failed to load DLL [%s]\nError Code [%d]\n Reason[%s]
+5=Method[%s] is described by by module[%s] to require [%d] arguments, but you supplied [%d] arguments.
+6=Failed to obtain entry point[ExposedMethods] in [%s]
+7=Error [%s] while loading Shared Lib[%s]
+8=Expected a [|] in [%s] returned by ExposedMethods.  Driver implementation error.
+
+[COMIntegration]
+SubSystem=16
+1=COM: LoadTypeLib failed on file [%s]
+2=Failed to get TypeAttributes from Typelib.
+3=Failed to retrieve Interface name from Typelib.
+4=COM: Attempted to bind [%s] to unsupported type [%s]
+5=Interface does not support IDispatch or it's not registered.\n\nWe plan to drop this requirement in a future version, \nfor now support the IDispatch Interface on your Objects.\nC++ - add [oleautomation] prior to the Interface in your IDL\n\nVisual Basic - build your extension object as an OCX control\n
+6=Invoke failed[%s]
+7=COM: Unsupported datatype [%s][%d] as return value
+
+[CGI Server]
+SubSystem=17
+1=No CONTENT_LENGTH environment variable is set
+2=REQUEST_METHOD is not GET or POST
+3=REQUEST_METHOD environment variable is set
+4=Malformed Request.  Missing [=] after [%s] in [%s]
+5=Unknown Request[%s]
+
+[ComponentInterface]
+SubSystem=18
+1=[%s] produced a NULL or empty return value
+2=[%s] while Invoking [%s]
+3=Return Equal [%s] while Invoking [%s]
+4=Return Starts With [%s] while Invoking [%s]
+5=Return Contains [%s] while Invoking [%s]
+
+[CustomException] 
+SubSystem=19
+1=[%s] returned an empty value.
+3=[%s] return value equals [%s]
+4=[%s] return value starts with [%s]
+5=[%s] return value contains [%s]
+
+[XSL]
+SubSystem=20
+0=Required attribute "%s" was not found in stylesheet element "%s".
+1=%s
+2=Unhandled exception parsing XML stream.
+3=Debug: bsearch out of order %s >= %s.
+4=A prior operation has already terminated the element.  The attribute cannot be added.
+5=Malformed argument list - %s.
+6=The value of the select attribute %s is invalid.
+7=x-path function %s not implemented.
+8=x-path function %s takes %s argument(s).  %d argument(s) were supplied.
+9=Location pattern is invalid (%s).
+10=Invalid stylesheet.  Could not find root node "stylesheet" or "transform".
+11=xsl element <%s> is not allowed at this level.
+12=non-xsl element <%s> is not allowed at this level.
+13=Invalid expression %s.
+14=Invalid pattern %s.
+15=Invalid argument %s supplied to x-path function %s.
+16=The contents of <xsl:variable name="%s" select="%s"> is invalid.
+17=Undefined variable $%s.
+18=The variable $%s already exists.
+19=Named template "%s" is undefined.
+20=The type of argument supplied to the x-path function %s is invalid.
+21=The value of the extension-element-prefixes attribute is invalid because xmlns:%s is not defined.
+22=%s is not a valid xml name.
+23=The attribute set "%s" is undefined.
+24=Sort %s %s is not supported.
+25=Invalid attribute value template - %s.
+26=The value of <%s %s="%s"> is not valid.
+27=decimal-format %s is undefined.
+28=sort elements must be the first elements in the for-each element. 
+29=Transformation process terminated by xsl:message.
+30=Invalid functiod %s.
+31=Failed to open output file[%s].  Check permissions.
+
+[T-Script]
+SubSystem=21
+0=%s
+1=Debug: bsearch out of order %s >= %s.
+2=Syntax error.  Line: %d  Column: %d
+3=Unexpected end of file.  Line: %d  Column: %d
+4='%s' is undefined.  Line: %d  Column: %d
+5='%s' has already been defined.  Line: %d  Column: %d
+6=Parameter sub-script %d out of range.  Line: %d  Column: %d
+7=Invalid script.
+8=Malformed argument list - %s.
+9=Invalid expression %s.
+10=Function %s takes %s argument(s).  %d argument(s) were supplied.  Line: %d  Column: %d
+11=XSL stylesheet '%s' not found.  Line: %d  Column: %d
+12=Script '%s' not found.  Line: %d  Column: %d
+13='%s' parameter #%d must be an integer data type.  Line: %d  Column: %d
+14=Failed to load extension '%s'.  %s  Line: %d  Column: %d
+15=Extension '%s' does not expose required method '%s'.  Line: %d  Column: %d
+16='%s' not found.  Line: %d  Column: %d
+
+[PerlIntegration]
+SubSystem=22
+1=Method[%s] is described by module[%s] to require [%d] arguments, but you supplied [%d] arguments.
+2=Unsupported datatype[%s] calling method[%s] in module[%s]
+3=Method[%s] in module[%s] must return a String
+4=Failed to execute [%s] in module[%s]
+
+[PythonIntegration]
+SubSystem=23
+1=Python memory allocation failed from PyList_New()
+2=PyString_FromStringAndSize([%s],%d) failed. (Using settings from txml.txt) 
+3=Failed to set Python script path to [%s]
+4=Unsupported native Python data conversion to [%s]
+5=Method[%s] is described by module[%s] to require [%d] arguments, but you supplied [%d] arguments.
+6=Failed to Compile or load module[%s] from [%s]
+7=Method [%s] not found at a global scope in module [%s]
+8=Global Method [%s] failed PyCallable_Check() in module [%s]
+9=%s::%s::%s return type is not string
+10=can't find class[%s] in module [%s]
+11=Python internal - Py_BuildValue() failed
+12=Can't find method[%s] in class[%s] in module[%s]
+13=Failed to invoke method[%s] in class[%s] in module[%s]
+14=[%s::%s] Required[%d] arguments but [%d] were supplied
+
+[GenericArray]
+SubSystem=24
+0=Array bounds exceeded.
+1=Out of memory.
+
+[Cipher]
+SubSystem=25
+1=[%s] is not encrypyed - cannot decrypt.
+2=Incorrect decrypt key for file [%s].
+3=Failed to decrypt file [%s] code [%d].
+4=Not enough memory to decrypt file [%s].
+5=Failed to open or access[%s] - cannot decrypt.
+6=Failed to create Cipher output file [%s].
+7=Failed to decrypt file [%s] code [%d].
+8=Not enough memory to encrypt file [%s].
+9=Failed to open or access[%s] - cannot encrypt.
+
+
+[ServerCore]
+SubSystem=26
+1=JudgeConnection: TCP header[%s] IP not from localhost
+2=JudgeConnection: Not within the 2 second time window[%d][%d]
+3=JudgeConnection: Cannot verify password
+4=JudgeConnection: Failed random memory verification
+5=Picking up Connection [%s] on SwitchBoardServer
+6=Waiting for a [%s] server to pick up this connection
+7=Done Waiting ..... No connection
+8=Done Waiting ..... Connecting
+9=Internal Buffering Error
+10=-- Server Too Busy
+11=-- Server Way Too Busy
+12=HTTP Content File [%s] requested but not found
+13=Protocol Error. Invalid value[%d] cannot be greater than 16
+14=Decompress failed.  Wrong password-key attempt?
+15=protocol error - invalid block size[%d]
+16=Wrong password-key attempt?
+17=Protocol error. If you are attempting to proxy or 'bounce' TCP, enable RawPacketProxy=yes in the correct subsection of the config file.
+18=ReadPacket buffer overrun.
+19=This machine is configured to expect data with the following:
+20=              [128 bit TwoFish Encryption]
+21=              [256 bit TwoFish Encryption]
+22=              [Compression Enabled]
+23=              [Packet Synchronization Enabled]
+24=but the actual data received had the following attributes:
+25=Connection failed to pass judgement
+26=Failed to read HostID packet
+27=Info:Failed to resolve[%s].  Connection refused.
+28=Outbound Connection to [%d:%s]----->
+29=Failed
+30=Connected-OK
+31=Failed to send Local HostID verification.
+32=Failed to forward connection-routing data.
+33=Bad attributes header
+34=Closed Outbound Connection to [%d:%s]
+35=DoFileTransferPacketSend - Prep for server failed.
+36=Timeout, Error or aborted by client[%d].
+37=DoFileTransferPacketSend() --> Send() aborted[%d].
+38=Modify the [FileTransfer] Timeout= value in the config file.
+39=recv() aborted [%d] (connection closed by remote)
+40=Timeout reading file transfer command.  Did you terminate with [CRLF] aka'\r\n'?
+41=InitialCommandRead buffer overrun attempt.
+42=Timeout waiting for OK after LocalGet
+43=Listing nested directory structure[%s]
+44=No Pickup for any [%s] on SwitchBoardServer
+
+
+
+

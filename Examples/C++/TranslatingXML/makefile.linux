@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+TranslatingXML: \
+	clear \
+	TranslatingXML.o
+	 
+	$(CC) \
+		-o TranslatingXML \
+		-L../../../Libraries/XMLFoundation/Build \
+		TranslatingXML.o \
+		-lnsl -lXMLFoundation -ldl
+
+TranslatingXML.o: ./TranslatingXML.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./TranslatingXML.cpp -o ./TranslatingXML.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

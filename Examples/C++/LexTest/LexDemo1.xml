@@ -1,0 +1,26 @@
+<?xml version='1.0' standalone='yes'?>
+<!-- www.UnitedBusinessTechnologies.com -->
+<!DOCTYPE LexDemo1>
+<LexDemo1>
+	<Customer>
+		<ContactName>Maria Anders</ContactName>
+		<City region='east' population='large'>Berlin</City>
+		<Country>Germany</Country>
+		<Order>
+			<OrderDate>1997-08-25</OrderDate>
+			<ShippedDate>1997-09-02</ShippedDate>
+			<LineItem>
+				<ProductID>28</ProductID>
+				<UnitPrice>45.6000</UnitPrice>
+			</LineItem>
+			<LineItem>
+				<ProductID>39</ProductID>
+				<UnitPrice>18.0000</UnitPrice>
+			</LineItem>
+			<LineItem>
+				<ProductID>46</ProductID>
+				<UnitPrice>12.0000</UnitPrice>
+			</LineItem>
+		</Order>
+	</Customer>
+</LexDemo1>

@@ -1,0 +1,49 @@
+// My5LoavesActiveX2012.idl : type library source for ActiveX Control project.
+
+// This file will be processed by the MIDL compiler tool to
+// produce the type library (My5LoavesActiveX2012.tlb) that will become a resource in
+// 5LoavesActiveX2012.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(93B52DBE-79D2-4E96-958B-98101E6ECD26), version(1.0),
+  control ]
+library My5LoavesActiveX2012Lib
+{
+	importlib(STDOLE_TLB);
+
+	//  Primary dispatch interface for CMy5LoavesActiveX2012Ctrl
+	[ 
+		uuid(7734809C-20CA-40B9-BCB0-C4AF23BAE95B)	
+	]
+	dispinterface _DMy5LoavesActiveX2012
+	{
+		properties:
+		methods:
+	};
+
+	//  Event dispatch interface for CMy5LoavesActiveX2012Ctrl
+
+	[ 
+		uuid(C53F7465-3DD2-450C-AE6C-B061546DF925)	
+	]
+	dispinterface _DMy5LoavesActiveX2012Events
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+	};
+
+	//  Class information for CMy5LoavesActiveX2012Ctrl
+	[
+		uuid(76F8BE7A-A345-46E7-894A-7F5CF9FDD947)
+	]
+	coclass My5LoavesActiveX2012
+	{
+		[default] dispinterface _DMy5LoavesActiveX2012;
+		[default, source] dispinterface _DMy5LoavesActiveX2012Events;
+	};
+
+};

@@ -1,0 +1,26 @@
+CC = g++
+#CC = /opt/SUNWspro/bin/CC
+
+#-mt -D_REENTRANT -xarch=v9
+CPPFLAGS = -O3 -w -c -D__sun 
+INCDIR = -I../../Library/inc -I../../Library/inc/Server -I/JDK/j2sdk1.4.0/include -I/JDK/j2sdk1.4.0/include/solaris -I.
+
+JavaXMLFoundation: \
+	clear \
+	JavaFoundation.o 
+	
+	$(CC) -G -g -o libJavaXMLFoundation.so \
+        JavaFoundation.o \
+		-L../../Library/Build \
+        -lXMLFoundation -lm -ldl -lnsl  
+	  
+
+JavaFoundation.o: ./JavaFoundation.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./JavaFoundation.cpp
+
+
+clean:
+	- rm -f a.out *.o *.cgi core
+
+clear:
+	clear
