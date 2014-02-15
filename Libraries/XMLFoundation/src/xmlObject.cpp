@@ -1444,9 +1444,7 @@ int XMLObject::FromXMLFileX(const char *pzFileName, GString *pErrorDescriptionDe
 	}
 	catch(...)
 	{
-#ifdef _WIN32
 		ASSERT(FALSE);
-#endif
 	}
 	
 	// if we got here, it failed and we caught an exception
@@ -3268,17 +3266,25 @@ bool XMLObject::ToXMLFile(GString& xmlData, const char *pzFileName, int nSeriali
 	return xmlData.ToFile(pzFileName, 0);
 }
 
-bool XMLObject::FromXMLFile(GString& xmlData, const char *pzFileName)
+bool XMLObject::FromXMLFileX(GString& xmlData, const char *pzFileName, GString *pErrorDescriptionDestination)
 {
 	try
 	{
+		// FromFile() can throw() GExceptions
 		if (xmlData.FromFile(pzFileName))
 		{
+			// FromXML() can throw() GExceptions
 			FromXML(xmlData.Buf(), 0, 0);
 			return true;
 		}
 	}
-	catch(...)
+	catch(GException &e) // FromXMLFileX() does not throw
+	{
+		if (pErrorDescriptionDestination)
+			*pErrorDescriptionDestination  << e.GetDescription() << " (" << e.GetError() << ")";;
+
+	}
+	catch(...)  // FromXMLFileX() does not throw (anything)
 	{
 		ASSERT(FALSE);
 	}

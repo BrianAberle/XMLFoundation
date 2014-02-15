@@ -34,10 +34,8 @@ XMLObjectCache::XMLObjectCache()
 	m_cacheForeign = new GHash();
 	m_cacheForeignAlternate = new GHash();
 	m_cacheData = new GHash();
-//	gthread_mutex_init(&m_cs, NULL);
+	_gthread_processInitialize();
 	XML_INIT_MUTEX(&m_cs);
-	
-
 	gthread_mutex_init(&m_csState, NULL);
 	gthread_mutex_init(&m_csForeign, NULL);
 	gthread_mutex_init(&m_csData, NULL);

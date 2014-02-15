@@ -12,7 +12,7 @@
 // --------------------------------------------------------------------------
 
 #ifndef _WIN32		// This is how XMLFoundation handles all threading on all non windows platforms
-					// On other OS's it's a direct map to this subset of POSIX thread calls.
+					// On Linux/AIX/Solaris/Android GThread is a direct map to this subset of POSIX thread calls.
 	#define gthread_mutex_t			pthread_mutex_t
 	#define gthread_mutex_init		pthread_mutex_init
 	#define gthread_mutex_destroy	pthread_mutex_destroy

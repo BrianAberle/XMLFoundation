@@ -155,6 +155,7 @@ public:
 	}
 	CLanguageDriverInterfaceCache()
 	{
+		_gthread_processInitialize();
 		gthread_mutex_init(&m_lock,0);
 	}
 	void ReturnInterfaceInstance(InterfaceInstance *pII)

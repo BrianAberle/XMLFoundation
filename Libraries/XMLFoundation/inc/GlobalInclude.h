@@ -13,31 +13,37 @@
 //
 // Common Global Include 
 //
+#pragma once
 #pragma warning (disable:4996)
 #pragma warning (disable:4267)
 #pragma warning (disable:4244)
+//#pragma warning (disable:4100)	// Unreferenced formal parameter
+//#pragma warning (disable:4702)	// Unreachable Code
+//#pragma warning (disable:4127)	// conditional expression is constant
+//#pragma warning (disable:4189)	// local variable is initialized but not referenced
+//#pragma warning (disable:4706)	// assignment within conditional expression
+
+
+
 
 #ifndef new
-#define NEWER_NEW new(SOURCE_FILE, __LINE__, 'X')
 
+	#define NEWER_NEW new(SOURCE_FILE, __LINE__, 'X')
 
+	#ifdef _WIN64
+		void * operator new( unsigned __int64 n, const char *pzFile, int nLine, char chUniqueOverload);
+	#elif _LINUX64
+		#include <stddef.h>
+		void * operator new( size_t n, const char *pzFile, int nLine, char chUniqueOverload);
+	#elif _IOS
+		#include <string>
+		void * operator new( size_t n, const char *pzFile, int nLine, char chUniqueOverload);
+	#else
+		void * operator new( unsigned int n, const char *pzFile, int nLine, char chUniqueOverload);
+	#endif
 
-#ifdef _WIN64
-	void * operator new( unsigned __int64 n, const char *pzFile, int nLine, char chUniqueOverload);
-#elif _LINUX64
-	#include <stddef.h>
-	void * operator new( size_t n, const char *pzFile, int nLine, char chUniqueOverload);
-#elif _IOS
-	#include <string>
-	void * operator new( size_t n, const char *pzFile, int nLine, char chUniqueOverload);
-#else
-	void * operator new( unsigned int n, const char *pzFile, int nLine, char chUniqueOverload);
-#endif
+	void operator delete( void* p, const char *pzFile, int nLine, char chUniqueOverload );
 
-
-
-
-void operator delete( void* p, const char *pzFile, int nLine, char chUniqueOverload );
 #endif
 
 // Uncomment this for the overloaded new/delete in memory.cpp to be called.
@@ -45,6 +51,8 @@ void operator delete( void* p, const char *pzFile, int nLine, char chUniqueOverl
 // AND your application AND any other libs that you use like Xfer.lib or XMLServer.lib
 //
 // #define new NEWER_NEW
+
+
 
 
 

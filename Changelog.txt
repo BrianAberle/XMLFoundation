@@ -173,3 +173,7 @@ Feb 7 - Commented the VIRTUAL toXML in XMLObject.h, references two examples of a
 211 - The (unexpected) Fixes and changes since v111 are enough to warrant 2014's Version 211.  Along with more documentation.
 -----------------------------------------------------------------------------------------------------
 Feb 11 - Finalized Build 211 - published the article update.
+-----------------------------------------------------------------------------------------------------
+Feb 13 - added to xmlobject.h: bool FromXMLFileX(GString& xmlData, const char *pzFileName, GString *pErrorDescriptionDestination = 0);
+Feb 15 - _gthread_processInitialize may now be called >  1 time also it is now called automatically from global 'ctors
+Feb 15 - added USE_DEPRECIATED_WIN32_THREADING build flag for 32 bit Windows XP support - platform toolset (v110_xp)

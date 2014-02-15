@@ -486,8 +486,9 @@ public:
 	// if [pErrorDescriptionDestination] points to a GString, that string will contain the error string
 	int FromXMLX(const char *pzXML, GString *pErrorDescriptionDestination = 0, XMLObject *pSecondaryHandler = 0);
 	int FromXMLFileX(const char *pzFileName, GString *pErrorDescriptionDestination = 0, XMLObject *pSecondaryHandler = 0);
-	// load [pzFileName] into [xmlData], populates 'this' from the source XML that will be in [xmlData] if FromXMLFile() returns 1
-	bool FromXMLFile(GString& xmlData, const char *pzFileName);
+	// if FromXMLFile() returns 1 on success and 0 for failure
+	// load [pzFileName] into [xmlData], populates 'this' from the source XML that will be in [xmlData].
+	bool FromXMLFileX(GString& xmlData, const char *pzFileName, GString *pErrorDescriptionDestination = 0);
 
 
 	// ToXML

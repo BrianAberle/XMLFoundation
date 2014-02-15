@@ -1,18 +1,15 @@
 
-Current Version: 2014 Version 211
-
-
-Known bugs as of Feb 11, 2014
+As of Feb 15, 2014
 -----------------------------
-none.
+If you use Visual Studio AND target platform toolset Windows XP (v110_xp) you need the Feb 15 update
 
 
 
 This is the tail end of XMLFoundation\changelog.txt since 2014's Version 211 (released on February 11)
 ----------------------------------------------------------------------
-none.
-
-
+Feb 13 - added to xmlobject.h: bool FromXMLFileX(GString& xmlData, const char *pzFileName, GString *pErrorDescriptionDestination = 0);
+Feb 15 - _gthread_processInitialize may now be called >  1 time also it is now called automatically from global 'ctors
+Feb 15 - added USE_DEPRECIATED_WIN32_THREADING build flag for 32 bit Windows XP support - platform toolset (v110_xp)
 
 
 

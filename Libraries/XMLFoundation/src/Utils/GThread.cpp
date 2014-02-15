@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //			John E. Bossom and United Business Technologies
-//			  Copyright (c) 2013  All Rights Reserved.
+//			  Copyright (c) 2013-2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -18,6 +18,14 @@
 // It has been modified to use non-depreciated Win32 interfaces.
 // It has been modified to use non-pthread conflicting structures, defines, and function names.
 
+// GThread is based on the 1998 port of pthreads, I picked up the source in 2000 2 years after many folks 
+// had used it and debugged it.  Back then, pthreads for Win32 was incomplete by POSIX standards, it only 
+// implemented the most common needs.  Millions of volunteers later, pThreads for Win32 was complete.
+// The 'new' complete pthreads could never be ported to WinPhone.
+// In 2014, GThread is the ONLY pthread port (subset of a pthread port) that supports all Windows platforms.
+// and all Windows compilers as well. Changes have been made to the 2000 fork of pthreads regarding USE_DEPRECIATED_WIN32_THREADING
+
+
 #include "GlobalInclude.h"
 #include "GThread.h"
 #include "errno.h"
@@ -25,9 +33,27 @@
 #include <sys/timeb.h> // for _ftime
 #include <process.h> // for _endthreadex
  
+// global variables
 int g_nextGThreadID = 1;
 static HINSTANCE _h_kernel32;
 static HINSTANCE _gthread_h_kernel32;
+
+
+// Configure GThread to use the depreciated interface (the only interface in XP and older) when building for 32 bit Windows
+// GThread will use: 
+//					 InitializeCriticalSection() not InitializeCriticalSectionEx()
+//					 CreateEvent()				 not CreateEventEx()
+//					 CreateSemaphore()			 not CreateSemaphoreEx()
+//					 CreateMutex()				 not CreateMutexEx()
+//
+//     only when USE_DEPRECIATED_WIN32_THREADING has been defined.
+// 
+//   IF       Visual Studio 6.0 or less     or  New Visual Studio targeting XP or older  or  Borland C++ Same era as VC6
+#if defined(_MSC_VER) && (_MSC_VER <= 1200) || (_WIN32_WINNT <= 0x0501)					 ||  (__BORLANDC__)
+	#define USE_DEPRECIATED_WIN32_THREADING
+#endif
+
+
 
 #ifndef ETIMEDOUT // for VC6
 	#define ETIMEDOUT 10060
@@ -39,6 +65,8 @@ static HINSTANCE _gthread_h_kernel32;
 #else
 	#define EXCEPTIONCAST (ULONG_PTR *)
 #endif
+
+
 
 gthread_t gthread_self (void);
 int _gthread_processInitialized = 0;
@@ -103,7 +131,7 @@ CRITICAL_SECTION _gthread_rwlock_test_init_lock;
 void initGThread()
 {
 	// In VC 6.0 and older use the depreciated interface
-	#if defined(_MSC_VER) && _MSC_VER <= 1200 
+	#ifdef USE_DEPRECIATED_WIN32_THREADING
 	  InitializeCriticalSection(&_gthread_cond_test_init_lock);
 	#else
 	  InitializeCriticalSectionEx(&_gthread_cond_test_init_lock,2,0);
@@ -184,7 +212,7 @@ int gthread_cond_init (gthread_cond_t * cond, const gthread_condattr_t * attr)
     }
 
 	// In VC 6.0 and older use the depreciated interface
-	#if defined(_MSC_VER) && _MSC_VER <= 1200 
+	#ifdef USE_DEPRECIATED_WIN32_THREADING
 	  cv->waitersDone = CreateEvent (
 					 0,
 					 (int) FALSE,  /* manualReset  */
@@ -1166,12 +1194,8 @@ sem_init (sem_t * sem, int pshared, unsigned int value)
        *               sem_t is a simple structure with one entry;
        *               We don't have to allocate it...
        */
-#if defined(_MSC_VER) && _MSC_VER <= 1200  
-      *sem = CreateSemaphore (
-			       0,
-			       value,
-			       0x7FFFFFF,
-			       NULL);
+#ifdef USE_DEPRECIATED_WIN32_THREADING
+      *sem = CreateSemaphore (  0,    value,  0x7FFFFFF,NULL);
 #else
 	  *sem = CreateSemaphoreExW(NULL, value, 0x7FFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
 #endif
@@ -1354,7 +1378,7 @@ gthread_mutex_init(gthread_mutex_t *mutex, const gthread_mutexattr_t *attr)
 	   * Create a critical section. 
 	   */
 		// In VC 6.0 and older use the depreciated interface
-		#if defined(_MSC_VER) && _MSC_VER <= 1200 
+		#ifdef USE_DEPRECIATED_WIN32_THREADING
 		  InitializeCriticalSection(&mx->cs);
 		#else
 		  InitializeCriticalSectionEx(&mx->cs,2,0);
@@ -1367,7 +1391,7 @@ gthread_mutex_init(gthread_mutex_t *mutex, const gthread_mutexattr_t *attr)
 	   * current process
 	   */
   	  // In VC 6.0 and older
-	  #if defined(_MSC_VER) && _MSC_VER <= 1200 
+	  #ifdef USE_DEPRECIATED_WIN32_THREADING
   	    mx->mutex = CreateMutex (NULL,   FALSE,   NULL);
 	  #else
 	    mx->mutex = CreateMutexEx(NULL, FALSE, NULL, MUTEX_ALL_ACCESS);
@@ -2422,7 +2446,7 @@ int gthread_create (gthread_t * tid, const gthread_attr_t * attr,void *(*start) 
   thread->cancelType  = GTHREAD_CANCEL_DEFERRED;
 
 	// In VC 6.0 and older 
-	#if defined(_MSC_VER) && _MSC_VER <= 1200 
+	#ifdef USE_DEPRECIATED_WIN32_THREADING
 	 thread->cancelEvent = CreateEvent( 0, (int) TRUE, /* manualReset  */ (int) FALSE,/* setSignaled  */		  NULL);
 	#else
 	 thread->cancelEvent = CreateEventEx(  0,  NULL,  CREATE_EVENT_MANUAL_RESET,    EVENT_ALL_ACCESS);
@@ -2880,8 +2904,7 @@ _gthread_processTerminate (void)
 }				/* processTerminate */
 
 
-int
-_gthread_processInitialize (void)
+int _gthread_processInitialize (void)
      /*
       * ------------------------------------------------------
       * DOCPRIVATE
@@ -2904,7 +2927,10 @@ _gthread_processInitialize (void)
       * ------------------------------------------------------
       */
 {
-  _gthread_processInitialized = TRUE;
+	if (_gthread_processInitialized)
+		return 1; // if we already did it - success
+
+	_gthread_processInitialized = TRUE;
 
   /*
    * Initialize Keys
@@ -2920,7 +2946,7 @@ _gthread_processInitialize (void)
    * Set up the global test and init check locks.
    */
 	// In VC 6.0 and older use the depreciated interface
-	#if defined(_MSC_VER) && _MSC_VER <= 1200 
+	#ifdef USE_DEPRECIATED_WIN32_THREADING
 	  InitializeCriticalSection(&_gthread_mutex_test_init_lock);
 	  InitializeCriticalSection(&_gthread_cond_test_init_lock);
 	  InitializeCriticalSection(&_gthread_rwlock_test_init_lock);
@@ -2930,17 +2956,14 @@ _gthread_processInitialize (void)
 	  InitializeCriticalSectionEx(&_gthread_rwlock_test_init_lock,2,0);
 	#endif
 
-
+	// This dynamic load of TryEnterCriticalSection is necessary on some builds, this will be true for older Borland Builds also - here it only test for VC6
 	#if defined(_MSC_VER) && _MSC_VER <= 1200 
 		_gthread_h_kernel32 = LoadLibrary(TEXT("KERNEL32.DLL"));
-		_gthread_try_enter_critical_section =
-		(BOOL (PT_STDCALL *)(LPCRITICAL_SECTION))
-		GetProcAddress(_gthread_h_kernel32,
-			   (LPCSTR) "TryEnterCriticalSection");
+		_gthread_try_enter_critical_section = (BOOL (PT_STDCALL *)(LPCRITICAL_SECTION))	GetProcAddress(_gthread_h_kernel32,	   (LPCSTR) "TryEnterCriticalSection");
 	#else
 		_gthread_try_enter_critical_section = TryEnterCriticalSection;
 	#endif
 
-  return (_gthread_processInitialized);
+  return _gthread_processInitialized;
 
-}				/* processInitialize */
+}				
