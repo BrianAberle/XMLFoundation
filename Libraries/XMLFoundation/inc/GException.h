@@ -76,10 +76,14 @@ public:
 #ifndef WINCE
  #ifndef __WINPHONE
   #if  defined(_DEBUG)&&  defined(_WIN32) // This is only for Windows desktop
+
     #include <windows.h>
-    #pragma pack( push, before_imagehlp, 8 )
+    
+	#pragma pack( push, before_imagehlp, 8 )
     #include <imagehlp.h>
     #pragma pack( pop, before_imagehlp )
+
+
 	class GCallStack
 	{
 	protected:

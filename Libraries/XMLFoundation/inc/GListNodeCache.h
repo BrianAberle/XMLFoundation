@@ -182,7 +182,7 @@ DO_IT_AGAIN:
 
 				if ( ++_nPutCount  %  (NODES_PER_ALLOC * nFrequency) == 0)   // 21
 				{
-					__int64 nBlocks = _pStackAllocBlocks->Size();
+//					__int64 nBlocks = _pStackAllocBlocks->Size();
 					if ( _pStackAvailable->Size() >  NODES_PER_ALLOC * 21)
 					{
 
@@ -440,7 +440,7 @@ nDifference += -3;
 
 								if(nLastExceptionOptimize)
 								{
-									int nReset = nIndexSearch - nLastExceptionOptimize;
+//	int nReset = nIndexSearch - nLastExceptionOptimize;
 									nLastExceptionOptimize = nIndexSearch;
 
 //BREAK:		if (nReset < 10)	

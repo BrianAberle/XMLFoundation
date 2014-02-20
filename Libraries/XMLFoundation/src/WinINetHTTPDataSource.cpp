@@ -368,7 +368,7 @@ RE_SEND:
 			{
 				// This has failed with 12152
 				// 12152 = ERROR_HTTP_INVALID_SERVER_RESPONSE
-				DWORD dw = GetLastError();
+				// DWORD dw = GetLastError();
 				// ThrowLastError();
 			}
 		}

@@ -103,6 +103,8 @@ GProfile &GetErrorProfile()
 #include <string>
 #include <vector>
 #pragma comment( lib, "imagehlp" )
+//#pragma comment(lib, "dbghelp.lib")  
+
 
 ///////////////////////////////////////////////////////////////////////////
 /////////////////////// Win32 stack tracing ///////////////////////////////

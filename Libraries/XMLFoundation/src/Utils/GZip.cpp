@@ -7494,6 +7494,8 @@ int ZEXPORT inflatePrime(z_streamp strm,int bits,int value)
     return Z_OK;
 }
 
+
+
 /*
    Return state with length and distance decoding tables and index sizes set to
    fixed code decoding.  Normally this returns fixed tables from inffixed.h.
@@ -7504,6 +7506,7 @@ int ZEXPORT inflatePrime(z_streamp strm,int bits,int value)
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
+/*
 local void fixedtablesXXX(struct inflate_state FAR *state)
 {
 #ifdef BUILDFIXED
@@ -7511,12 +7514,10 @@ local void fixedtablesXXX(struct inflate_state FAR *state)
     static code *lenfix, *distfix;
     static code fixed[544];
 
-    /* build fixed huffman tables if first call (may not be thread safe) */
     if (virgin) {
         unsigned sym, bits;
         static code *next;
 
-        /* literal/length table */
         sym = 0;
         while (sym < 144) state->lens[sym++] = 8;
         while (sym < 256) state->lens[sym++] = 9;
@@ -7527,26 +7528,16 @@ local void fixedtablesXXX(struct inflate_state FAR *state)
         bits = 9;
         inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
 
-        /* distance table */
         sym = 0;
         while (sym < 32) state->lens[sym++] = 5;
         distfix = next;
         bits = 5;
         inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
 
-        /* do this just once */
         virgin = 0;
     }
-#else /* !BUILDFIXED */
+#else 
 //#   include "inffixed.h"
-	    /* inffixed.h -- table for decoding fixed codes
-     * Generated automatically by makefixed().
-     */
-
-    /* WARNING: this file should *not* be used by applications.
-       It is part of the implementation of this library and is
-       subject to change. Applications should only use zlib.h.
-     */
 
     static const code lenfix[512] = {
         {96,7,0},{0,8,80},{0,8,16},{20,8,115},{18,7,31},{0,8,112},{0,8,48},
@@ -7634,12 +7625,14 @@ local void fixedtablesXXX(struct inflate_state FAR *state)
         {22,5,193},{64,5,0}
     };
 
-#endif /* BUILDFIXED */
+#endif 
     state->lencode = lenfix;
     state->lenbits = 9;
     state->distcode = distfix;
     state->distbits = 5;
 }
+*/
+
 
 #ifdef MAKEFIXED
 #include <stdio.h>

@@ -210,6 +210,7 @@
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Debug\5Loaves.tlb</TypeLibraryName>

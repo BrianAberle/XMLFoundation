@@ -17,11 +17,9 @@
 #pragma warning (disable:4996)
 #pragma warning (disable:4267)
 #pragma warning (disable:4244)
-//#pragma warning (disable:4100)	// Unreferenced formal parameter
-//#pragma warning (disable:4702)	// Unreachable Code
-//#pragma warning (disable:4127)	// conditional expression is constant
-//#pragma warning (disable:4189)	// local variable is initialized but not referenced
-//#pragma warning (disable:4706)	// assignment within conditional expression
+#pragma warning (disable:4100)	// Unreferenced formal parameter
+#pragma warning (disable:4702)	// Unreachable Code
+#pragma warning (disable:4127)	// conditional expression is constant
 
 
 

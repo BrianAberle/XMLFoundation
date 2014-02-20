@@ -74,6 +74,9 @@ inline void *RemoveKey(unsigned __int64	key, __int64 nOccurance = 0) const { ret
 	~GHash();
 };
 
+
+#pragma warning (disable:4512)	// 'GHashIterator' : assignment operator could not be generated
+
 class GHashIterator
 {
 	GBTreeIterator m_it;

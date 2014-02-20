@@ -15,7 +15,8 @@
 
 #include "XMLFoundation.h"	// lists, sorts, xmlparser, object factory, cipher, compression, and other app framework tools
 
-
+// comment out the following line to alloy JIT Debugging(just In Time) to be hooked by your debugger
+#define _XMLF_JIT_
 
 
 #ifdef _WIN32 // Windows 32 bit, 64 bit, Windows Mobile, and Windows Phone all define _WIN32
@@ -5827,7 +5828,9 @@ void *clientThread(void *arg)
 
 MAIN_THREAD_BODY:
 
-//	XML_TRY		// note: comment this line out so the JIT debugging can record the call stack It should be in the final build
+#ifdef _XMLF_JIT_
+	XML_TRY		// note: comment this line out so the JIT debugging can record the call stack It should be in the final build
+#endif
 	{
 		// pre-caches Transaction objects in the server build
 		OBJECT_PRECACHE;
@@ -6971,7 +6974,7 @@ HANDLER_FINISH:
 		} // end of branch2
 		
 	}
-/*
+#ifdef _XMLF_JIT_
 	XML_CATCH(ex)
 	{
 		GString strLog;
@@ -6980,7 +6983,8 @@ HANDLER_FINISH:
 
 		PROPIGATE_SERVER_EXCEPTION;
 	}
-*/
+#endif // _XMLF_JIT_
+
 CLOSE_CONNECT:  // this goto tag was previously named SOCKET_ERR_ABORT - it was renamed because it does not necessarily indicate error
 	nProxyClosed = 1; // shared memory flag if a worker thread was started - stop it.
 

@@ -372,7 +372,7 @@ cond_wait_cleanup(void * args)
   gthread_cond_t cv = cleanup_args->cv;
   int * resultPtr = cleanup_args->resultPtr;
   int lock_result;
-  int lastWaiter;
+  int lastWaiter = 0;
 
   if ((lock_result = gthread_mutex_lock (&(cv->waitersLock))) == 0)
     {
@@ -930,8 +930,8 @@ cond_timedwait (gthread_cond_t * cond,
 		const struct gtimespec *abstime)
 {
   int result = 0;
-  int internal_result = 0;
-  int lastWaiter = FALSE;
+//  int internal_result = 0;
+//  int lastWaiter = FALSE;
   gthread_cond_t cv;
   cond_wait_cleanup_args_t cleanup_args;
 

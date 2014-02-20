@@ -751,7 +751,11 @@ RESEND:
 		{
 			throw;
 		}
-#ifndef _NO_DOT_DOT_DOT
+
+// in a debug build, this code is better off compiled out so that the debugger will break closer to the problem.
+// in a release build, this may help to 'crash softer'.
+#ifndef _DEBUG
+		// if we should catch an unhandled exception here
 		catch ( ... )
 		{
 			TRACE_ERROR("Fatal Error while factory creating objects" );
@@ -761,6 +765,7 @@ RESEND:
 			throw GException("XMLProcedureCall", 6);
 		}
 #endif
+
 	}
 	else
 	{

@@ -177,3 +177,7 @@ Feb 11 - Finalized Build 211 - published the article update.
 Feb 13 - added to xmlobject.h: bool FromXMLFileX(GString& xmlData, const char *pzFileName, GString *pErrorDescriptionDestination = 0);
 Feb 15 - _gthread_processInitialize may now be called >  1 time also it is now called automatically from global 'ctors
 Feb 15 - added USE_DEPRECIATED_WIN32_THREADING build flag for 32 bit Windows XP support - platform toolset (v110_xp)
+Feb 19 - Made the Base class of GString public so the class can be thrown as a C++ exception
+Feb 19 - Set the VS2012 Warning Level to 4, reviewed all the output, made various small changes to silence several warnings
+Feb 19 - Added (/EHa) to all the example programs in the VS2012 workspace, 
+Feb 19 - commented the need for (/EHa) in ExceptionHandlerScope() in ExceptionHandler.h where the compiler warning is generated

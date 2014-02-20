@@ -84,8 +84,8 @@ protected:
 	virtual ~GStringType(){}
 };
 
-
-class GString  : protected GStringType
+// we 'want' protected not public derivation from GStringType, however because GException is derived from a GString and we 'throw' GStrings the public base class is required.  This is why GString is X rated, it makes everything public.
+class GString  : public GStringType
 {
 public: 
 	// _str and _len are conceptually protected, or private.  Best advice: DO NOT ACCESS THEM DIRECTLY.  

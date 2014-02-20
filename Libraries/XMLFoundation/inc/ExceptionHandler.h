@@ -196,6 +196,8 @@ public:
 	{
 #ifndef _NO_EXCEPT
  #ifdef _WIN32 
+// NOTE: In newer MSFT compilers, right click the project select Properties, then C/C++, All Settings
+//       Change "Enable C++ Exceptions" from "yes(/EHsc)" to "Yes with SEH Exceptions (/EHa)"
 		f = _set_se_translator(_xml_se_translator);
  #else
 		nILL = signal(SIGILL,  DispSIGILL);	
