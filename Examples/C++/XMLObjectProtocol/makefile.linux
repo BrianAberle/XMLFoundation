@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+XMLObjectProtocol: \
+	clear \
+	XMLObjectProtocol.o
+	 
+	$(CC) \
+		-o XMLObjectProtocol \
+		-L../../../Libraries/XMLFoundation/Build \
+		XMLObjectProtocol.o \
+		-lnsl -lXMLFoundation -ldl
+
+XMLObjectProtocol.o: ./XMLObjectProtocol.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./XMLObjectProtocol.cpp -o ./XMLObjectProtocol.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

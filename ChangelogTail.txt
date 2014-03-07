@@ -1,7 +1,7 @@
-
-As of Feb 19, 2014
+As of March 6, 2014
 -----------------------------
-If you use Visual Studio AND target platform toolset Windows XP (v110_xp) you need the Feb 15 update
+no known bugs or issues for 3 weeks
+See the current IETF thread at the end of this file:
 
 
 
@@ -14,7 +14,7 @@ Feb 19 - Made the Base class of GString public so the class can be thrown as a C
 Feb 19 - Set the VS2012 Warning Level to 4, reviewed all the output, made various small changes to silence several warnings
 Feb 19 - Added (/EHa) to all the example programs in the VS2012 workspace, 
 Feb 19 - commented the need for (/EHa) in ExceptionHandlerScope() in ExceptionHandler.h where the compiler warning is generated
-
+Mar 6 - added TheOIDProtocol example for the IETF discussion
 
 
 Bugs fixed since 2014's Version 111 (released on Jan 11)
@@ -22,3 +22,163 @@ Bugs fixed since 2014's Version 111 (released on Jan 11)
 possibly in a rare case with an app using compression a bug was fixed in GZip by upgrading XMLFoundation to the current zlib source
 changed the default value of nGrowByAllocationSize from 1024 to -1 in GString.h - a major performance fix for BigData
 XML reserved byte escaping in GString::AppendEscapeXMLReserved() is now correct by the W3C XML1.0/1.1 spec + custom overrides.
+If you use Visual Studio AND target platform toolset Windows XP (v110_xp) you need the Feb 15 update
+
+
+
+
+To: apps-discuss@ietf.org, superuser@gmail.com, dave@cridland.net
+CC: Brian Aberle
+
+
+Topic: Is this Concept/Design/Implementation a protocol?
+
+This IS a wire protocol, I was mistaken.  It can be a wire protocol.  The very fast XML updates depend on the attribute tag name, "oid" - an extension to XML required for "XMLObject Parsing" if we call it that.  I created a simple example program that clearly shows the need for this.
+ 
+I hope you can 'see' the answer yourself - as I made a makefile for Linux, VC6 and VS2012 that show the results in numbers.  The new example program is called "TheOIDProtocol". Find it here:
+https://onedrive.live.com/redir?resid=D7EC275E76D295CF!923&authkey=!AAnvh0CKDY4nuho&ithint=file%2c.zip
+
+Answer: Yes, it can be considered a protocol if you add some small constraints to "Standard XML".
+         These additions, ALTHOUGH THEY ARE OPTIONAL, do define a protocol.  
+
+This specialized "XML Object Parser" knows a special key word it is "oid"  It was designed to be brief, "oid" Stands for Object ID.
+If the first attribute is "oid", (POSITIONAL and CASE SENSITIVE) exists, the parser acts different.
+Putting "oid" as the 3rd attribute has no effect, this violates some thought on positional significance 
+ of attribute order because this special optimization demands that "oid" be #1 in position as the attribute.
+This is the protocol.  Yep.  Cant get around that.  The protocol also make provision for UpdateTime
+
+This is why: Without this protocol - XML updates are SLOW.  This is how the world works with no "oid":
+The tokenizer is getting fragments of data that it cannot possibly identify as an object until a
+"Temporary Object" is built to contain all of the data.  Now this "DOM like" Temporary object might only be a  
+ small subset of the actual object - for example a complex object may have many member variables and 
+ the xml used to update it contains only the information necessary to update the object plus the changes.
+This is a delta rather than an overwrite.  Since the key to the object instance exists within the data it becomes
+'necessary' to create the temporary object because we have no information to associate the actual object instance.
+
+ In the world with and "oid" (that must appear in just the right place and case) we do not need any temporary
+ object to hold the data because the tokenizer peeks ahead one token to look for this special "oid"
+ if it exists, we obtain the one and only object instance (via a unique key) and parse directly into it.  
+ This is a major performance improvement utilizing much less memory and CPU when "oid"
+ is the first attribute.  That is a protocol.  Speed is the reason.  
+
+Why was ETag added to HTTP in 1.1?  
+ HTTP 1.0 didnt cache - I remember when ETag support was added to ServerCore.cpp for HTTP 1.1
+Caching was a nice and needed feature in HTTP, no less than the "oid" in XML.
+
+There is already an example which shows the performance improvement gained by the "oid"
+The ExIndexObjects example times an "Update" vs and "Update Faster" and you can see a difference
+however that example was not designed to be a case to emphasize exactly how major the time 
+ difference is.  The larger the temporary object the more magnified the time and memory in 
+ dealing with it - The IndexObjects example uses very small objects and very many of them - 
+with very small objects you can see it is a little faster - look how much faster larger complex object are
+when you run the simple little example I just published.
+
+ 
+Brian
+ 
+ 
+
+ 
+
+> Date: Tue, 4 Mar 2014 12:16:11 -0500
+> From: hsantos@isdg.net
+> To: xml4ietf@live.com; dave@cridland.net
+> CC: apps-discuss@ietf.org
+> Subject: Re: [apps-discuss] RFC for XMLObject Parsing
+> 
+> I think we might be seeing what I have found is a new need just to 
+> document stuff in a structured simple manner with some level of 
+> "broad" industry and peer review, more importantly for all sizes of 
+> interest.
+> 
+> I personally believe the IETF should leverage this need and begin to 
+> include application level recommended design, implementation and 
+> deployment methods proposals. Not everything has to be a "standard" 
+> and these days, we have so many argumentations and levels of 
+> communications, that yes, today XML is highly considered as a 
+> "client/server" and dynamic communications "wired" protocol. The 
+> increased speeds has allowed what was otherwise higher overhead "data" 
+> methods to be a non-issue and a natural part of an I/O protocol.
+> 
+> -- 
+> HLS
+> 
+> On 3/4/2014 9:28 AM, Brian Aberle wrote:
+> > Correct - this is not a wire protocol, it's a design approach and an algorithm, initially created to add a native XML get() and set() to all CORBA objects. Of course this discussion does not belong at OMG because it applies equally to COM/DCOM, and for that matter even MFC GUI objects are simplified with this design approach (using no SAX and no DOM and no W3C recognized approach) - see the XMLDialog example.
+> >
+> > Date: Tue, 4 Mar 2014 11:54:31 +0000
+> > Subject: Re: [apps-discuss] RFC for XMLObject Parsing
+> > From: dave@cridland.net
+> > To: superuser@gmail.com
+> > CC: xml4ietf@live.com; apps-discuss@ietf.org
+> >
+> > Yes; unless there's a wire protocol involved, of course. But I get the impression there isn't in this case.
+> >
+> > On 4 March 2014 11:37, Murray S. Kucherawy <superuser@gmail.com> wrote:
+> >
+> > Aren't the definitions of XML and its ilk within the purview of the W3C and not us?
+> >
+> >
+> >
+> > On Mon, Mar 3, 2014 at 7:57 PM, Brian Aberle <xml4ietf@live.com> wrote:
+> >
+> >
+> >
+> >
+> > Hi world,
+> > It's me again. I'll just be honest here. Ive never took the time in my whole career to be on an IETF list - but don't count me out for that. Isn't this the place where the old school masters kick it? All .com aside this is about .edu - and sirs, mind you that is where all this Internet stuff came from. Now I know a forum of Peacock's is not impressed by another colorful cool guy. We have moderators because we know that cock fighting is real. I don't know if ya'll are shy, just not real chatty, or are too busy, maybe just didn't notice the new guy, I don't know. I put together a very complete example and implementation. Forgive me for not supplying this direct link in my first posting:
+> >
+> >
+> > https://onedrive.live.com/redir?resid=D7EC275E76D295CF!923&authkey=!AAnvh0CKDY4nuho&ithint=file%2c.zip
+> >
+> >
+> >
+> > World - Would it be helpful if I put all this together into an Internet Draft to obtain feedback? That is the new question. This overview in HTML is rough and rogue and was not intended for IETF Gurus, Bosses, Admins, and Chiefs, but for programmers using this stuff. http://www.codeproject.com/Articles/37850/XMLFoundation
+> >
+> >
+> >
+> > The OLD question was "Should we have an RFC for this?"
+> > The NEW question is "Should this be put into an Internet Draft?" Is that necessary? to get the attention of cocks that squawk in this spot? I asked the apps-discuss admins who said that it could be equally as effective to get good discussion going as it would an Internet Draft. I believe them, so I turned up the color volume a bit.
+> >
+> >
+> >
+> > World, can I have an ACK, NAK, Ping, anything? Look at the numbers in the example program ExIndexObjects. If numbers were to get in a cock fight id put all my money on 777.
+> >
+> >
+> > From: xml4ietf@live.com
+> >
+> >
+> > To: apps-discuss@ietf.org
+> > Subject: RFC for XMLObject Parsing
+> > Date: Thu, 27 Feb 2014 13:02:40 -0700
+> >
+> >
+> >
+> >
+> > Hello World,
+> >
+> >
+> >
+> > I am seeking community feedback regarding an official alternative to SAX and DOM. I have put together several examples that show performance numbers which alone justify this alternative to SAX or DOM. There are other reasons as well, primarily - the argument for "Object Oriented Design" in the application layer. This issue in discussion here before the community is: Do we want an RFC for this? Maybe not. Maybe so. We don't all want to keep inventing the wheel. The concept is simple. It is "XML Serialization".
+> >
+> >
+> > XMLObject Parsing? We don't need to invent new words, but we must also note that "Serialization" includes neither Keyed XML Updates nor Object Instance Reference counting. We also don't need fancy things that we just don't need, however I have prepared an example using CORBA that does need this(and we needed it on the $2B NCIS project). This concept was identified quickly by Bjarne Stroustrup in this thread: http://www.artima.com/forums/flat.jsp?forum=226&thread=204721
+> >
+> >
+> > Most recent reply: Feb 12, 2010 12:43 AM by Brian Aberle
+> >
+> >
+> >
+> > I recommend that this thread be continuation from that one, where we resolve to solve an identified need (for and RFC?) That is the question. I have prepared a rough and rogue draft on this concept http://www.codeproject.com/Articles/37850/XMLFoundation-2 I have received much valuable feedback in the public forum at the bottom of that article over the past decade++; The roughness of the draft HTML doc describing this stuff, should not reflect on the polished and refined all encompassing open source implementation.
+> >
+> >
+> > I had developed/co-developed 2 XML Parsers prior to the finalization of XML 1.0. That is rather simple stuff in terms of implementation - fact backed by the "Yet Another" factor in available XML Parsers. "XML Serialization" is perhaps slightly more complex in implementation. We need to use the new word "XML Object Parsing" or perhaps "XML Serialization++" to describe the even more complex implementation which addresses the needs raised in the above two public threads over the past decade.
+> >
+> >
+> > Since the very purpose of IETF is designed to prevent us all from re-inventing the wheel when we collectively can identify a need for it, (each of us would create our own cool version no doubt) but collectively we would roll nowhere that way - Should we have an RFC for this? That is the question.
+> >
+> >
+> >
+> > World, what do you think?
+> >
+> 

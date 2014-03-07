@@ -3879,7 +3879,9 @@ const char *GString::AbbreviateNumeric()
 	// the compile error is "integer constant too large for long type"
 	// N is an __int64, and I double checked that __int64 is defined as 'long long' in Linux
 	// I even tried to cast the constant to a "long long" and I get the same error.
-#ifndef _LINUX
+//#ifndef _LINUX
+
+
 	else if (N < 10000000000)	// 1.0Gb - 9.9Gb
 	{
 		Insert(1,'.');
@@ -3912,7 +3914,8 @@ const char *GString::AbbreviateNumeric()
 		SetLength(3);
 		*this << "Tb";
 	}
-#endif
+
+//#endif
 	
 	return _str;
 }

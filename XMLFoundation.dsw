@@ -246,6 +246,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "TheOIDProtocol"=".\Examples\C++\XMLObjectProtocol\TheOIDProtocol.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "TranslatingXML"=".\Examples\C++\TranslatingXML\TranslatingXML.dsp" - Package Owner=<4>
 
 Package=<5>
