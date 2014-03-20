@@ -15,7 +15,7 @@
 
 #include "XMLFoundation.h"	// lists, sorts, xmlparser, object factory, cipher, compression, and other app framework tools
 
-// comment out the following line to alloy JIT Debugging(just In Time) to be hooked by your debugger
+// comment out the following line to allow JIT Debugging(just In Time) to be hooked by your debugger
 #define _XMLF_JIT_
 
 
@@ -49,7 +49,8 @@
 
 #ifdef _ANDROID
 	#include <errno.h>		// for definition of EBUSY (16) Note: Needed ONLY for Android port
-	// Android NDK Pthreads does not have a pthread_cancel()
+	// Android NDK pthreads does not have a pthread_cancel() so ServerCore's calls to gthread_cancel 
+	// are #defined to pthread_cancel and resolved by this function here for the Andriod build
 	int pthread_cancel(pthread_t pthread_id)
 	{
 		pthread_kill(pthread_id, SIGUSR1);
@@ -70,12 +71,29 @@
 #include "IntegrationLanguages.h" // integration to Perl, Python, Java, C++, VB, COM, CORBA, and TransactXML extensions
 GList g_lstActivePlugins;
 
+
 #ifdef ___XFER
-// note you must also link to "../../Libraries/Release/Xfer.lib" or "../../Libraries/Debug/Xfer.lib"
-#include "XferCommand.h"		// Xfer Protocol
-#include "XferProtocol.h"		// Xfer Protocol
-#include "XferDispatch.h"		// Xfer Protocol
-#include "XferSwitchBoard.h"	// Xfer Protocol
+	#include "../../Libraries/Xfer/inc/XferCommand.h"		// Xfer Protocol
+	#include "../../Libraries/Xfer/inc/XferProtocol.h"		// Xfer Protocol
+	#include "../../Libraries/Xfer/inc/XferDispatch.h"		// Xfer Protocol
+	#include "../../Libraries/Xfer/inc/XferSwitchBoard.h"	// Xfer Protocol
+	// Note: you must also link to "../../Libraries/Release/Xfer.lib" or "../../Libraries/Debug/Xfer.lib" or you can include the source like this:
+	#ifdef ___XFER_SRC
+		#include "../../Libraries/Xfer/src/XferCommand.cpp"		// Xfer Protocol
+		#include "../../Libraries/Xfer/src/XferProtocol.cpp"	// Xfer Protocol
+		#include "../../Libraries/Xfer/src/XferDispatch.cpp"	// Xfer Protocol
+		#include "../../Libraries/Xfer/src/XferSwitchBoard.cpp"	// Xfer Protocol
+	#else
+		#pragma comment(lib, "../../Libraries/Xfer.lib")	
+	#endif
+#else
+	// ServerCoreCustomGlobals.cpp will contain your own customized extensions to ServerCore.cpp
+	// In your project (or makefile) NO NOT add ServerCoreCustomGlobals.cpp unless you select "Exclude From Build"
+	// in the properties for the file "ServerCoreCustomGlobals.cpp" - see the 5Loaves project in /Servers/5Loaves
+	// NOTE: This file should exist in the same directory as ServerCore.cpp
+//	#ifdef __CUSTOM_CORE__
+//		#include "ServerCoreCustomGlobals.cpp"
+//	#endif
 #endif //___XFER
 
 #include "SwitchBoard.h"		
@@ -205,31 +223,6 @@ long g_nClientthreadsPeakUse = 0;
 long g_nProxyThreadsInUse = 0;;
 long g_nProxyThreadsPeakUse = 0;
 
-
-
-// -----------------------------------------------------
-
-// unsigned __int64 g_nXferTxnID = 0;
-// int g_nRequireTxnSeq = 1;
-// int g_nMaxSocketWriteBlock;	// 65536:	chops up large network writes in to packets this size.  In Windows - if the HTTP server caches content and a > 4M file is stored, the sockets layer would often fail on the large single write if it was not broken up.  This also applies to Xfer protocol, however chunks never exceed MAX_RAW_CHUNK so writes will only be broken if this value is less than MAX_RAW_CHUNK.  It was thoroughly tested at 8192, the default block size using Nagle under Windows.
-// int g_nXferPutRouteSize;		// 8192:	MAX_RAW_CHUNK must be larger than g_nXferPutRouteSize, the difference will be used to optimize buffering for network writes and limits the size of the connect route to g_nXferPutRouteSize bytes only for the Xfer PUT command, all other commands have a limit slightly less than MAX_RAW_CHUNK itself, and this Xfer PUT limit is soft and dynamic at runtime.
-// int g_TraceXfer = 0;
-// int g_TraceXferBin = 0;
-// -----------------------------------------------------
-
-//	g_nXferTxnIDPrecision = GetProfile().GetIntOrDefault("Xfer","TxnIDPrecision",3);
-//	g_bRequireFlags = GetProfile().GetIntOrDefault("Xfer","RequireDataFlags",10);
-//	g_nRequireTxnSeq = GetProfile().GetBoolOrDefault("Xfer","RequireTxnSequence",1);
-//	g_bRequireSysID = GetProfile().GetBoolOrDefault("Xfer","RequireSysId",1);
-
-
-
-
-
-
-
-
-
 int g_nLockThreadBuffers = 1;
 
 
@@ -263,7 +256,7 @@ __int64 g_PreZipBytes = 0;
 __int64 g_PostZipBytes = 0;
 
 
-extern void showActiveThreads(GString *pG = 0);
+
 
 
 
@@ -275,6 +268,8 @@ void SetServerCoreInfoLog( void (*pfn) (int, GString &) )
 }
 
 GString g_strCachedLog;
+GString g_strPreLog;
+
 gthread_mutex_t g_csMtx3;
 int g_csMtxInit3 = 0;
 void InfoLog(int nMsgID, GString &strSrc)
@@ -290,7 +285,9 @@ void InfoLog(int nMsgID, GString &strSrc)
 		try
 		{
 			// This allows an application to trap special messages for dynamic debug breaks of special message notification handlers.
+			strSrc.Prepend(g_strPreLog);
 			g_CoreLog(nMsgID,strSrc);
+
 		}catch(...)
 		{
 			// because if g_CoreLog throws for any reason the whole server would deadlock to death over logging
@@ -304,6 +301,8 @@ void InfoLog(int nMsgID, GString &strSrc)
 	if (g_bDisableLog) // if logging is off because the user has disabled it
 		return;
 
+	// Note that we dont use any logging related CPU until we know logging is enabled
+	strSrc.Prepend(g_strPreLog);
 
 
 	//  note: g_strLogFile may not have a value at startup( == ""), but it may get a value shortly thereafter so we should cache the log if so configured
@@ -1824,8 +1823,6 @@ ThreadData *AttachToClientThread(ThreadConnectionData *pTCD, GArray *pGPool,int 
 
 
 
-
-
 gthread_mutex_t g_csMtx2;
 int g_csMtxInit2 = 0;
 GString g_strHTTPHitLog;
@@ -2118,7 +2115,7 @@ void BuildHTTPHeader(char *header, const char *pzFileName, const char *pzConnect
 				GListIterator itNVP(pMimePairs);
 				while (itNVP())
 				{
-					GProfile::NameValuePair *pNVP = (GProfile::NameValuePair *)itNVP++;
+					GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 
 					if ( strExt.CompareNoCase( pNVP->m_strName ) == 0)
 					{
@@ -2463,7 +2460,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 			GListIterator itNVP(pSpecialFile);
 			while (itNVP())
 			{
-				GProfile::NameValuePair *pNVP = (GProfile::NameValuePair *)itNVP++;
+				GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 				GString strCopy = pNVP->m_strValue;
 				char *pSep = (char *)strpbrk(strCopy, "*");
 				if (pSep)
@@ -5664,8 +5661,8 @@ int startListeners(int nAction, int nPort = -1)
 					if(bind(pTSD->sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
 					{
 						pTSD->nState = -2;
-						GString strErr;
-						strErr.Format("Cannot use port[%d] (in use?)                           N\\A[%d]",(int)pTSD->nPort, (int)pTSD->nPort);
+						GString strErr;																// that big arrow makes this stick out in a log file
+						strErr.Format("Cannot use port[%d] (try [netstat -o] or [netstat -lp | grep %d]  ---------------------------->  N\\A[%d]",(int)pTSD->nPort, (int)pTSD->nPort,(int)pTSD->nPort);
 						InfoLog(91,strErr);
 					}
 					else
@@ -5712,11 +5709,14 @@ int startListeners(int nAction, int nPort = -1)
 	return nRet;
 }
 
+void showActiveThreads(GString *pG = 0);
+
 #ifdef ___XFER
-#include "XferLocalCommands.cpp"
+	#include "../../Libraries/Xfer/Core/XferLocalCommands.cpp"
 #endif
-
-
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomGlobalInternals.cpp" 
+#endif
 
 
 class MessagingArgs
@@ -5957,7 +5957,7 @@ MAIN_THREAD_BODY:
 		if (td->pTSD->nProtocol == 3) // Xfer or remote console
 		{
 #ifdef ___XFER
-#include "XferCoreIntegration.cpp"
+#include "../../Libraries/Xfer/Core/XferCoreIntegration.cpp"
 #endif
 		}
 
@@ -6771,11 +6771,13 @@ KEEP_ALIVE:
 		}
 
 #ifdef ___XFER 
-#include "XferHTTPHook.cpp"
+	#include "../../Libraries/Xfer/Core/XferHTTPHook.cpp"
 #endif
 
-#ifdef SERVERCORE_CUSTOM_HTTP 
-#include "ServerCoreCustomHTTP.cpp"
+// __CUSTOM_CORE__ includes all Core hooks,  SERVERCORE_CUSTOM_HTTP includes only this HTTP hook
+// This will be the most commonly used hook into ServerCore, as it can be used to build simple HTTP Services
+#if defined(__CUSTOM_CORE__) && !defined(SERVERCORE_CUSTOM_HTTP) 
+	#include "ServerCoreCustomHTTP.cpp"
 #endif
 
 
@@ -9246,7 +9248,10 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 			else
 				g_DataTrace = 0;
 		}
-
+		else if (strEntry.CompareNoCase("PreLog") == 0)
+		{
+			g_strPreLog = GetProfile().GetStringOrDefault(	"Trace","PreLog","" );
+		}
 
 #ifdef ___XFER
 		else if (strEntry.CompareNoCase("XferTrace") == 0)
@@ -9257,7 +9262,8 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 		{
 			g_TraceXferBin = GetProfile().GetBoolean("Trace","XferTraceBinary",false);
 		}
-#endif // #ifdef ___XFER
+#endif // ___XFER
+
 
 
 	} 
@@ -9368,6 +9374,9 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 		}
 	}
 #endif // #ifdef ___XFER
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomProfileUpdate.cpp"
+#endif
 
 	return 0;
 }
@@ -9378,6 +9387,7 @@ void AssignSystemProfileValues()
 	// set the global values	
 	g_TraceConnection = GetProfile().GetBoolOrDefault(	"Trace","ConnectTrace",0);
 	g_TraceSocketHandles = GetProfile().GetBoolOrDefault("Trace","SocketHandles",0);
+	g_strPreLog = GetProfile().GetStringOrDefault(		"Trace","PreLog","" );
 	g_TraceThread = GetProfile().GetBoolOrDefault(		"Trace","ThreadTrace",0);
 	g_HTTPHeaderTrace = GetProfile().GetBoolOrDefault(	"Trace","HTTPHeaderTrace",0);
 	g_TraceHTTPFiles = GetProfile().GetBoolOrDefault(	"Trace","HTTPFilesTrace",0);
@@ -9408,6 +9418,9 @@ void AssignSystemProfileValues()
 	g_strProxyAuthSysName = GetProfile().GetStringOrDefault("Xfer","ProxyAuthSystemName","sys");
 	g_bRequireSysID = GetProfile().GetBoolOrDefault("Xfer","RequireSysId",0);
 #endif // ___XFER
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomProfileInit.cpp"
+#endif
 	
 	g_strMessagingSwitchPath = GetProfile().GetPath("SwitchBoardServer","Name",false);
 	g_bEnableMessagingSwitchboard = GetProfile().GetBoolean("SwitchBoardServer","Enable",false);
@@ -9440,40 +9453,46 @@ void RegisterRealTimeProfileMonitorValues()
 	//	int g_nProxyReadWait
 	//	int g_nProxyIdleReadWait
 	//  int g_nMaxHTTPHeaderSize;
-	GetProfile().RegisterChangeNotification("Trace", "ConnectTrace",			GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "ThreadTrace",			GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "HTTPHeaderTrace",		GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "HTTPFilesTrace",		GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "DataTraceFile",			GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "SocketHandles",			GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "XferTrace",				GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "XferTraceBinary",		GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "TransferSizes",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "ConnectTrace",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "ThreadTrace",		GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPHeaderTrace",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPFilesTrace",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "DataTraceFile",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "SocketHandles",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "XferTrace",		GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "XferTraceBinary",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "TransferSizes",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "PreLog",			GProfileMonitor);
+
+
 
 	GetProfile().RegisterChangeNotification("HTTP",  "KeepAliveMax",			GProfileMonitor);
-	GetProfile().RegisterChangeNotification("HTTP",  "HitLog",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTP",  "HitLog",					GProfileMonitor);
 	GetProfile().RegisterChangeNotification("HTTP",  "UseKeepAlives",			GProfileMonitor);
 	GetProfile().RegisterChangeNotification("HTTP",  "KeepAliveTimeOut",		GProfileMonitor);
 
-	GetProfile().RegisterChangeNotification("System","BlockedPortPenalty",	GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("System","DisableLog",			GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("System","LogFile",				GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("System","BlockedPortPenalty",		GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("System","DisableLog",				GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("System","LogFile",					GProfileMonitor); 
 	GetProfile().RegisterChangeNotification("System","LogCache",				GProfileMonitor); 
 	GetProfile().RegisterChangeNotification("System","RefuseService",			GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("System","MaxOpenConnectionsPerIP",GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("System","FrequencyTimeLimit",	GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("System","MaxOpenConnectionsPerIP",	GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("System","FrequencyTimeLimit",		GProfileMonitor); 
 
 #ifdef ___XFER
 	GetProfile().RegisterChangeNotification("Xfer","TxnIDPrecision",			GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("Xfer","RequireDataFlags",		GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("Xfer","RequireDataFlags",			GProfileMonitor); 
 	GetProfile().RegisterChangeNotification("Xfer","RequireTxnSequence",		GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("Xfer","RequireSysId",			GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("Xfer","RequireProxyAuth",		GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("Xfer","RequireSysId",				GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("Xfer","RequireProxyAuth",			GProfileMonitor); 
 	GetProfile().RegisterChangeNotification("Xfer","SwitchBoardPath",			GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("Xfer","EnableSwitchBoard",		GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("Xfer","SwitchBoardWaitForServer",GProfileMonitor); 
-	GetProfile().RegisterChangeNotification("Xfer","SwitchBoardWaitForClient",GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("Xfer","EnableSwitchBoard",			GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("Xfer","SwitchBoardWaitForServer",	GProfileMonitor); 
+	GetProfile().RegisterChangeNotification("Xfer","SwitchBoardWaitForClient",	GProfileMonitor); 
 	GetProfile().RegisterChangeNotification("Xfer","SwitchBoardMaxQ",			GProfileMonitor); 
+#endif
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomProfileSetNotify.cpp"
 #endif
 }
 
@@ -9514,6 +9533,9 @@ int server_start(const char *pzStartupMessage = 0)
 	SetXferSwitchBoardConnect( SBConnect );
 	SetXferWaitForReply( SBWaitForReply );
 	SetXferInfoLog( InfoLog );
+#endif
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomServerStart.cpp"
 #endif
 
 
@@ -10239,6 +10261,9 @@ void server_stop()
 	DestroyXferCommandThreadPool();
 	DestroyXferProxyThreadPool();
 #endif 
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomServerStop.cpp"
+#endif
 
 	gthread_mutex_destroy(&g_csMtxConnCache);
 

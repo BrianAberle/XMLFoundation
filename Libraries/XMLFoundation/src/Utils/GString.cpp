@@ -18,6 +18,7 @@ static char SOURCE_FILE[] = __FILE__;
 #include "GDirectory.h" // only for 1 method, CreatePath()
 #include "GZip.h"		// for Compress() / DeCompress()
 #include "TwoFish.h"	// for Cipher() / DeCipher()
+#include "GProfile.h"	// for Cipher() / DeCipher()
 
 
 #include <string.h> // for: memcpy(), strlen(), strcmp(), memmove(), strchr(), 
@@ -2992,7 +2993,11 @@ void GString::FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAsc
 				(*this)  += "     ";
 				(*this)  += strASCIIBytes;
 				strASCIIBytes = "";
+#ifdef _WIN32
+				(*this)  += "\r\n";
+#else
 				(*this)  += "\n";
+#endif
 			}
 		}
 
@@ -3245,6 +3250,9 @@ try
 	}
 }catch(...)	{}
 }
+
+
+GProfile &GetErrorProfile(); // GException.cpp
 
 // Load an error from the active ErrorProfile() owned by GException.cpp
 void GString::LoadResource(const char* szSystem, int error, ...)

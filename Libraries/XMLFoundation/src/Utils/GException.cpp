@@ -16,6 +16,7 @@ static char SOURCE_FILE[] = __FILE__;
 
 #include "GException.h"
 #include "GString.h"
+#include "GProfile.h"
 #include <stdlib.h> //for: atoi()
 #include <stdarg.h> //for: va_start(), va_end 
 #include <string.h> //for: strlen(), memcpy()
@@ -88,7 +89,7 @@ GProfile &GetErrorProfile()
 			}
 		}
 	}
-	static GProfile ErrorProfile(g_pstrErrorFileContents->StrVal(), (int)g_pstrErrorFileContents->Length());
+	static GProfile ErrorProfile(g_pstrErrorFileContents->StrVal(), (int)g_pstrErrorFileContents->Length(), 0);
 	return ErrorProfile;
 }
 

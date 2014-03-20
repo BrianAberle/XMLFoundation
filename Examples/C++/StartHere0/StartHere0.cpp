@@ -88,10 +88,10 @@ char pzXML[] =
 #endif
 
 
-#include "GStringCipherZip.h"
 
 int main(int argc, char* argv[])
 {
+
 	MyCustomObject O;
 	O.FromXMLX(pzXML);
 
@@ -143,14 +143,13 @@ int main(int argc, char* argv[])
 	O.m_bits &= ~(1<<7);
 
 	// add any encoding tags or doctype you need - if you need them other wise skip the next two lines
-//	GString strXMLStreamDestinationBuffer = "<?xml version=\"1.0\" standAlone='yes'?>\n";
-	GString strXMLStreamDestinationBuffer = "<?xml version=\"1.0\" encoding='windows-1252'?>\r\n";
-	strXMLStreamDestinationBuffer << "<!DOCTYPE totallyCustom SYSTEM \"http://www.IBM.com/example.dtd\">\r\n";
+//	GString strXMLStreamDestinationBuffer = "<?xml version=\"1.0\" encoding='windows-1252'?>\r\n";
+	GString strXMLStreamDestinationBuffer = "<?xml version=\"1.0\" standAlone='yes'?>\n";
+//	strXMLStreamDestinationBuffer << "<!DOCTYPE totallyCustom SYSTEM \"http://www.IBM.com/example.dtd\">\r\n";
 	O.ToXML( &strXMLStreamDestinationBuffer);
 /*  
 	// this is the xml in strXMLStreamDestinationBuffer 
 	<?xml version="1.0" standAlone='yes'?>
-	<!DOCTYPE totallyCustom SYSTEM "http://www.IBM.com/example.dtd">
 	<Thing Color="Black and White">
 			<Wrapper>
 					<StringList>one</StringList>
@@ -165,7 +164,7 @@ int main(int argc, char* argv[])
 			<OnItsSide8>Black</OnItsSide8>
 	</Thing>.
 */	
-	strXMLStreamDestinationBuffer.ToFile("EncodingTest.txt");
+//	strXMLStreamDestinationBuffer.ToFile("MyOutputFile.xml");
 
 	strDebug << strXMLStreamDestinationBuffer;
 	printf(strDebug);

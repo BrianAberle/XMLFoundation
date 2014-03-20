@@ -11206,26 +11206,30 @@ int GZipBuffToBuffDecompress (
     strm.zfree  = Z_NULL;
     strm.opaque = Z_NULL;
 
+    *dstLen = 0;
     int err = -1;
     int ret = -1;
 
     err = inflateInit2(&strm, (15 + 32)); //15 window bits, and the +32 tells zlib to to detect if using gzip or zlib
     if (err == Z_OK) {
         err = inflate(&strm, Z_FINISH);
-        if (err == Z_STREAM_END) {
+        if (err == Z_STREAM_END) 
+		{
             ret = strm.total_out;
         }
         else {
              inflateEnd(&strm);
-             return err;
+			 return err;
         }
     }
-    else {
+    else 
+	{
         inflateEnd(&strm);
         return err;
     }
-
     inflateEnd(&strm);
+	
+	*dstLen = ret;
     return ret;
 }
 

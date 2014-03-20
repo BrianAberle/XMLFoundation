@@ -784,7 +784,7 @@ void *GBTreeIterator::IncrementIterator()
 	}
 
 	// load the current GBTreeStruct for this stack frame
-	GStackPopType(m_strTreeStack, btRoot, GBTree::GBTreeStruct *);
+	GBTree::GBTreeStruct *btRoot = (GBTree::GBTreeStruct *)m_strTreeStack.Top();
 
 
 	if (!btRoot)
@@ -798,21 +798,7 @@ void *GBTreeIterator::IncrementIterator()
 		unsigned __int64 mbrInt64;
 	}Member;  
 
-
-//	..............  This is GStackPopType() manually expanded ..............
-	if (m_strFrameLocStack.m_nNext > 0)
-	{
-		m_strFrameLocStack.m_nNext--;
-		Member.mbrVoid = (void *)m_strFrameLocStack.m_arrPtr[m_strFrameLocStack.m_nNext];
-		m_strFrameLocStack.m_arrPtr[m_strFrameLocStack.m_nNext] = 0;
-	}
-	else
-	{
-		Member.mbrVoid = (void *)_GStack0;	
-	}								
-//	..............  This is GStackPopType() manually expanded ..............
-
-
+	Member.mbrVoid = m_strFrameLocStack.Top();
 
 
 	switch (Member.mbrInt) 

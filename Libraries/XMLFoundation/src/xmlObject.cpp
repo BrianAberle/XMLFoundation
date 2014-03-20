@@ -2035,7 +2035,10 @@ void XMLObject::LoadMemberMappings()
 				
 				nArraySize = GetMemberMapCount(0);
 			}
-			
+			if (m_pMemberDescriptorArray)
+			{
+				free(m_pMemberDescriptorArray);			
+			}
 			// now rather than calling new() once for each MapMember called, we will only call malloc() 1 time.
 			// The single allocation will hold an array of 1 MemberDescriptor for each call to MapMember()
 			m_pMemberDescriptorArray = malloc(sizeof(MemberDescriptor) * nArraySize);
@@ -2075,7 +2078,10 @@ void XMLObject::UnMapMembers( MemberDescriptor* btRoot/* = 0*/, bool bRealloc/* 
 
 	if (bRealloc)
 	{
-		free(m_pMemberDescriptorArray);
+		if (m_pMemberDescriptorArray)
+		{
+			free(m_pMemberDescriptorArray);
+		}
 		m_pMemberDescriptorArray = 0;
 		GetMemberMapCount(2);
 	}
@@ -2651,17 +2657,14 @@ XMLObject::~XMLObject()
 		delete m_TimeStamp; m_TimeStamp = 0;
 	if (m_pToXMLStorage)
 		delete m_pToXMLStorage; m_pToXMLStorage = 0;
-
 	if (m_pMemberDescriptorArray)
 		free(m_pMemberDescriptorArray); m_pMemberDescriptorArray = 0;
-	
-
 	if (m_pAttributes)
 		delete m_pAttributes; m_pAttributes = 0;
 	if (m_strXMLTag)
 		delete m_strXMLTag; m_strXMLTag = 0;
-//	if (m_strObjectType)
-//		delete m_strObjectType; m_strObjectType = 0;
+	if (m_strObjectType)
+		delete m_strObjectType; m_strObjectType = 0;
 	if (m_pDefaultDataHandler)
 		delete m_pDefaultDataHandler;
 

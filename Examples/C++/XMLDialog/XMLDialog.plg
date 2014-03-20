@@ -6,48 +6,6 @@
 --------------------Configuration: XMLDialog - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating command line "rc.exe /l 0x409 /fo"Debug/XMLDialog.res" /d "_DEBUG" /d "_AFXDLL" "C:\XMLFoundation\Examples\C++\XMLDialog\XMLDialog.rc"" 
-Creating temporary file "C:\Users\THEONE~1\AppData\Local\Temp\RSPD8A0.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /I "../ExObjsFromXML" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\XMLFoundation\Examples\C++\ExObjsFromXML\ObjectModel.cpp"
-]
-Creating command line "cl.exe @C:\Users\THEONE~1\AppData\Local\Temp\RSPD8A0.tmp" 
-Creating temporary file "C:\Users\THEONE~1\AppData\Local\Temp\RSPD8A1.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /I "../ExObjsFromXML" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/XMLDialog.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\XMLFoundation\Examples\C++\XMLDialog\XMLDialog.cpp"
-"C:\XMLFoundation\Examples\C++\XMLDialog\XMLDialogDlg.cpp"
-]
-Creating command line "cl.exe @C:\Users\THEONE~1\AppData\Local\Temp\RSPD8A1.tmp" 
-Creating temporary file "C:\Users\THEONE~1\AppData\Local\Temp\RSPD8A2.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /I "../ExObjsFromXML" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/XMLDialog.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\XMLFoundation\Examples\C++\XMLDialog\StdAfx.cpp"
-]
-Creating command line "cl.exe @C:\Users\THEONE~1\AppData\Local\Temp\RSPD8A2.tmp" 
-Creating temporary file "C:\Users\THEONE~1\AppData\Local\Temp\RSPD8B2.tmp" with contents
-[
-..\..\..\Libraries\Debug\XmlFoundation.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/XMLDialog.pdb" /debug /machine:I386 /out:"Debug/XMLDialog.exe" /pdbtype:sept 
-".\Debug\ObjectModel.obj"
-".\Debug\StdAfx.obj"
-".\Debug\XMLDialog.obj"
-".\Debug\XMLDialogDlg.obj"
-".\Debug\XMLDialog.res"
-"\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
-]
-Creating command line "link.exe @C:\Users\THEONE~1\AppData\Local\Temp\RSPD8B2.tmp"
-<h3>Output Window</h3>
-Compiling resources...
-Compiling...
-StdAfx.cpp
-Compiling...
-ObjectModel.cpp
-Compiling...
-XMLDialog.cpp
-XMLDialogDlg.cpp
-Generating Code...
-Linking...
 
 
 

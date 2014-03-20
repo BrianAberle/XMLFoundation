@@ -6,22 +6,6 @@
 --------------------Configuration: TheOIDProtocol - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\THEONE~1\AppData\Local\Temp\RSP8F49.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\XMLFoundation\Examples\C++\XMLObjectProtocol\TheOIDProtocol.cpp"
-]
-Creating command line "cl.exe @C:\Users\THEONE~1\AppData\Local\Temp\RSP8F49.tmp" 
-Creating temporary file "C:\Users\THEONE~1\AppData\Local\Temp\RSP8F5A.tmp" with contents
-[
-..\..\..\Libraries\Debug\XmlFoundation.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/TheOIDProtocol.pdb" /debug /machine:I386 /out:"Debug/TheOIDProtocol.exe" /pdbtype:sept 
-".\Debug\TheOIDProtocol.obj"
-]
-Creating command line "link.exe @C:\Users\THEONE~1\AppData\Local\Temp\RSP8F5A.tmp"
-<h3>Output Window</h3>
-Compiling...
-TheOIDProtocol.cpp
-Linking...
 
 
 

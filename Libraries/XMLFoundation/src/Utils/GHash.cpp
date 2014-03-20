@@ -36,8 +36,8 @@ unsigned __int64 GHash::HashKey(const char *key) const
 
 	// circumstances will (very slightly) slow down despite the potential for performance improvement
 	// This is why, by default, SpookyHash is NOT used.
-	if (m_nCollisionReduction)	
-		return SpookyHash::Hash32(key, strlen(key), 0);
+//	if (m_nCollisionReduction)	
+//		return SpookyHash::Hash32(key, strlen(key), 0);
 
 	// The following VERY simple hash normally(maybe always) produces slightly faster lookups... 
 
@@ -301,12 +301,11 @@ void GHash::RemoveAll()
 	InitTable();
 }
 
-GHash::GHash(unsigned int nPrime /* = 2503 */, int nCollisionReduction/* = 0*/) :
+GHash::GHash(unsigned int nPrime /* = 2503 */) :
 	m_nHashTableSize(nPrime),
 	m_table(0),
 	m_nDeferDestruction(0),
-	m_nCount(0),
-	m_nCollisionReduction(nCollisionReduction)
+	m_nCount(0)
 {
 	InitTable();
 }

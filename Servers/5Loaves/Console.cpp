@@ -1,6 +1,9 @@
+//#define ___XFER				http://1drv.ms/1fo7Asp
+//#define ___XFER_SRC
+//#define ___XFER_EVAL
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -13,6 +16,7 @@
 int g_paused;
 int g_doneCount;
 
+
 #ifndef _REENTRANT
 #define _REENTRANT
 #endif
@@ -21,10 +25,8 @@ int g_doneCount;
 #include <sys/types.h>
 
 #include "GThread.h"
-
 #include "XMLFoundation.h"
 #include "GException.h"
-
 
 
 
@@ -57,6 +59,15 @@ int g_doneCount;
 // The core server
 // #define SERVERCORE_CUSTOM_HTTP right here to build a Custom HTTP Server using ServerCoreCustomHTTP.cpp
 #include "../Core/ServerCore.cpp"
+
+
+#ifdef ___XFER
+	char g_szAppName[] = "Xfer";
+	#include "../../Libraries/Xfer/Init/XferInit.cpp"
+	#define __REQUIRE_CIPHERED_STARTUP_FILE
+#else
+	char g_szAppName[] = "5Loaves";
+#endif
 
 
 GString g_strFinalRunTimePassword;
@@ -215,8 +226,11 @@ int GetUserBoolean()
 }
 
 #ifdef ___XFER
-#include "../Core/XferConsoleCommand.cpp"
-#endif //___XFER
+	#include "../../Libraries/Xfer/Core/XferConsoleCommand.cpp"
+#else
+	// add your own additional hooks in this file - for easy source versioning
+	#include "../Core/ConsoleCommandsCustom.cpp"
+#endif 
 
 int g_isRunning = 1;
 void ConsoleCommand(char *pzCommand)
@@ -228,7 +242,7 @@ void ConsoleCommand(char *pzCommand)
 #ifdef _WIN32
 		GString strServiceCommand;
 
-		printf("This command sends commands to the 5Loaves Windows Service\n");
+		printf("This command sends commands to the %s Windows Service\n",g_szAppName);
 		printf("running on THIS machine. Commands: at,hp,rp,vp,sl,rl,kill,mc\n");
 		printf("work like direct console commands, +additional commands:\n");
 		printf("'stop' stops the service, arg1[I] for Immediate shutdown.\n");
@@ -268,13 +282,20 @@ void ConsoleCommand(char *pzCommand)
 			char *p = (PCHAR)MapViewOfFile( hFileMapping, FILE_MAP_WRITE, 0, 0, 0);
 			if (p)
 			{
+				#ifdef ___XFER
+					GString strPasswordOnStack(&g_XKey.pzFiller2[41],79);
+				#else
+					GString strPasswordOnStack(g_strFinalRunTimePassword);
+				#endif
+				
 				GString strIPCMessage;
 				strIPCMessage << rand() << rand() << "|";
 				strIPCMessage.write(strServiceCommand,strServiceCommand.Length());
 				strIPCMessage << rand() << rand();
 
-				GString strIPCData;
-				EnHexUUCipher(&strIPCMessage, &strIPCData, g_strFinalRunTimePassword);
+				GString strIPCData;						
+				EnHexUUCipher(&strIPCMessage, &strIPCData, strPasswordOnStack);
+										
 
 				memcpy(p,">>",2);
 				memcpy(&p[2],(const char *)strIPCData,strIPCData.Length()+1);
@@ -285,7 +306,7 @@ void ConsoleCommand(char *pzCommand)
 
 				GString strCiphered(&p[2]);
 				GString strDeCiphered;
-				DeHexUUCipher(&strCiphered, &strDeCiphered, g_strFinalRunTimePassword);
+				DeHexUUCipher(&strCiphered, &strDeCiphered, strPasswordOnStack);
 				const char *pzData = strDeCiphered;
 				char *pSep = (char *)strpbrk(pzData,"|");
 				if (pSep)
@@ -396,13 +417,7 @@ void ConsoleCommand(char *pzCommand)
 
 	else if (strCmdIn.CompareNoCase("Register") == 0 ) // Register
 	{
-		printf("This command allows you to enable premium features in 5Loaves\n");
-		printf("You must enter the feature description you want, for example\n");
-		printf("'PrivateSurf', will register this machine for that feature\n");
-		printf("Set the [System] RegisterServer  and RegisterPath before you\n");
-		printf("use this command.  The results of the command are displayed\n");
-		printf("and you must copy them to your startup file in the proper location\n");
-		printf("for the feature you want to enable.  (enter to exit command) or \n");
+		printf("This command allows you to enable premium features in %s\n",g_szAppName);
 		printf("Enter the feature you want to enable:\n");
 
 		char *pzFeature = GetUserCommand();
@@ -410,7 +425,7 @@ void ConsoleCommand(char *pzCommand)
 		{
 			char *pBuf = new char[8192];
 			char *pResult = 0;
-			int nRet = 0 ;//EnableFeature(pzFeature, pBuf, &pResult);
+			int nRet = 0 ;//EnableFeature(pzFeature, pBuf, &pResult);  // this is under development
 			if (nRet)
 			{
 				if (pResult[0] == 0)
@@ -526,7 +541,7 @@ void ConsoleCommand(char *pzCommand)
 	}
 	else if (strCmdIn.CompareNoCase("qm") == 0 ) // QueryMasterConfig
 	{
-		printf("This command allows you to view any setting in 5Loaves.txt\n");
+		printf("This command allows you to view any setting in the Config file\n");
 		printf("Enter a section without the [] (enter to exit command):\n");
 		GString strSection(GetUserCommand());
 		if (strSection.Length())
@@ -548,7 +563,7 @@ void ConsoleCommand(char *pzCommand)
 	}
 	else if (strCmdIn.CompareNoCase("mc") == 0 ) // MasterConfig
 	{
-		printf("This command allows you to change any setting in 5Loaves.txt\n");
+		printf("This command allows you to change any setting in the Config \n");
 		printf("Not all commands apply while the server is already running.\n");
 		printf("For example changing the thread pool size will have no effect\n");
 		printf("because that value is only meaningful during server startup.\n");
@@ -564,8 +579,14 @@ void ConsoleCommand(char *pzCommand)
 				char *pzValue = GetUserCommand();
 				if (pzValue && pzValue[0])
 				{
+#ifdef ___XFER_EVAL
+					// This command allows you to set ANY value for ANY entry, 
+					// You can even add Xfer users with this command, or change their password - (you cant evaluate that)
+					printf("This feature is removed from the evaluation version.\n");
+#else
 					GetProfile().SetConfig(pzSection, pzEntry, pzValue);
 					printf("New value has been set.\n");
+#endif
 				}
 			}
 		}
@@ -642,127 +663,12 @@ void ConsoleCommand(char *pzCommand)
 	// You can see how easy the console is to customize.  The console is a complete
 	// command line shell implementation that works on many platforms.  Xfer uses it.
 #ifdef ___XFER
-	else if (strCmdIn.CompareNoCase("pls") == 0 )
-	{
-		ExecXferCommand("PLS");
-	}
-	else if (strCmdIn.CompareNoCase("kil") == 0 )
-	{
-		ExecXferCommand("KIL");
-	}
-	else if (strCmdIn.CompareNoCase("prp") == 0 )
-	{
-		ExecXferCommand("PRP");
-	}
-	else if (strCmdIn.CompareNoCase("mkd") == 0 )
-	{
-		ExecXferCommand("MKD");
-	}
-	else if (strCmdIn.CompareNoCase("all") == 0 )
-	{
-		ExecXferCommand("ALL");
-	}
-	else if (strCmdIn.CompareNoCase("del") == 0 )
-	{
-		ExecXferCommand("DEL");
-	}
-	else if (strCmdIn.CompareNoCase("dir") == 0 )
-	{
-		ExecXferCommand("DIR");
-	}
-	else if (strCmdIn.CompareNoCase("run") == 0 )
-	{
-		ExecXferCommand("RUN");
-	}
-	else if (strCmdIn.CompareNoCase("enc") == 0 )
-	{
-		ExecXferCommand("ENC");
-	}
-	else if (strCmdIn.CompareNoCase("dec") == 0 )
-	{
-		ExecXferCommand("DEC");
-	}
-	else if (strCmdIn.CompareNoCase("ren") == 0 )
-	{
-		ExecXferCommand("REN");
-	}
-	else if (strCmdIn.CompareNoCase("get") == 0 )
-	{
-		ExecXferCommand("GET");
-	}
-	else if (strCmdIn.CompareNoCase("put") == 0 )
-	{
-		ExecXferCommand("PUT");
-	}
-	else if ( strCmdIn.CompareNoCase("STS") == 0  )
-	{
-		printf("[Enter]=all jobs    [A]=Active jobs  [id(|id)]=specific job(s)\n");
-		GString strJobList (GetUserCommand());
-		
-		printf("[Enter] for normal view  [D] for Detailed view\n");
-		GString strView (GetUserCommand());
+	#include "../../Libraries/Xfer/Core/XferConsoleCommandHook.cpp"
+#else
+	// add your own additional hooks in this file - for easy source versioning
+	#include "../Core/ConsoleCommandsCustomHook.cpp"
+#endif 
 
-		XferCommand Cmd(strCmdIn);
-		Cmd.nReadTimeout = 5;
-		if (strJobList.CompareNoCase("A") == 0)
-		{
-			Cmd.strCmdParam1 << '1';
-		}
-		else
-		{
-			Cmd.strCmdParam1 << '0' << strJobList;
-		}
-
-		Cmd.Go();
-		int nRows = 0;
-		if (Cmd.strCommandResult.Length())
-		{
-			GString strHeader;
-			if (strView.CompareNoCase("D") == 0)
-				strHeader.Format("   id      % 4s% 4s% 4s% 4s% 12s% 4s% 4s% 10s\n","Type","Job","Pct","Vfy","Time (sec)","#", "of","Size");
-			else
-				strHeader.Format("% 4s% 4s% 4s% 4s% 4s% 10s\n","Type","Job","Pct", "#", "of","Size");
-
-
-			GStringList lstRows("\n",Cmd.strCommandResult);
-			GStringIterator itR(&lstRows);
-			if (itR())
-				printf(strHeader);
-
-			while (itR())
-			{
-				GStringList lstCols("\r",itR++);
-				GStringIterator itC(&lstCols);
-				if (!itC())
-					break;
-				nRows++;
-				const char *a = itC++; // type "Xfer"
-				const char *b = itC++; // action "get" or "put"
-				const char *c = itC++; // pct done
-				const char *d = itC++; // verified "yes" or "no"
-				const char *e = itC++; // current file index, (1)
-				const char *f = itC++; // total files expected, (1)
-				const char *g = itC++; // total transfer size
-				const char *h = itC++; // elapsed time
-				const char *i = itC++; // key
-				const char *i2 = itC++;// IsRunning 'yes' or 'no'
-				const char *j = itC++; // full path and file name
-				const char *k = itC++; // error
-
-				if (strView.CompareNoCase("D") == 0)
-					strHeader.Format("% 10s % 4s% 4s% 4s% 4s% 12s% 4s% 4s% 10s  %s[%s]\n",i,a,b,c,d,h,e,f,g,j,k);
-				else
-					strHeader.Format("% 4s% 4s% 4s% 4s% 4s% 10s  %s[%s]\n",a,b,c,e,f,g,GDirectory::LastLeaf(j),k);
-				
-				printf(strHeader);
-			}
-		}
-		if (nRows == 0)
-		{
-			printf("No jobs match criteria\r\n");
-		}
-	}
-#endif // ___XFER
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	else if (strCmdIn.CompareNoCase("Decrypt") == 0 )
@@ -770,7 +676,7 @@ void ConsoleCommand(char *pzCommand)
 		GString strKey; GString strInFile; GString strOutFile; GString strErrorOut;
 
 		printf("Enter the complete path to the crypted file [enter to cancel]\n");
-		printf("Examples [c:\\5Loaves.bin] or [/5Loaves.bin]\n");
+		printf("Examples [c:\\5LoavesConfig.xbin] or [/XferConfig.xbin]\n");
 		strInFile = GetUserCommand();
 		if (strInFile.Length())
 		{
@@ -800,7 +706,7 @@ void ConsoleCommand(char *pzCommand)
 		GString strKey; GString strInFile; GString strOutFile; GString strErrorOut;
 
 		printf("Enter the complete path to the clear text file [enter to cancel]\n");
-		printf("Examples [c:\\5Loaves.txt] or [/5Loaves.txt]\n");
+		printf("Examples [c:\\5LoavesConfig.xbin] or [/XferConfig.xbin]\n");
 		strInFile = GetUserCommand();
 		if (strInFile.Length())
 		{
@@ -809,7 +715,7 @@ void ConsoleCommand(char *pzCommand)
 			if (strKey.Length())
 			{
 				printf("Enter the complete path to the destination file \n");
-				printf("Examples [c:\\5LoavesStartup.bin] or [/5LoavesStartup.bin]\n");
+				printf("Examples [c:\\5LoavesConfig.xbin] or [/5LoavesConfig.xbin]\n");
 				strOutFile = GetUserCommand();
 				if (strOutFile.Length())
 				{
@@ -873,102 +779,174 @@ void server_build_check();
 
 int main(int argc, char * argv[])
 {
-//  for new platform ports enable the following code, and compare it to the output of a good build
-//  This tests all the algorithms to be sure they compiled correctly.
+// After a new platform port, enable the following code, and compare it to the output of a good build.
+// This will test all the algorithms to be sure they compiled correctly.  The byte ordering is sometimes
+// backwards (or forwards) which causes TwoFish to cipher backwards (or forwards). An executable compiled
+// backwards works great with all other backwards builds ciphering and deciphering between them.  
+// We all need to order the integer the same only for the sake of TCP/IP and protocols. Therefore "network byte ordering" exists.
+// and likewise for a block cipher based protocol, so - After a new platform port - run server_build_check() 
+// to be sure your bits are in order.
+// --------------------------------
 //	g_LogCache = 0;
 //	g_LogStdOut = 1;
 //	server_build_check();
 //	return 0;
+// --------------------------------
+#ifdef ___XFER
+	if (!XferProcessInit())
+	{
+		return 0;
+	}
+#endif
+
 
 #ifndef _WIN32
 	struct termio original_io;
 	SetTermIO(1, &original_io, 1);
 #endif
 
+
+
 	// check for a ciphered startup file
-	// current directory or root named "5LoavesStartup.bin"
+
+	
+	// Look in current directory for "5LoavesConfig.xbin", XferConfig.xbin, or MyAppConfig.xbin
 	GString strCipheredConfigFile;
 	int bUseCipheredStartup = 1;
-#ifdef _WIN32					
-	strCipheredConfigFile = "c:\\5LoavesStartup.bin";
-#else
-	strCipheredConfigFile = "/5LoavesStartup.bin";
-#endif
+	bool bHasSetStartupFile = 0;
+	strCipheredConfigFile << g_szAppName << "Config.xbin";
+
+
 	struct stat sstruct;
 	int result = stat(strCipheredConfigFile, &sstruct);
 	if (result != 0)
 	{
 		// look in the current directory
-		strCipheredConfigFile = "5LoavesStartup.bin";
 		int result = stat(strCipheredConfigFile, &sstruct);
 		if (result != 0)
 		{
-			// not using a ciphered startup
-			bUseCipheredStartup = 0;
+			// also try one folder below the current directory - mostly for the sake of a debugger
+			strCipheredConfigFile = "../";
+			strCipheredConfigFile << g_szAppName << "Config.xbin";
+			int result = stat(strCipheredConfigFile, &sstruct);
+			if (result != 0)
+			{
+				bUseCipheredStartup = 0; // the ciphered file was not found
+			}
 		}
 	}
 	if (bUseCipheredStartup)
 	{
 		GString strPassword;
-//		GString strPassword("my hard coded password");
 
 		// get the password from stdin, turn off echo where possible
 		if (strPassword.IsEmpty())
 		{
-			printf( "Enter startup password OR press enter:\n" );
+			printf( "Enter an Over-ride password OR press enter:\n" );
 			strPassword = GetUserCommand(0);
 		}
 
-		if (strPassword.Length())
-		{
-			GString strConfigFileDefault;
 
-			// load the crypted disk file into clear text memory
-			char *pDest;
-			int nDestLen;
+		if (!strPassword.Length())
+		{
+			// add your own code here to embed a passward used between your application and the config file if it must be ciphered.
+			// strPassword << "my hard coded password";
+			#ifdef ___XFER
+				strPassword.Write(&g_XKey.pzFiller2[41],79);
+			#endif
+		}
+		if (!strPassword.Length())
+		{
+			#ifdef __REQUIRE_CIPHERED_STARTUP_FILE
+				printf("Password is required\n");
+				return -1;
+			#else
+			#endif
+		}
+
+		// open the ciphered file, read it into [strCfgData] decipher it into [strDest] and set the GProfile from the [strDest] value
+		try
+		{
+			GString strCfgData;
+			strCfgData.FromFile(strCipheredConfigFile);
+			GString strDest(8192);
 			GString strErrorOut;
-			if (FileDecryptToMemory(strPassword, strCipheredConfigFile, &pDest, &nDestLen, strErrorOut))
+			if (DecryptMemoryToMemory(strPassword, strCfgData,strCfgData.GetLength(), strDest,  strErrorOut))
 			{
-				// parse into the profile data structures
-				SetProfile(new GProfile(&pDest[7], nDestLen));
-				g_strFinalRunTimePassword = strPassword;
-				delete pDest;
+				// delete the default (and empty) GProfile object and create a new one
+				delete SetProfile(new GProfile((const char *)strDest, strDest.Length(), 0));
+				bHasSetStartupFile = 1;
 			}
 			else
 			{
-				printf("Auto Start using[%s] Failed[%s]",(const char *)strCipheredConfigFile,(const char *)strErrorOut);
-				return -1;
+				printf("%s",strErrorOut._str);
 			}
 		}
+		catch ( GException & )
+		{
+		}
+
 	}
-	else
+	
+	if (!bHasSetStartupFile)
 	{
+#ifdef __REQUIRE_CIPHERED_STARTUP_FILE
+		printf("Could not find %sConfig.xbin\n",g_szAppName);
+		return -1;
+#else
 		g_strFinalRunTimePassword = "Password"; // no password
 		if (argc > 1)
 		{
-			SetProfile(new GProfile(argv[1],"FIVE_LOAVES_CONFIG"));
+			delete SetProfile(new GProfile(argv[1],0));
 		}
 		else
 		{
-			SetProfile(new GProfile("5Loaves.txt","FIVE_LOAVES_CONFIG"));
+			// 3/19/2014 - when bUseXML is set to 1 it switches the application config file to XML
+			// Notice that it is also passed into GProfile() as the 3rd argument to let it know to expect XML
+			// ------------------------
+			bool bUseXML = 1; // change it to 0 for an INI based application
+
+			char *pExt = (bUseXML) ? ".xml" : ".txt";
+			GString strConfigFile(g_szAppName);
+			strConfigFile << pExt;
+
+			GString strConfigData;
+			if (!strConfigData.FromFile( strConfigFile, 0 )) // look in the current directory
+			{
+				strConfigFile = "../"; // over-write the value 
+				strConfigFile << g_szAppName << pExt; // append file name and .ext
+				if (!strConfigData.FromFile( strConfigFile )) // look back one directory
+				{
+					printf("Could not find %s.txt\n",g_szAppName);
+				}
+			}
+			strCipheredConfigFile = strConfigFile; // store the startup file we used
+			delete SetProfile(new GProfile(strConfigData._str, strConfigData._len, bUseXML ));
 		}
+#endif
 	}
 
+	// 3/19/2014  converting INI to XML = set bUseXML to 0, then uncomment this code
+	// ------------------------
+	// GString s;
+	// GetProfile().WriteCurrentConfig(&s,1);
+	// s.ToFile("c:\\log\\config.xml");
 
 	GString strStartupMessage;
 	strStartupMessage << "Using [";
 	if (bUseCipheredStartup && strCipheredConfigFile.Length())
 		strStartupMessage << strCipheredConfigFile;
 	else
-		strStartupMessage << GetProfile().LastLoadedConfigFile();  //"5Loaves.txt";
+		strStartupMessage << strCipheredConfigFile;
 	strStartupMessage << "]";
 
+	// build the shell prompt like this:
+	//	char *   = "\nXfer>";
+	//	char *   = "\n5Loaves>";
+	//	char *   = "\nMyShell>";
+	GString strPrompt("\n");
+	strPrompt << g_szAppName << ">";
 
-#ifdef ___XFER
-	char *prompt = "\nXfer>";
-#else
-	char *prompt = "\n5Loaves>";
-#endif
 	ExceptionHandlerScope durationOfprocess;
 NEVER_DIE:
 	XML_TRY			
@@ -981,7 +959,7 @@ NEVER_DIE:
 
 			char *pzFirstCommandRead = GetUserCommand();
 			
-			printf(prompt);
+			printf( strPrompt._str );
 			
 			while( g_isRunning )
 			{
@@ -989,7 +967,7 @@ NEVER_DIE:
 				if (pzCommand)
 				{
 					ConsoleCommand(pzCommand);
-					printf(prompt);
+					printf( strPrompt._str );
 					fflush(stdout);
 				}
 				else
@@ -1002,25 +980,23 @@ NEVER_DIE:
 					if (argc == 1) // if startup arguments are passed in then do not display the warning or non functioning prompt
 					{
 						printf("\nCommand line input has been disabled\n");
-						printf(prompt);
+						printf( strPrompt._str );
 
 					}
 					else // since we have no console prompt, write a pidfile 
 					{
-						// 
 						#ifndef _WIN32
-							#ifdef ___XFER
-								const char *pzPIDFile = GetProfile().GetStringOrDefault("System", "PidFile", "var/run/xfer.pid");
-							#else
-								const char *pzPIDFile = GetProfile().GetStringOrDefault("System", "PidFile", "var/run/5loaves.pid");
-							#endif
+							GString strUnixPIDFile("var/run/");
+							strUnixPIDFile << g_szAppName << ".pid";
+							strUnixPIDFile.MakeLower();  
+
+							const char *pzPIDFile = GetProfile().GetStringOrDefault("System", "PidFile", strUnixPIDFile );
 
 						    GString strPIDFile;
 							strPIDFile << (long) getpid();
 							unlink(pzPIDFile);
 							strPIDFile.ToFile(pzPIDFile);
 						#endif
-					
 					}
 
 					// 10 second Sleep

@@ -16,7 +16,7 @@
 
 #include "GString.h"
 #include "GStringList.h"
-#include "GProfile.h"
+//#include "GProfile.h"
 
 class GException : public GString
 {
@@ -62,7 +62,6 @@ public:
 	const char *ToXML(const char *pzExceptionParent = "TransactResultSet");
 };
 
-GProfile &GetErrorProfile();
 void SetErrorDescriptions(const char *pzErrData);
 class GlobalErrorLanguage
 {

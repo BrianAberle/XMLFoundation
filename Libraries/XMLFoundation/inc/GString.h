@@ -88,19 +88,34 @@ protected:
 class GString  : public GStringType
 {
 public: 
-	// _str and _len are conceptually protected, or private.  Best advice: DO NOT ACCESS THEM DIRECTLY.  
-	// however - you can access them directly - to avoid a stack call - although inlined methods 'should' avoid that stack call
-	// therefore C++ allows you to keep them protected, or private to enforce an 'Object Oriented' design which
-	// generally it is better with respect to the best abstract and extendable design approach.
+	// _str and _len are conceptually protected, or private.  Best advice: UNDERSTAND HOW GSTRING WORKS.
+	// Know that in MY code, I nearly NEVER change the length of a GString by assigning a value directly to _len.
+	// Look how much wiser it is to use SetLength().  I like MY code to be clear and readable and i have found that
+	// the publicity of this normally protected data can be helpful in that regard.  Look at GetLength() then
+	//
+	// look at the difference in this:		foo(s._len)     vs      foo(s.GetLength())
+	//										
+	// likewise consider this:				foo( (char *)(const char *)s )    or        
+	//										foo( (char *)s.StartingAt(0) )    or   
+	//										foo(s.Buf(0))   
+	//								   vs.  foo(s._str)
+	// Note that Buf() was already a little risque in style(aka 'in the buff').  It was added many years ago 
+	// for this very reason of adding simplistic readability amid complex totality.
+	// It would be wise to understand how your GString works or your might put it on backwards and everyone will laugh at you.
+	//
 	// however - the publicity of _str and _len allows direct memory addressing (guaranteed) without a method call.  
 	// This allows a debugger to treat the variable a bit different:
 	// For example - this is the 4th byte of a GString
 	// ptrToGString->_str[3] - this code will NOT call the operator [] - so there is no index bounds checking
 	// this also allows the debugger to 'view' a (guaranteed vs inlined) variable
-	// Once again: BEST Advice: never use _str or _len directly - it defeats Object Oriented design.
-	// however - There is a time and a place for everything under the sun.  ServerCore.cpp is filled with goto's.
+	//
+	// GString s(512);								// KNOW how big your _str is
+	// GetModuleFileName(0, s._str, s._len);		// KNOW that GetModuleFileName() will not write beyond the length
+	// s._len = strlen(s._str);						// KNOW that the value returned from strlen() is within the bounds WITHOUT exception
+	//
 	char *_str;	   // pointer to string data
 	__int64  _len; // length of string data not counting terminating null
+
 protected:
 	__int64  _max; // current memory allocation size of _str
     unsigned short* _pWideStr; // Unicode working storage, type is (wchar_t *)
@@ -419,6 +434,7 @@ public:
 	//	  or use 		   char ch = s.GetAt(0);	which will widen nIdx automatically
 	// const char *p1 = &s[0];
 	// const char *p2 = s.Buf();   <------- p1 == p2 : Using the p2 approach is easier to read.
+	// const char *p3 = s._str;   <------- p1 == p2 == p3 : This is OK too - but dont tell anyone.
 	//
 	// Additional Note: operator[] provides a 32 and 64 bit overload because unlike class "methods" which NEED only a 64 bit interface
 	//					to support 32 and 64 bit arguments,  "operator overloads" will NOT implicitly convert 32 bit arguments to 64
@@ -529,6 +545,9 @@ public:
 	__int64 ReverseFind( char chToFind ) const;
 	__int64 ReverseFind( char chToFind, __int64 nStart ) const;
 	__int64 ReverseFind( const char *pzToFind, __int64 nStart = -1, int bMatchCase = 0 ) const;
+	// s = "c:\The\Path\Folder1\Folder2\File.exe"
+	// example: s.SetLength(s.ReverseFindNth("\\",2));
+	// s = "c:\The\Path\Folder1"
 	__int64 ReverseFindNth( const char *pzToFind, int Nth) const;
 	
 	// starting from the end of the string, return the index of the first char in this that matches any char in pzToFind

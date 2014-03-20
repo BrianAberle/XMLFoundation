@@ -38,9 +38,9 @@
 // state of the replication process in a distributed data structure that uses XML for data markup.
 //
 // This is a major performance improvement utilizing much less memory and CPU.
-// That is a protocol.  Speed is the reason. 
+// This is a protocol.  Speed is the reason. 
 // Why was ETag added to HTTP in 1.1?  
-// HTTP 1.0 didnt cache - I remember when ETag support was added to ServerCore.cpp for HTTP 1.1
+// HTTP 1.0 didnt cache - I remember when ETag was added to HTTP 1.1 (ServerCore.cpp uses it)
 // Caching was a needed feature in HTTP, no less than the "oid" in XML.
 // so should we call this XML++, or XML 1.2, or should we ignore it because its politically inconvenient?
 //
@@ -48,7 +48,7 @@
 // The 'IndexObjects' example times an "Update" vs "Update Faster" and you can see the difference in that
 // example also. However, that example was not designed as a case to emphasize exactly how major of a 
 // performance difference it is.  The larger the temporary object, the more magnified the time and memory in 
-// dealing with it - that example uses many very small objects - even with the very small objects
+// dealing with it - that example uses many very small objects - and even with those very small objects
 // you can see that the oid update is faster - look how much faster oid updates are with 
 // a larger more complex object .....
 
@@ -512,7 +512,7 @@ int main(int argc, char* argv[])
 // now here is the proof:
 
 	// update object ID 1
-	GPerformanceTimer *pGTime = new GPerformanceTimer("Update Fast",0);
+	GPerformanceTimer *pGTime = new GPerformanceTimer("Update Slow",0);
 	Obs.FromXMLX(pzXML1UpdateSlow);
 	delete pGTime;
 
@@ -523,7 +523,7 @@ int main(int argc, char* argv[])
 // NOTE we did not add a new object we updated an object
 
 
-	GPerformanceTimer *pG2Time = new GPerformanceTimer("Update Faster",0);
+	GPerformanceTimer *pG2Time = new GPerformanceTimer("Update Fast",0);
 	Obs.FromXMLX(pzXML1UpdateFast);
 	delete pG2Time;
 

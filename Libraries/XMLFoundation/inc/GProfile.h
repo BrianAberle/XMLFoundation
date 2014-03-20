@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -14,34 +14,111 @@
 #ifndef __PROFILE_H__
 #define __PROFILE_H__
 
-// GProfile uses 
-//	GString, GStringList
-
+// GProfile stores application configuration settings.  GProfile is much like the Windows Registry in design.
+// The Windows Registry is rightly called a database, It has it's own format.  
+// GProfile has can use either INI or XML format.
+//
+// From 2000 up utill 2014 GProfile used only the .INI file format which is VERY easy to hand edit,
+// and it is VERY easy to read.  In both categories, Readability and Hand-editability INI wins over XML.
+//
+///////////////////////////////////////////////////////////////////
+// This is the exact technical definition of INI format:
+///////////////////////////////////////////////////////////////////
 // Comments start with ';'
 // Section names are enclosed in []
-// All section values are name=value pairs
+// All section values are "name=value"pairs
 // All white space is ignored
 //
-// Example:
+///////////////////////////////////////////////////////////////////
+// This is INI data
+///////////////////////////////////////////////////////////////////
+//
+//									;a brief note about INI
 //		[Settings]
 //			Cache=true
 //			Errors=/errors/english/errors.txt
 //			Rules=/rules/
-
-#include "GList.h"
-#include "GString.h"
+//
+///////////////////////////////////////////////////////////////////
+// There are several ways to model this same data in XML 
+// This is one way:
+///////////////////////////////////////////////////////////////////
+//
+//		<configuration>
+//			<section name="Settings">
+//				<setting name="Cache">True</setting>
+//				<setting name="Errors">/errors/english/errors.txt</setting>
+//				<setting name="Rules">/rules/</setting>
+//			</section>
+//		<configuration>
+//
+//
+///////////////////////////////////////////////////////////////////
+// This is another way. This is the way GProfile does it.<----------------------------------
+///////////////////////////////////////////////////////////////////
+//
+//		<configuration>
+//			<section name="Settings">
+//				<setting name="Cache" value="True"/>
+//				<setting name="Errors" value="/errors/english/errors.txt"/>
+//				<setting name="Rules" value="/rules/"/>
+//			</section>
+//		<configuration>
+//
+//
+// When you consider hand entered values, in a .txt file as the basis of your
+// application configuration system - then INI format is by far the best solution
+// due to the simplicity designed for hand edit cut and paste.  INI does not 
+// require paired quotes around anything.  A frequently hand-edited config file
+// is far more likely to experience a parsing error using XML which must also be
+// properly escaped &amp; well formed.  A parsing error could == system failure.
+//
+// BUT - many or MOST applications are NOT HAND EDITED, the config file is generated.
+// As you will see in the GProfile implementation, it is easier - and far less lines
+// of code to use XML as the data storage format. GProfile calls FromXML() and skips 
+// the hand written INI parsing code(mostly handled by GString) ProfileParse() and GetLine()
+//
+// Not only do many applications generate the file, they encrypt it - so all that
+// concern about hand editing is Null and Void if the storage is encrypted and only machine generated.
+// In that case, XML provides a more 'open' solution with respect to integration.
+// In my own applications, they integrate tightly via GProfile.  One app can
+// set a GProfile value that triggers another app to act on the changed setting.
+// Since GProfile provides this kind of integration, the additional support of XML is justified.
+// 
+//
 #include "GStringList.h"
 #include "GBTree.h"
 
 
-class GProfile
+#include "xmlObject.h"
+class GProfileEntry : public XMLObject
+{
+public:
+	GString m_strName;
+	GString m_strValue;
+	virtual void MapXMLTagsToMembers();
+	DECLARE_FACTORY(GProfileEntry, setting)
+};
+
+
+class GProfileSection : public XMLObject
+{
+public:
+	GString		m_strName;
+	GList		m_lstNVP;
+	virtual void MapXMLTagsToMembers();
+	DECLARE_FACTORY(GProfileSection, section)
+};
+
+
+class GProfile : public XMLObject
 {
 	typedef int(*fnChangeNotify)(const char *,const char *,const char *);
 	GBTree	*m_pTreeNotify;
 	int ChangeNotify(const char *pzSection, const char *pzEntry, const char *pzValue);
 	long SetConfig(const char *szSection, const char *szEntry, const char *nValue, short bSetDefault);
 	GStringList lstChangeNotifications;
-
+	bool m_bIsXML; // the storage format is either INI or XML
 public:
 	// RegisterChangeNotification usage:
 	// add this global function in your code:
@@ -81,27 +158,11 @@ public:
 	GBTree *AttachNotifications(GBTree *pTree);
 	void ExecuteAllNotifications();
 
-	typedef struct
-	{
-		GString m_strName;
-		GString m_strValue;
-	} NameValuePair;
-
-	typedef struct
-	{
-		GString		m_strName;
-		GList		m_lstNVP;
-	} Section;
-
 protected:
-
-	GString m_strEnvOverride;
-	GString m_strBaseFileName; // no path
-
 	GList m_lstSections;
 
-	Section *FindSection(const char *szSection);
-	NameValuePair *FindKey(const char *szKey, Section *pSection);
+	GProfileSection *FindSection(const char *szSection);
+	GProfileEntry *FindKey(const char *szKey, GProfileSection *pSection);
 
 	GString m_strFile;
 	short m_bCached;
@@ -114,7 +175,7 @@ protected:
 	void ThrowLastError(const char *pzFile);
 #endif
 	void ProfileParse(const char *szBuffer, __int64 dwSize);
-	long WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *pDest, const char *pzSection = 0);
+	long WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *pDest, const char *pzSection = 0, bool bWriteXML = 0);
 
 public:
 	const char *LastLoadedConfigFile(){return m_strFile;}
@@ -123,7 +184,7 @@ public:
 	// The existing value will be repalced with the supplied value when it does exist
 	long SetConfig(const char *szSection, const char *szEntry, const char *pzValue);
 	long SetConfig(const char *szSection, const char *szEntry, int nValue);
-	long SetConfig(const char *szSection, const char *szEntry, long lValue);		// short bSetDefault = 0
+	long SetConfig(const char *szSection, const char *szEntry, long lValue);		
 	long SetConfig(const char *szSection, const char *szEntry, __int64 lValue);
 	long SetConfigBinary(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength);
 	long SetConfigCipher(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength);
@@ -144,10 +205,10 @@ public:
 	// Writes memory config to a given destination.
 	// An existing file will be overwritten, GString will be appended to.
 	// Returns the number of bytes written to the destination on success or 0 for failure.
-	long WriteCurrentConfig(const char *pzPathAndFileName);
-	long WriteCurrentConfig(GString *pzDestStr);
+	long WriteCurrentConfig(const char *pzPathAndFileName, bool bWriteXML = 0);
+	long WriteCurrentConfig(GString *pzDestStr, bool bWriteXML = 0);
 	// just like WriteCurrentConfig(), but only serialize a single [section]
-	long WriteCurrentConfigSection(GString *pzDestStr, const char *pzSection);
+	long WriteCurrentConfigSection(GString *pzDestStr, const char *pzSection, bool bWriteXML = 0);
 
 
 	// function retrieves the names of all sections
@@ -159,7 +220,7 @@ public:
 	//	GListIterator itNVP(GetProfile().GetSection("MySection"));
 	//	while (itNVP())
 	//	{
-	//		GProfile::NameValuePair *pNVP = (GProfile::NameValuePair *)itNVP++;
+	//		GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 	//		// pNVP->m_strName
 	//		// pNVP->m_strValue
 	//	}
@@ -169,8 +230,8 @@ public:
 	int GetSectionEntryCount(const char *szSectionName);
 
 	// RemoveSection() and AddSection() do as their names suggest affecting an entire [Section] with all entries in it
-	GProfile::Section *RemoveSection(const char *szSection);
-	void AddSection(GProfile::Section *pS, int bIssueChangeNotification = 1);
+	GProfileSection *RemoveSection(const char *szSection);
+	void AddSection(GProfileSection *pS, int bIssueChangeNotification = 1);
 
 	// deletes an entry under the specified [Section]
 	int RemoveEntry(const char *szSection, const char *szEntry);
@@ -204,7 +265,7 @@ public:
 
 
 	////////////////////////////////////////////////////////////////
-	// The following methods return a specified data type or 
+	// The following methods return a specified data type 
 	// WARNING: these throw a GException if bThrowNotFound = true
 	// This is handy when loading large blocks of required settings, 
 	// just try--catch the whole block.  
@@ -223,37 +284,33 @@ public:
 
 	
 
-	// base file name like "txml.txt" - and - ENV_VAR_NAME
-	// for use in a statement like this: 
-	// SetProfile(new GProfile("5Loaves.txt","FIVE_LOAVES_CONFIG"));
-	GProfile(const char *pzFileName, const char *pzEnvOverride );
-
 	// load the profile configuration file yourself, 
 	// and create this object "with no disk config file"
-	GProfile(const char *szConfigData, __int64 dwSize);
+	GProfile(const char *szConfigData, __int64 dwSize, bool bIsXML);
 	
 	// load from file, no environment override allowed
-	GProfile(const char *pzFilePathAndName);
+	GProfile(const char *pzFilePathAndName, bool bIsXML);
 
 	// create an empty profile.
 	// you will have to add values using OverRideConfig()
 	GProfile();
-
-
 	~GProfile();
+
+	virtual void MapXMLTagsToMembers();
+	DECLARE_FACTORY(GProfile, configuration)
 };
 /*
-class NameValuePairIterator
+class GProfileEntryIterator
 {
 	GList::Node *pDataNode;
 	GList *pTList;
 public:
 	GList::Node *pCurrentNode;    // used to return reference to data
 
-	NameValuePairIterator(const GList *pList);
-	~NameValuePairIterator() {};
+	GProfileEntryIterator(const GList *pList);
+	~GProfileEntryIterator() {};
 	int operator ! () const;
-	const GProfile::NameValuePair *operator ++ (int);
+	const GProfileEntry *operator ++ (int);
 };
 */
 

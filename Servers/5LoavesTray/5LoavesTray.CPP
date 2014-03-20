@@ -55,7 +55,7 @@ BOOL C5LoavesTrayApp::InitInstance()
 		GString strSameDirStartupFile(pzName);
 		strSameDirStartupFile.TrimRightBytes(4);
 
-		GString strFile("c:\\5LoavesStartup.bin");
+		GString strFile("c:\\5LoavesConfig.xbin");
 		FILE *fpTst = fopen(strSameDirStartupFile,"r");
 		if (fpTst)
 		{

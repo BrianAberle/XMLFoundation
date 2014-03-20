@@ -26,6 +26,27 @@
 // C) Test it on a machine with more memory.
 
 
+///////////////////
+// GSparseHash and GHash are interesting to compare.  For a Lookup() GSparseHash and GHash are very close.
+// The big difference is the time it takes to iterate the entire collection.
+// The iteration times VARY(differ) VERY(lots) GREATLY between debug and release builds.
+
+// --------  Iteration Times  --------
+// GHash DEBUG   		  269,400 microseconds
+// GHash Release 		   98,753 microseconds
+// GSparesHash DEBUG	7,112,693 microseconds
+// GSparesHash RELEASE	    8,216 microseconds
+
+// We should mostly disregard debug build performance numbers, even though they are so interesting:
+// GSparseHash can be iterated much faster than GHash(in a Release build where it matters)
+// Both GList and GQSortArray can be iterated over 2x as fast as GSparseHash 
+//    ( GSparseHash and GHash greatest attribute is Lookup speed.)
+// A GBTree is the only structure to use if you need to sort alphabetically because it is 
+//  the only keyed data structure iterator that does that.
+///////////////////
+
+
+
 // you may want to set this to 'true' or 1 if you are going to run this in the debugger.
 bool bSmallTest = 0;
 
@@ -211,7 +232,7 @@ class AllTheWords: public XMLObject
 public:
 	DECLARE_FACTORY(AllTheWords, AllWords)
 	AllTheWords() {m_nSort = 0;}
-	AllTheWords(int nSort) : m_quickSortWords(500000,10000) { m_listWords.EnableCache(); m_nSort = nSort;  ModifyObjectBehavior(NO_OBJECT_DATA); }
+	AllTheWords(int nSort) : m_quickSortWords(500000,10000), m_hashTableWords(777001)  { m_listWords.EnableCache(); m_nSort = nSort;  ModifyObjectBehavior(NO_OBJECT_DATA); }
 	virtual ~AllTheWords(){  }
 	__int64 Iterate()
 	{
@@ -316,6 +337,7 @@ int main(int argc, char* argv[])
 //			for(int i=2; i < 3; i++) // if you want to test only  - GBTree
 //			for(int i=3; i < 4; i++) // if you want to test only  - GHash
 //			for(int i=4; i < 5; i++) // if you want to test only  - GSparseHash
+//			for(int i=3; i < 5; i++) // GHash and GSparseHash
 			for(int i=0; i < 5; i++) // ---------------------------------------->Run all of them
 			{
 			if (!g_UseSparseHash && i==4)

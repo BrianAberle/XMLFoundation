@@ -20,21 +20,38 @@ static char SOURCE_FILE[] = __FILE__;
 #include "GException.h"
 #include "GDirectory.h"
 #include "Base64.h"
-#include <stdlib.h> //for: getenv()
+//#include <stdlib.h> //for: getenv()
 #include <string.h> //for: memcpy()
 #include <stdio.h>  //for: fopen(),fclose();
-
-
 #ifndef _WIN32
 	#include <errno.h>
 #endif
-
-
 #ifdef _WIN32
 #include <Windows.h>
 #endif
-
 #include "TwoFish.h"
+
+
+
+
+IMPLEMENT_FACTORY(GProfileSection, section);
+IMPLEMENT_FACTORY(GProfileEntry, setting);
+IMPLEMENT_FACTORY(GProfile, configuration)
+void GProfile::MapXMLTagsToMembers()
+{
+	MapMember(&m_lstSections, GProfileSection::GetStaticTag());
+}
+void GProfileEntry::MapXMLTagsToMembers()
+{
+	MapAttribute(&m_strName,"name");
+	MapAttribute(&m_strValue,"value");
+}
+void GProfileSection::MapXMLTagsToMembers()
+{
+	MapAttribute(&m_strName,"name");
+	MapMember(&m_lstNVP, GProfileEntry::GetStaticTag());
+}
+
 
 static GProfile *g_AlternateProfile = 0;
 static GProfile *g_pDefaultProfile = 0;
@@ -72,45 +89,16 @@ GProfile &GetProfile()
 }
 
 
-GProfile::GProfile(const char *pzFileName, const char *pzEnvOverride )
+// create a profile from the supplied file name
+GProfile::GProfile(const char *pzFilePathAndName, bool bIsXML/* = 0 */)
 	: m_bCached(0)
 {
+	m_bIsXML = bIsXML;
 	m_pTreeNotify = new GBTree();
-	m_strEnvOverride = pzEnvOverride;
-	m_strBaseFileName = pzFileName; // no path
-
-	GString strConfigFileDefault;
-
-	if (pzFileName && pzFileName[0])
+	if (pzFilePathAndName && pzFilePathAndName[0])
 	{
-		// see if we can open the file from the current or supplied path
-		// if not look for it in the root of the file system
-		FILE *fp = fopen(pzFileName,"rb");
-		if (fp)
-		{
-			fclose(fp);
-			strConfigFileDefault = pzFileName;
-		}
-		else
-		{
-		#ifdef _WIN32					// like "txml.txt"
-			strConfigFileDefault.Format("c:\\%s",pzFileName);
-		#else
-			strConfigFileDefault.Format("/%s",pzFileName);
-		#endif
-		}
-	}
-	if (pzEnvOverride && pzEnvOverride[0])
-	{
-#ifndef __WINPHONE
-		// env var like "XML_CONFIG_FILE"
-		if (getenv(pzEnvOverride))
-			// Use the system environment setting
-			m_strFile = getenv(pzEnvOverride);
-		else
-			// Use the default
-			m_strFile = strConfigFileDefault;
-#endif
+		// use the supplied pzFilePathAndName - it will be loaded when data is called for
+		m_strFile = pzFilePathAndName;
 	}
 }
 
@@ -118,10 +106,19 @@ GProfile::GProfile(const char *pzFileName, const char *pzEnvOverride )
 //
 // load the profile configuration file yourself, 
 // and create this object "with no disk config file"
-GProfile::GProfile(const char *szBuffer, __int64 dwSize)
+GProfile::GProfile(const char *szBuffer, __int64 dwSize, bool bIsXML/* = 0*/)
 {
+	m_bIsXML = bIsXML;
 	m_pTreeNotify = new GBTree();
-	ProfileParse(szBuffer, dwSize);
+	if (m_bIsXML)
+	{
+		FromXMLX(szBuffer);
+		m_bCached = true;
+	}
+	else
+	{
+		ProfileParse(szBuffer, dwSize);
+	}
 }
 
 
@@ -130,23 +127,10 @@ GProfile::GProfile()
 	: m_bCached(0)
 {
 	m_pTreeNotify = new GBTree();
-	m_strEnvOverride = "NONE";
-	m_strBaseFileName = "NONE";
 	m_strFile = "NONE";
+	m_bIsXML = 0;
 }
 
-// create a profile from the supplied file name
-GProfile::GProfile(const char *pzFilePathAndName )
-	: m_bCached(0)
-{
-	m_pTreeNotify = new GBTree();
-	m_strEnvOverride = "NONE";
-	m_strBaseFileName = GDirectory::LastLeaf(pzFilePathAndName); //"txml.txt";
-
-	if (pzFilePathAndName && pzFilePathAndName[0])
-		// use the supplied pzFilePathAndName
-		m_strFile = pzFilePathAndName;
-}
 
 GProfile::~GProfile()
 {
@@ -251,8 +235,8 @@ long GProfile::SetConfig(const char *szSectionName, const char *szKey, const cha
 
 long GProfile::SetConfig(const char *szSectionName, const char *szKey, const char *pzValue, short bSetDefault)
 {
-	NameValuePair *pNVP;
-	Section *pSection = FindSection(szSectionName);
+	GProfileEntry *pNVP;
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
 		pNVP = FindKey(szKey, pSection);
@@ -264,7 +248,7 @@ long GProfile::SetConfig(const char *szSectionName, const char *szKey, const cha
 		else
 		{
 			// new key
-			pNVP = new NameValuePair;
+			pNVP = new GProfileEntry;
 			pSection->m_lstNVP.AddLast(pNVP);
 			pNVP->m_strName = szKey;
 			pNVP->m_strValue = pzValue;
@@ -273,12 +257,12 @@ long GProfile::SetConfig(const char *szSectionName, const char *szKey, const cha
 	else
 	{
 		// new section
-		pSection = new Section;
+		pSection = new GProfileSection;
 		pSection->m_strName = szSectionName;
 		m_lstSections.AddLast(pSection);
 
 		// new key
-		pNVP = new NameValuePair;
+		pNVP = new GProfileEntry;
 		pSection->m_lstNVP.AddLast(pNVP);
 		pNVP->m_strName = szKey;
 		pNVP->m_strValue = pzValue;
@@ -294,12 +278,12 @@ void GProfile::Destroy()
 	GListIterator itSections(&m_lstSections);
 	while (itSections())
 	{
-		Section *pSection = (Section *)itSections++;
+		GProfileSection *pSection = (GProfileSection *)itSections++;
 
 		GListIterator itNVP(&pSection->m_lstNVP);
 		while (itNVP())
 		{
-			NameValuePair *pNVP = (NameValuePair *)itNVP++;
+			GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 			delete pNVP;
 		}
 
@@ -352,10 +336,7 @@ void GProfile::ThrowLastError(const char *pzFile)
 }
 #endif
 
-void GProfile::GetLine(GString &strLine, 
-					   const char *szBuffer, 
-					   __int64 *nIdx, 
-					   __int64 dwSize)
+void GProfile::GetLine(GString &strLine, const char *szBuffer,  __int64 *nIdx,  __int64 dwSize)
 {
 	strLine.Empty();
 	while (*nIdx < dwSize)
@@ -365,13 +346,12 @@ void GProfile::GetLine(GString &strLine,
 		strLine += szBuffer[*nIdx];
 		(*nIdx)++;
 	}
-
 	(*nIdx)++;
 }
 
 void GProfile::ProfileParse(const char *szBuffer, __int64 dwSize)
 {
-	Section *pSection = 0;
+	GProfileSection *pSection = 0;
 
 	// parse the file
 	__int64 nIdx = 0;
@@ -397,7 +377,7 @@ void GProfile::ProfileParse(const char *szBuffer, __int64 dwSize)
 				nIdx = strLine.Length();
 
 			// new section
-			pSection = new Section;
+			pSection = new GProfileSection;
 			pSection->m_strName = strLine.Mid(1, nIdx - 1);
 			pSection->m_strName.TrimLeftWS();
 			pSection->m_strName.TrimRightWS();
@@ -409,7 +389,7 @@ void GProfile::ProfileParse(const char *szBuffer, __int64 dwSize)
 			__int64 nIdx = strLine.Find('=');
 			if (nIdx == -1)
 				continue;
-			NameValuePair *pNVP = new NameValuePair;
+			GProfileEntry *pNVP = new GProfileEntry;
 			pSection->m_lstNVP.AddLast(pNVP);
 			pNVP->m_strName = strLine.Left(nIdx);
 			pNVP->m_strName.TrimLeftWS();
@@ -434,6 +414,14 @@ void GProfile::Load()
 
 	// destroy the cached objects
 	Destroy();
+
+	if (m_bIsXML)
+	{
+		FromXMLFile(m_strFile);
+		m_bCached = true;
+		return;
+	}
+
 
 	char *szBuffer = 0;
 	long dwSize = 0;
@@ -467,23 +455,9 @@ void GProfile::Load()
 		// close the file
 		CloseHandle(hFile);
 	}
-	catch(GException &r)
+	catch(GException &)
 	{
-		GString strMessage;
-		strMessage.Format(
-		"\nFailed to open a configuration file for this application.\n"
-		"You may choose one of two options for locating the config file.\n"
-		"1. Place the file [%s] in the root of your file system (C:\\ )\n"
-		"2. Set the environment variable [%s] to a fully \n"
-		"   qualified file name like:\n"
-		"       c:\\mypath\\%s             \n"
-		"** You must be logged on with read permissions to this file **\n\n\n"
-		"%s\n",(const char *)m_strBaseFileName,
-		(const char *)m_strEnvOverride, 
-		(const char *)m_strBaseFileName,
-		(const char *)m_strBaseFileName,
-		r.GetDescription());
-
+		GString strMessage("\nFailed to open a configuration file for this application.\n");
 		throw GException(2, (const char *)strMessage);
 	}
 
@@ -493,19 +467,7 @@ void GProfile::Load()
 	int nResult = strTemp.FromFile((const char *)m_strFile, 0);
 	if (nResult == 0)
 	{
-		GString strMessage;
-		strMessage.Format(
-		"\nFailed to open a configuration file for this application.\n"
-		"You may choose one of two options for locating the config file.\n"
-		"1. Place the file [%s] in the root of your file system (/)\n"
-		"2. Set the environment variable [%s] to a fully qualified file name like:\n"
-		"       /usr/local/app/%s			\n"
-		"** You must be logged on as a user with read permissions to this file **\n\n\n"
-		"OS reported error code:%d\n",(const char *)m_strBaseFileName,
-		(const char *)m_strEnvOverride, 
-		(const char *)m_strBaseFileName,
-		(const char *)m_strBaseFileName,
-		errno);
+		GString strMessage("\nFailed to open a configuration file for this application.\n");
 
 		throw GException(2, (const char *)strMessage);
 	}
@@ -523,16 +485,16 @@ void GProfile::Load()
 }
 
 
-GProfile::Section *GProfile::FindSection(const char *szSection)
+GProfileSection *GProfile::FindSection(const char *szSection)
 {
 	Load();
 
-	Section *pRet = 0;
+	GProfileSection *pRet = 0;
 
 	GListIterator itSections(&m_lstSections);
 	while ( itSections() && (!pRet))
 	{
-		Section *pSection = (Section *)itSections++;
+		GProfileSection *pSection = (GProfileSection *)itSections++;
 
 		if (pSection->m_strName.CompareNoCase(szSection) == 0)
 			pRet = pSection;
@@ -542,27 +504,31 @@ GProfile::Section *GProfile::FindSection(const char *szSection)
 }
 
 
-long GProfile::WriteCurrentConfigSection(GString *pzDestStr, const char *pzSection)
+long GProfile::WriteCurrentConfigSection(GString *pzDestStr, const char *pzSection, bool bWriteXML/* = 0*/)
 {
-	long lret = GProfile::WriteCurrentConfigHelper(0,pzDestStr, pzSection);
+	long lret = GProfile::WriteCurrentConfigHelper(0,pzDestStr, pzSection, bWriteXML);
 	return lret;
 }
 
 
 // Serialize memory config
 // Returns the number of bytes written to the destination on success or 0 for failure.
-long GProfile::WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *pDest, const char *pzSection/*=0*/)
+long GProfile::WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *pDest, const char *pzSection/*=0*/, bool bWriteXML/*=0*/)
 {
 	GString strLocalDest;
 	GString *strConfigData = (pDest) ? pDest : &strLocalDest;
 
 	try
 	{
+		if (bWriteXML)
+		{
+		    *strConfigData << "<configuration>\n";
+		}
+
 		GListIterator itSections(&m_lstSections);
 		while ( itSections() )
 		{
-			Section *pSection = (Section *)itSections++;
-			
+			GProfileSection *pSection = (GProfileSection *)itSections++;
 			if (pzSection)
 			{
 				if( pSection->m_strName.CompareNoCase(pzSection) != 0)
@@ -570,18 +536,29 @@ long GProfile::WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *
 					continue;
 				}
 			}
-			
-			(*strConfigData) << "[" << pSection->m_strName << "]\r\n";
-
-			GListIterator itNVP(&pSection->m_lstNVP);
-			while (itNVP())
+			if (bWriteXML)
 			{
-				NameValuePair *pNVP = (NameValuePair *)itNVP++;
-				(*strConfigData) << pNVP->m_strName << "=" << pNVP->m_strValue << "\r\n";
+				pSection->ToXML(strConfigData, 1);
 			}
-			if (itSections())
-				(*strConfigData) << "\r\n\r\n";
+			else
+			{
+				(*strConfigData) << "[" << pSection->m_strName << "]\r\n";
+
+				GListIterator itNVP(&pSection->m_lstNVP);
+				while (itNVP())
+				{
+					GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
+					(*strConfigData) << pNVP->m_strName << "=" << pNVP->m_strValue << "\r\n";
+				}
+				if (itSections())
+					(*strConfigData) << "\r\n\r\n";
+			}
 		}
+		if (bWriteXML)
+		{
+		    *strConfigData << "\r\n</configuration>";
+		}
+
 		if (pzPathAndFileName)
 			strConfigData->ToFile(pzPathAndFileName);
 
@@ -597,16 +574,16 @@ long GProfile::WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *
 
 
 
-GProfile::NameValuePair *GProfile::FindKey(const char *szKey, GProfile::Section *pSection)
+GProfileEntry *GProfile::FindKey(const char *szKey, GProfileSection *pSection)
 {
-	NameValuePair *pRet = 0;
+	GProfileEntry *pRet = 0;
 	
 	if (pSection)
 	{
 		GListIterator itNVP(&pSection->m_lstNVP);
 		while ((itNVP()) && (!pRet))
 		{
-			NameValuePair *pNVP = (NameValuePair *)itNVP++;
+			GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 			if (pNVP->m_strName.CompareNoCase(szKey) == 0)
 				pRet = pNVP;
 		}
@@ -625,7 +602,7 @@ void GProfile::GetSectionNames(GStringList *lpList)
 		GListIterator itSections(&m_lstSections);
 		while (itSections())
 		{
-			Section *pSection = (Section *)itSections++;
+			GProfileSection *pSection = (GProfileSection *)itSections++;
 			lpList->AddLast(pSection->m_strName);
 		}
 	}
@@ -633,13 +610,13 @@ void GProfile::GetSectionNames(GStringList *lpList)
 
 int GProfile::RemoveEntry(const char *szSectionName, const char *szEntry)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
 		GListIterator itNVP(&pSection->m_lstNVP);
 		while (itNVP())
 		{
-			NameValuePair *pNVP = (NameValuePair *)itNVP++;
+			GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 			if (pNVP->m_strName.CompareNoCase(szEntry) == 0)
 			{
 				pSection->m_lstNVP.Remove(pNVP);
@@ -651,7 +628,7 @@ int GProfile::RemoveEntry(const char *szSectionName, const char *szEntry)
 	return 0;
 }
 
-void GProfile::AddSection(GProfile::Section *pS, int bIssueChangeNotification/*=1*/)
+void GProfile::AddSection(GProfileSection *pS, int bIssueChangeNotification/*=1*/)
 {
 	if (pS)
 	{
@@ -663,16 +640,16 @@ void GProfile::AddSection(GProfile::Section *pS, int bIssueChangeNotification/*=
 			GListIterator itNVP(&pS->m_lstNVP);
 			while ( itNVP() )
 			{
-				NameValuePair *pNVP = (NameValuePair *)itNVP++;
+				GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 				ChangeNotify(pS->m_strName, pNVP->m_strName, pNVP->m_strValue);
 			}
 		}
 	}
 }
 
-GProfile::Section *GProfile::RemoveSection(const char *szSection)
+GProfileSection *GProfile::RemoveSection(const char *szSection)
 {
-	Section *pS = FindSection(szSection);
+	GProfileSection *pS = FindSection(szSection);
 	if (pS)
 	{
 		m_lstSections.Remove(pS);
@@ -686,7 +663,7 @@ GProfile::Section *GProfile::RemoveSection(const char *szSection)
 // returns the number of entries for a given section
 int GProfile::GetSectionEntryCount(const char *szSectionName)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 
 	if (pSection)
 		return pSection->m_lstNVP.Size();
@@ -696,7 +673,7 @@ int GProfile::GetSectionEntryCount(const char *szSectionName)
 
 const GList *GProfile::GetSection(const char *szSectionName)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 
 	if (pSection)
 		return &pSection->m_lstNVP;
@@ -709,10 +686,10 @@ const GList *GProfile::GetSection(const char *szSectionName)
 // function retrieves a boolean from the specified section
 short GProfile::GetBool(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			if (!pNVP->m_strValue.IsEmpty())
@@ -744,10 +721,10 @@ short GProfile::GetBool(const char *szSectionName, const char *szKey, short bThr
 // function retrieves a boolean from the specified section
 short GProfile::GetBoolean(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			if (pNVP->m_strValue.CompareNoCase("true") == 0 ||
@@ -782,10 +759,10 @@ short GProfile::GetBoolean(const char *szSectionName, const char *szKey, short b
 // function retrieves a long from the specified section
 __int64 GProfile::GetInt64(const char *szSectionName, const char *szKey, short bThrowNotFound)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			if (!pNVP->m_strValue.IsEmpty())
@@ -813,10 +790,10 @@ int	 GProfile::GetInt(const char *szSectionName, const char *szKey, short bThrow
 
 long GProfile::GetLong(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			if (!pNVP->m_strValue.IsEmpty())
@@ -839,10 +816,10 @@ long GProfile::GetLong(const char *szSectionName, const char *szKey, short bThro
 
 const char *GProfile::GetPath(const char *szSectionName, const char *szKey, short bThrowNotFound)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			if ( !( pNVP->m_strValue.Right(1) == "/" || pNVP->m_strValue.Right(1) == "\\") )
@@ -873,7 +850,7 @@ const char *GProfile::GetPath(const char *szSectionName, const char *szKey, shor
 
 int GProfile::DoesExist(const char *szSectionName)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
 		return 1;
@@ -883,10 +860,10 @@ int GProfile::DoesExist(const char *szSectionName)
 
 int GProfile::DoesExist(const char *szSectionName, const char *szKey)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			return 1;
@@ -899,10 +876,10 @@ int GProfile::DoesExist(const char *szSectionName, const char *szKey)
 // function retrieves a string from the specified section
 const char *GProfile::GetString(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			return (const char *)pNVP->m_strValue;
@@ -946,21 +923,21 @@ const char *GProfile::GetCiphered(const char *szSectionName, const char *szKey, 
 }
 
 
-long GProfile::WriteCurrentConfig(const char *pzPathAndFileName)
+long GProfile::WriteCurrentConfig(const char *pzPathAndFileName, bool bWriteXML/* = 0*/)
 {
-	long lret = GProfile::WriteCurrentConfigHelper(pzPathAndFileName,0);
+	long lret = GProfile::WriteCurrentConfigHelper(pzPathAndFileName,0,0,bWriteXML);
 	return lret;
 }
-long GProfile::WriteCurrentConfig(GString *pzDestStr)
+long GProfile::WriteCurrentConfig(GString *pzDestStr, bool bWriteXML/* = 0*/)
 {
-	return GProfile::WriteCurrentConfigHelper(0,pzDestStr);
+	return GProfile::WriteCurrentConfigHelper(0,pzDestStr,0,bWriteXML);
 }
 short GProfile::GetBoolOrDefault(const char *szSectionName, const char *szKey, short bDefault)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			if (!pNVP->m_strValue.IsEmpty())
@@ -1128,10 +1105,10 @@ void GProfile::RegisterChangeNotification(const char *pzSection, const char *pzE
 
 int GProfile::ValueLength(const char *szSectionName, const char *szKey)
 {
-	Section *pSection = FindSection(szSectionName);
+	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
 	{
-		NameValuePair *pNVP = FindKey(szKey, pSection);
+		GProfileEntry *pNVP = FindKey(szKey, pSection);
 		if (pNVP)
 		{
 			return (int)pNVP->m_strValue.Length();
@@ -1161,12 +1138,12 @@ void GProfile::ExecuteAllNotifications()
 	GListIterator itSections(&m_lstSections);
 	while ( itSections() )
 	{
-		Section *pSection = (Section *)itSections++;
+		GProfileSection *pSection = (GProfileSection *)itSections++;
 
 		GListIterator itNVP(&pSection->m_lstNVP);
 		while (itNVP())
 		{
-			NameValuePair *pNVP = (NameValuePair *)itNVP++;
+			GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
 
 			GString strKey(pSection->m_strName);
 			strKey << pNVP->m_strName;

@@ -240,6 +240,7 @@
       <PrecompiledHeaderOutputFile>.\Release\5LoavesSvc.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

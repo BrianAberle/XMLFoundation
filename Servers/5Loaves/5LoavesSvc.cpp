@@ -1,6 +1,8 @@
+//#define ___XFER			http://1drv.ms/1fo7Asp       
+//#define ___XFER_SRC
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  ((All Rights Reserved))
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -12,13 +14,15 @@
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 
+
 #include <Windows.h>
 //////////////////////////////////////////////////////////////////////////////
 #define dimof(A)  (sizeof(A) / sizeof(A[0]))
 #ifdef ___XFER
-char g_szAppName[] = "Xfer";
+	char g_szAppName[] = "Xfer";
+	#define __REQUIRE_CIPHERED_STARTUP_FILE
 #else
-char g_szAppName[] = "5Loaves";
+	char g_szAppName[] = "5Loaves";
 #endif
 HANDLE g_hIOCP = NULL;
 // The completion port wakes for 1 of 2 reasons:
@@ -36,35 +40,35 @@ enum COMPKEY {
 #include "GThread.h"
 
 
+
 // 64 kb max socket read
 #define MAX_SOCKET_CHUNK	65536
 
 #include <conio.h>
 #include <winsock.h>
 
-
-//#define ADD_REMOTE_WS
 #include "../Core/ServerCore.cpp"
 
 SERVICE_STATUS ss;
 SERVICE_STATUS_HANDLE hSS;
 
-
 GString g_strPassword;
 GString g_strFinalRunTimePassword;
 
 #ifdef ___XFER
-GString strServerName("Xfer");
-GString strServerDescription("Xfer Protocol");
+	GString strServerName("Xfer");
+	GString strServerDescription("Xfer Protocol");
+	#include "../../Libraries/Xfer/Init/XferInit.cpp"
 #else
-GString strServerName("5Loaves");
-GString strServerDescription("FiveLoaves");
+	GString strServerName("5Loaves");
+	GString strServerDescription("FiveLoaves");
 #endif
 
 char pzServer[256];
 
 
-void WINAPI TimeServiceHandler(DWORD fdwControl) {
+void WINAPI TimeServiceHandler(DWORD fdwControl) 
+{
    // The Handler thread is very simple and executes very quickly because
    // it just passes the control code off to the ServiceMain thread.
    PostQueuedCompletionStatus(g_hIOCP, fdwControl, CK_SERVICECONTROL, NULL);
@@ -124,8 +128,7 @@ BOOL ThreadInteract(GString *pstrMessage)
      return FALSE;
 
   // 
-  // Obtain a handle to WinSta0 - service must be running
-  // in the LocalSystem account
+  // Obtain a handle to WinSta0 - service must be running in the LocalSystem account
   // 
   hwinsta = OpenWindowStation("winsta0", FALSE,
                               WINSTA_ACCESSCLIPBOARD   |
@@ -168,13 +171,12 @@ BOOL ThreadInteract(GString *pstrMessage)
    if (!SetThreadDesktop(hdesk))
            return FALSE;
 
-
+   GString strMsgTitleBar(g_szAppName);
+   strMsgTitleBar << " Service Message";
    
-   MessageBox(GetDesktopWindow(), (const char *)*pstrMessage, "5Loaves Service Message", MB_OK);
+   MessageBox(GetDesktopWindow(), (const char *)*pstrMessage, strMsgTitleBar, MB_OK);
    delete pstrMessage;
    
-
-	
 
    // 
    // Reset the Window station and desktop
@@ -201,14 +203,21 @@ BOOL ThreadInteract(GString *pstrMessage)
 
 
 
-
-
-
-
-
 int g_ServiceisRunning = 1;
 BOOL ThreadConsole(void)
 {
+
+	
+	return 0;  // Thread termination intentional.
+
+	// This can be a very handy mechanism for other processes on the same machine that this service
+	// is running on - for them to get access to set and get internal Server values.  
+	// This implementation works well but was removed - because service console admin is now done over a TCP
+	// port to extend this IPC (inter process communication) beyond the local machine.  The code remains here
+	// along with the client side implementation in Console.cpp because it may be needed again someday.
+
+
+
 	//  Shared service objects(syncronization, mmfile, named objects) need a NULL DACL
 	PSECURITY_DESCRIPTOR    pSD;
 	SECURITY_ATTRIBUTES sa;
@@ -271,7 +280,8 @@ BOOL ThreadConsole(void)
 				int nStrLen = strlen(pzData);
 				for(int i=0; i<nStrLen;i++)
 				{
-					if(!isdigit(pzData[i]))
+					// jump past the digits that were added to sufficiently scramble all messages including very short ones.
+					if(!isdigit(pzData[i])) 
 					{
 						memcpy(pMemFile,"<<Bad Format",12);
 						continue;
@@ -482,12 +492,10 @@ void MakePassword( GString strPassword )
 	// easy to find for the brief time that it exists.
 }
 
-
-// Start up from the encrypted config file if possible, otherwise look for 
-// 5Loaves.txt for an unciphered startup file, first in the current folder
-// then in the root of the filesystem at last resort.
+// this is the main() for this service.
 void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv) 
 {
+
 #ifdef _WIN64
 	unsigned __int64 dwCompKey  = CK_SERVICECONTROL;
 #else
@@ -498,63 +506,67 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 	OVERLAPPED *po;
 
 	SetProcessShutdownParameters(0x100,SHUTDOWN_NORETRY);
-	
-//  Attempt to get the password for decrypting the startup 
-//  arguments that are stored in an external disk file.
-	GString strPassword;
-
-//  If the password was passed in as the service was started
-//  from the command line, use that.
-	if (g_strPassword.Length())
-	{
-		strPassword = g_strPassword;
-	}
-//  OR if the password was supplied by the service control manager	
-	else if (dwArgc == 2)
-	{
-		strPassword = lpszArgv[1];
-	}
-
-//  OR just uncomment and put any value between the quotes
-//  to 'hardcode' a password into your custom build of this service
-//  ***** example of very simple integrated password ********
-//	strPassword = "MyPassword";
-
-
-//  OR Another more secure way to embed the password.
-//  ***** example of integrated password ********
-//	MakePassword(strPassword);
-
-
-
-	// If no password was obtained, set a default.
-	if (strPassword.IsEmpty())
-		strPassword = "Password";
-
-	// used by the "console"
-	g_strFinalRunTimePassword = strPassword;
 
 	GString strFile;
 	GString strErrorOut;
 	int bSetStartupFile = 0;
 
+	// Create the completion port and save its handle in a global
+	// variable so that the Handler function can access it.
+	g_hIOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, CK_PIPE, 0);
 
-   // Create the completion port and save its handle in a global
-   // variable so that the Handler function can access it.
-   g_hIOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, CK_PIPE, 0);
+	// Give SCM the address of this service's Handler
+	// NOTE: hSS does not have to be closed.
+	hSS = RegisterServiceCtrlHandler((const char *)strServerName, TimeServiceHandler);
 
-   // Give SCM the address of this service's Handler
-   // NOTE: hSS does not have to be closed.
-   hSS = RegisterServiceCtrlHandler((const char *)strServerName, TimeServiceHandler);
+	// Do what the service should do.
+	// Initialize the members that never change
+	ss.dwServiceType = SERVICE_WIN32_OWN_PROCESS; 
+	ss.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN;
 
-   // Do what the service should do.
-   // Initialize the members that never change
-   ss.dwServiceType = SERVICE_WIN32_OWN_PROCESS; 
-   ss.dwControlsAccepted = SERVICE_ACCEPT_STOP | 
-      SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN;
+	GString strPassword;
+	do 
+	{
+	////////////////////////////////////////////////////////////////////////////////////////////
+	// set the password
+	#ifdef ___XFER
+		if (!XferProcessInit())
+		{
+			ss.dwCurrentState = SERVICE_STOPPED; 
+			ss.dwCheckPoint = ss.dwWaitHint = 0;
+			SetServiceStatus(hSS, &ss);
+			goto SERVICE_SLEEPING;
+		}
+		strPassword.Write(&g_XKey.pzFiller2[41],79);
+	#else
+	//  Attempt to get the password for decrypting the startup  arguments that are stored in an external disk file.
+	//  If the password was passed in as the service was started from the command line, use that.
+		if (g_strPassword.Length())
+		{
+			strPassword = g_strPassword;
+		}
+	//  OR if the password was supplied by the service control manager	
+		else if (dwArgc == 2)
+		{
+			strPassword = lpszArgv[1];
+		}
+	//  OR just uncomment and put any value between the quotes
+	//  to 'hardcode' a password into your custom build of this service
+	//  ***** example of very simple integrated password ********
+	//	strPassword = "MyPassword";
+	//
+	//  OR Another more secure way to embed the password.
+	//  ***** example of integrated password ********
+	//	MakePassword(strPassword);
+	#endif
+		// If no password was obtained, set a default.
+		if (strPassword.IsEmpty())
+			strPassword = "Password";
+	//	g_strFinalRunTimePassword = strPassword;  // this was used by ThreadConsole() removed 2014
+	////////////////////////////////////////////////////////////////////////////////////////////
 
-   do {
-      switch (dwCompKey) {
+      switch (dwCompKey) 
+	  {
       case CK_SERVICECONTROL:
          // We got a new control code
          ss.dwWin32ExitCode = NO_ERROR; 
@@ -562,80 +574,98 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
          ss.dwCheckPoint = 0; 
          ss.dwWaitHint = 0;
 
-         if (fdwControl == SERVICE_CONTROL_INTERROGATE) {
+         if (fdwControl == SERVICE_CONTROL_INTERROGATE) 
+		 {
             SetServiceStatus(hSS, &ss);
             break;
          }
 
          // Determine which PENDING state to return
-         if (dwSrvCtrlToPend[fdwControl] != 0) {
-            ss.dwCurrentState = dwSrvCtrlToPend[fdwControl]; 
-            ss.dwCheckPoint = 0;
-            ss.dwWaitHint = 500;   // half a second
-            SetServiceStatus(hSS, &ss);
+         if (dwSrvCtrlToPend[fdwControl] != 0) 
+		 {
+			ss.dwCurrentState = dwSrvCtrlToPend[fdwControl]; 
+			ss.dwCheckPoint = 0;
+			ss.dwWaitHint = 500;   // half a second
+			SetServiceStatus(hSS, &ss);
          }
 
-		 // get Dynamic Environment Alternate Startup File
+		 // get the path and file name containing the compiled executable machine code for this process.
 		 char pzName[512];
 		 memset(pzName,0,512);
 		 GetModuleFileName(NULL,pzName,512);
 		 GString strSameDirStartupFile(pzName);
-		 strSameDirStartupFile.TrimRightBytes(4);
-		 GString strDEASF(GDirectory::LastLeaf(strSameDirStartupFile));
-		 if (strDEASF.CompareNoCase("5LoavesSvc") == 0)
-		 {
-			strDEASF << (long)GetTickCount() << (long)GetCurrentThread();
-		 }
+		 strSameDirStartupFile.TrimRightBytes(4); // lop off the ".exe" so "c:\a\b\c\file.exe" becomes "c:\a\b\c\file"
+		 strSameDirStartupFile << "Config.xbin";  // tack this on and remember that an executable file can be renamed
+												  // so you have the .exe name within the name of it's cooresponding settings file
 
-         switch (fdwControl) {
+		 GString strSameDirStartupFile2(pzName);
+		 strSameDirStartupFile2.SetLength(strSameDirStartupFile2.ReverseFind('\\'));
+		 strSameDirStartupFile2 << '\\' << g_szAppName << "Config.xbin";  // do not include the variable name this time
+
+		 
+		 // lastly, drop back to the 2nd '\' from the end to back up on folder - this is done for the debugger
+		 // which produces a binary in a folder one deeper than the working directory.
+		 GString strSameDirStartupFile3(pzName);
+		 strSameDirStartupFile3.SetLength(strSameDirStartupFile3.ReverseFindNth("\\",2));
+		 strSameDirStartupFile3 << '\\' << g_szAppName << "Config.xbin";  // do not include the variable name this time
+
+         
+		 switch (fdwControl) 
+		 {
             case SERVICE_CONTROL_RUN:
             case SERVICE_CONTROL_CONTINUE:
 				try
 				{
-					// look for a ciphered startup file first
+					// Look for a ciphered startup file like "5LoavesConfig.xbin" or "XferConfig.xbin"
+
 					
-					// if a (unique name) environment assigned location is set, use that
-					if (getenv(strDEASF))
+					// if a startup file equal to the name of this executable + "Config.xbin"
+					// is in the same directory as this executable, use that
+					FILE *fpTst = fopen(strSameDirStartupFile,"r");						// First try #1
+					if (!fpTst)
 					{
-						strFile = getenv(strDEASF);
+						// use the default .xbin file shared between all Xfer Binaries
+						strSameDirStartupFile = strSameDirStartupFile2;					// Next try #2
+						fpTst = fopen(strSameDirStartupFile,"r");
+						if (!fpTst)
+						{
+							strSameDirStartupFile = strSameDirStartupFile3;				// Next try #3
+							fpTst = fopen(strSameDirStartupFile,"r");
+						}
+					}
+
+					if (fpTst)
+					{
+						fclose(fpTst); // we opened it just to see if it was there - now close it.
+						strFile = strSameDirStartupFile;
+
+						// open the ciphered file, read it into [strCfgData] decipher it into [strDest] and set the GProfile from the [strDest] value
+						try
+						{
+							GString strCfgData;
+							strCfgData.FromFile(strFile);
+							GString strDest(8192);
+							if (DecryptMemoryToMemory(strPassword, strCfgData,strCfgData.GetLength(), strDest,  strErrorOut))
+							{
+								// delete the default (and empty) GProfile object and create a new one
+								delete SetProfile(new GProfile((const char *)strDest, strDest.Length()));
+								bSetStartupFile = 1;
+							}
+						}
+						catch ( GException & )
+						{
+						}
 					}
 					else
 					{
-						// if a startup file equal to the name of this executable 
-						// name (minus the extension) in the same directory, use that
-						FILE *fpTst = fopen(strSameDirStartupFile,"r");
-						if (fpTst)
-						{
-							fclose(fpTst);
-							strFile = strSameDirStartupFile;
-						}
-						else // otherwise try the default root location
-						{	 // if it's not there we'll look for an unciphered startup file.
-							strFile = "c:\\5LoavesStartup.bin";
-						}
+						ss.dwCurrentState = SERVICE_STOPPED; 
+						ss.dwCheckPoint = ss.dwWaitHint = 0;
+						SetServiceStatus(hSS, &ss);
+						goto SERVICE_SLEEPING; 
 					}
 
-
-
-					// decrypt disk file into memory
-					char *pDest;
-					int nDestLen;
-					try
-					{
-						if (FileDecryptToMemory(strPassword, strFile, &pDest, &nDestLen, strErrorOut))
-						{
-							// parse into the profile data structures
-							SetProfile(new GProfile(&pDest[7], nDestLen));
-							delete pDest;
-							bSetStartupFile = 1;
-						}
-					}
-					catch ( GException &)
-					{
-					}
-					
-					// OK, give up looking for a ciphered startup file
-					// look for a clear text startup file
+					#ifndef __REQUIRE_CIPHERED_STARTUP_FILE
+					// OK, give up looking for a ciphered startup file look for a clear text startup file
 					if (!bSetStartupFile)
 					{
 						// lop off the file name (all bytes trailing the last slash of path )
@@ -656,19 +686,18 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 							strFile = "c:\\5Loaves.txt";
 						}
 						
-						
-						
 						// load the disk file into memory
 						GString strCfgData;
 						strCfgData.FromFile(strFile,0);
 						if (strCfgData.Length())
 						{
-							SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
-							bSetStartupFile = 1;
+							delete SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
+					 		bSetStartupFile = 1;
 						}
 					}
+					#endif // ifndef __REQUIRE_CIPHERED_STARTUP_FILE
 
-					if (GetProfile().GetBool("Svc5Loaves","HighPriority",0))
+					if (GetProfile().GetBool("WindowsService","HighPriority",0))
 						SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS); 
 
 	
@@ -679,7 +708,7 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 					{
 						// the startup file could not be found.
 						unsigned long iID;
-						GString *pG = new GString("Could not find startup file (5Loaves.txt or 5LoavesStartup.bin) or password to decipher 5LoavesStartup.bin is invalid.");
+						GString *pG = new GString("Could not find valid startup file (missing *Startup.xbin) or the password is invalid.");
 						CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)ThreadInteract,NULL,0,&iID);
 
 
@@ -737,8 +766,9 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
          break;
 
       }
-
-      if (ss.dwCurrentState != SERVICE_STOPPED) {
+SERVICE_SLEEPING:
+      if (ss.dwCurrentState != SERVICE_STOPPED) 
+	  {
          // Sleep until a control code comes in or a client connects
          GetQueuedCompletionStatus(g_hIOCP, &dwBytesTransferred, &dwCompKey, &po, INFINITE);
          fdwControl = dwBytesTransferred;
@@ -754,155 +784,308 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 
 typedef BOOL (CALLBACK* ChangeServiceConfig2Type)(SC_HANDLE,  DWORD ,  LPVOID);
 
-void InstallService() {
-   TCHAR szModulePathname[_MAX_PATH];
-   SC_HANDLE hService;
+void StopService()
+{
+	SC_HANDLE schSCManager = OpenSCManager(NULL,SERVICES_ACTIVE_DATABASE,SC_MANAGER_CONNECT/*SC_MANAGER_ALL_ACCESS*/);
+	SC_HANDLE schService = OpenService( schSCManager, g_szAppName, SERVICE_STOP/*SERVICE_ALL_ACCESS*/);
+	if (!schService)
+	{
+		CloseServiceHandle(schSCManager);
+	}
+	else
+	{
+		SERVICE_STATUS sts;
+		int nRet = ControlService(schService, SERVICE_CONTROL_STOP, &sts);
+		CloseServiceHandle(schService); 
+		CloseServiceHandle(schSCManager);
+	}
+}
 
-   // Open the SCM on this machine.
-   SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
+void RemoveService() 
+{
+	StopService();
 
-   // Get our full pathname
-   GetModuleFileName(NULL, szModulePathname, dimof(szModulePathname));
+	// Open the SCM on this machine.
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
 
-   // Add this service to the SCM's database.
-   hService = CreateService(hSCM, (const char *)strServerName, (const char *)strServerName, 0,
-      SERVICE_WIN32_OWN_PROCESS, SERVICE_DEMAND_START, SERVICE_ERROR_IGNORE, 
-      szModulePathname, NULL, NULL, NULL, NULL, NULL);
-   CloseServiceHandle(hService);
+	// Open this service for DELETE access
+	SC_HANDLE hService = OpenService(hSCM, (const char *)strServerName, DELETE);
+
+	if (!hService)
+	{
+		// maybe it was not there - so we got this error finding it - we can ignore that
+	}
+
+	// Remove this service from the SCM's database.
+	DeleteService(hService);
+
+	// Close the service and the SCM
+	CloseServiceHandle(hService);
+	CloseServiceHandle(hSCM);
+}
+
+void SetServiceAutoStartup(bool bAutoStart)
+{
+	// Open the SCM on this machine.
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS/*SC_MANAGER_CREATE_SERVICE*/);
+
+	SC_HANDLE schService = OpenService( hSCM, strServerName, SERVICE_ALL_ACCESS); 
+	if (schService)
+	{
+		if (! ChangeServiceConfig( 
+				schService,        // handle of service 
+				SERVICE_NO_CHANGE, // service type: no change 
+				(bAutoStart) ? SERVICE_AUTO_START : SERVICE_DEMAND_START, // change service start type (SERVICE_AUTO_START = 2, SERVICE_DEMAND_START = 3)
+				SERVICE_NO_CHANGE, // error control: no change 
+				NULL,			   // null is 'no change' or new binary path
+				NULL,              // load order group: no change 
+				NULL,              // tag ID: no change 
+				NULL,              // dependencies: no change 
+				NULL,              // null is 'no change' or new NT account name
+				NULL,              // null is 'no change' or new password
+				NULL) )            // display name: no change
+		{
+			// strResult << "Failed to set service config";
+		}
+		CloseServiceHandle(schService); 
+	}
+	CloseServiceHandle(hSCM);
+}
 
 
-	//  Set the service description in 2K & XP 
+void InstallService() 
+{
+	RemoveService();
+
+	TCHAR szModulePathname[_MAX_PATH];
+	SC_HANDLE hService;
+
+	// Open the SCM on this machine.
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS/*SC_MANAGER_CREATE_SERVICE*/);
+	// Get our full pathname
+	GetModuleFileName(NULL, szModulePathname, dimof(szModulePathname));
+	// Add this service to the SCM's database.
+	hService = CreateService(hSCM, (const char *)strServerName, (const char *)strServerName, 0,	SERVICE_WIN32_OWN_PROCESS, SERVICE_DEMAND_START, SERVICE_ERROR_IGNORE, szModulePathname, NULL, NULL, NULL, NULL, NULL);
+	if (!hService)
+	{
+		MessageBox(GetDesktopWindow(), "Must be Administrator to install a service.\r\nRight click on cmd and Run As Admin\r\n\r\nERROR: Service not installed", "Service Message", MB_OK);
+	}
+	CloseServiceHandle(hService);
+
+
+
+	//  Set the service description where available
 	//  --------------------------------------
-    HINSTANCE dllHandle = LoadLibrary("advapi32");
+	HINSTANCE dllHandle = LoadLibrary("advapi32");
 	ChangeServiceConfig2Type fn = 0;;
 	fn = (ChangeServiceConfig2Type)GetProcAddress(dllHandle,"ChangeServiceConfig2A");
 	if (fn) // always NULL
 	{
-		hService = OpenService(hSCM,(const char *)strServerName,SERVICE_CHANGE_CONFIG);
+		hService = OpenService(hSCM,strServerName,SERVICE_CHANGE_CONFIG);
+
 		SERVICE_DESCRIPTION sd;
 		sd.lpDescription=(char *)(const char *)strServerDescription;
 		fn(hService, SERVICE_CONFIG_DESCRIPTION, &sd);
 		CloseServiceHandle(hService);
 	}
+	// Close the service 
+	CloseServiceHandle(hService);
 
 
 
-   // Close the service and the SCM
-   CloseServiceHandle(hService);
-   CloseServiceHandle(hSCM);
+	// now set it to auto-start
+	// ------------------------------------------
+	SC_HANDLE schService = OpenService( hSCM, strServerName, SERVICE_ALL_ACCESS); 
+	if (schService)
+	{
+		if (! ChangeServiceConfig( 
+				schService,        // handle of service 
+				SERVICE_NO_CHANGE, // service type: no change 
+				SERVICE_AUTO_START, // change service start type (SERVICE_AUTO_START = 2)
+				SERVICE_NO_CHANGE, // error control: no change 
+				NULL,			   // null is 'no change' or new binary path
+				NULL,              // load order group: no change 
+				NULL,              // tag ID: no change 
+				NULL,              // dependencies: no change 
+				NULL,              // null is 'no change' or new NT account name
+				NULL,              // null is 'no change' or new password
+				NULL) )            // display name: no change
+		{
+			// strResult << "Failed to set service config";
+		}
+		CloseServiceHandle(schService); 
+	}
+	CloseServiceHandle(hSCM);
+
+
+
+	// Finally, - open the firewall
+	// netsh advfirewall firewall add rule name="Xfer" dir=in action=allow program="C:\Users\The one\Desktop\Xfer Pro\Windows Service\X64.exe" enable=yes
+	// ------------------------------------------
+	GString strShellOpenFirewall("advfirewall firewall add rule name=\"");
+	strShellOpenFirewall << g_szAppName << "\" dir=in action=allow program=\"" << szModulePathname << "\" enable=yes";
+	
+	GString strWindowsSystemNetShell(4096);					// pre-alloc a 4k GString
+	GetSystemDirectory(strWindowsSystemNetShell._str,4096);	// Put GetSystemDirectory() output in our GString
+	strWindowsSystemNetShell.SetLength(strlen(strWindowsSystemNetShell._str)); // now, tell GString the Length since we used it's (should be) private parts
+	strWindowsSystemNetShell << "\\netsh.exe";
+	
+	GString strCommand( strWindowsSystemNetShell );
+	SHELLEXECUTEINFO lpExecInfo;
+	memset(&lpExecInfo, 0, sizeof(SHELLEXECUTEINFO));
+	lpExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	lpExecInfo.lpFile = strCommand; 
+	lpExecInfo.lpParameters = strShellOpenFirewall;
+	lpExecInfo.lpDirectory = "";
+	lpExecInfo.lpVerb = "open";
+	lpExecInfo.nShow = SW_SHOW;
+	lpExecInfo.fMask = 0;
+	lpExecInfo.hwnd = GetDesktopWindow();
+	ShellExecuteEx(&lpExecInfo); // note  Shell32.lib contains the ShellExecuteEx() implementation, 
+}
+//////////////////////////////////////////////////////////////////////////////
+//	Needed for ShellExecuteEx()
+	#pragma comment(lib, "Shell32.lib")	
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+void StartService()
+{
+	SC_HANDLE schSCManager = OpenSCManager(NULL,SERVICES_ACTIVE_DATABASE,SC_MANAGER_CONNECT/*SC_MANAGER_ALL_ACCESS*/);
+	SC_HANDLE schService = OpenService( schSCManager, g_szAppName, SERVICE_START); 
+	if (!schService)
+	{
+		MessageBox(GetDesktopWindow(), "You must Run As Administrator to start services", "Service Message", MB_OK);
+		CloseServiceHandle(schSCManager);
+	}
+	else
+	{
+		int nRet = StartService(schService,0,NULL);
+		CloseServiceHandle(schService); 
+		CloseServiceHandle(schSCManager);
+	}
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 
-
-void RemoveService() {
-   // Open the SCM on this machine.
-   SC_HANDLE hSCM = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-
-   // Open this service for DELETE access
-   SC_HANDLE hService = OpenService(hSCM, (const char *)strServerName, DELETE);
-
-   // Remove this service from the SCM's database.
-   DeleteService(hService);
-
-   // Close the service and the SCM
-   CloseServiceHandle(hService);
-   CloseServiceHandle(hSCM);
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-
-int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hinstExePrev, 
-   LPSTR pszCmdLine, int nCmdShow) {
-
+int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hinstExePrev, LPSTR pszCmdLine, int nCmdShow) 
+{
 	//
 	// ***** To debug this application  ****
-	// set fDebug to 1, then recompile
-	// and run the program in a debugger like any windows .exe
-	// The exact same code executes as if the user clicked the 
-	// 'start' button in the NT services manager.
+	// set fDebug to 1, then recompile and run the program in a debugger like any windows .exe
+	// The exact same code executes as if the user clicked the 'start' button in the NT services manager.
 	int fDebug = 0;
 	
-   int nArgc = __argc;
+	int nArgc = __argc;
 #ifdef UNICODE
-   LPCTSTR *ppArgv = (LPCTSTR*) CommandLineToArgvW(GetCommandLine(), &nArgc);
+	LPCTSTR *ppArgv = (LPCTSTR*) CommandLineToArgvW(GetCommandLine(), &nArgc);
 #else
-   LPCTSTR *ppArgv = (LPCTSTR*) __argv;
+	LPCTSTR *ppArgv = (LPCTSTR*) __argv;
 #endif
 
-   BOOL fStartService = (nArgc < 2);
-   int i;
+	BOOL bStartService = (nArgc < 2);
+	int i;
 
-   int bInstall = 0;
-   int bRemove  = 0;
-   int bRun  = 0;
-   for (i = 1; i < nArgc; i++) {
-      if ((ppArgv[i][0] == __TEXT('-')) || (ppArgv[i][0] == __TEXT('/'))) {
-         // Command line switch
-         if (lstrcmpi(&ppArgv[i][1], __TEXT("install")) == 0) 
-            bInstall = 1;
+	int bInstall = 0;
+	int bRemove  = 0;
+	int bRun	= 0;
+	int bStart	= 0;
+	int bStop	= 0;
+	int bAuto  = 0;
+	int bManual  = 0;
+	for (i = 1; i < nArgc; i++) 
+	{
+     // Command line switch
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("install")) == 0) 
+			bInstall = 1;
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("remove"))  == 0)
+			bRemove = 1;
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("run"))  == 0)
+			bRun = 1;
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("start"))  == 0)
+			bStart = 1;
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("stop"))  == 0)
+			bStop = 1;
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("auto"))  == 0)
+			bAuto = 1;
+		if (lstrcmpi(&ppArgv[i][0], __TEXT("manual"))  == 0)
+			bManual = 1;
 
-         if (lstrcmpi(&ppArgv[i][1], __TEXT("remove"))  == 0)
-            bRemove = 1;
 
-         if (lstrcmpi(&ppArgv[i][1], __TEXT("run"))  == 0)
-			 bRun = 1;
+		GString strTemp(&ppArgv[i][1],strlen("desc:"));
+		if (strTemp.CompareNoCase("desc:") == 0)
+		{
+			strServerDescription = &ppArgv[i][1+strlen("desc:")];
+		}
 
-         GString strTemp(&ppArgv[i][1],strlen("desc:"));
-		 if (strTemp.CompareNoCase("desc:") == 0)
-		 {
-            strServerDescription = &ppArgv[i][1+strlen("desc:")];
-		 }
+		GString strTemp2(&ppArgv[i][1],strlen("name:"));
+		if (strTemp2.CompareNoCase("name:") == 0)
+		{
+			strServerName = &ppArgv[i][1+strlen("name:")];
+		}
 
-         GString strTemp2(&ppArgv[i][1],strlen("name:"));
-		 if (strTemp2.CompareNoCase("name:") == 0)
-		 {
-            strServerName = &ppArgv[i][1+strlen("name:")];
-		 }
-
-         GString strTemp3(&ppArgv[i][1],strlen("pass:"));
-		 if (strTemp3.CompareNoCase("pass:") == 0)
-		 {
-            g_strPassword = &ppArgv[i][1+strlen("pass:")];
-		 }
-      }
-   }
-	if (bInstall)
-		InstallService();
-	if (bRemove)
-		RemoveService();
-
+		GString strTemp3(&ppArgv[i][1],strlen("pass:"));
+		if (strTemp3.CompareNoCase("pass:") == 0)
+		{
+			g_strPassword = &ppArgv[i][1+strlen("pass:")];
+		}
+	}
 #ifdef UNICODE
-   HeapFree(GetProcessHeap(), 0, (PVOID) ppArgv);
+	HeapFree(GetProcessHeap(), 0, (PVOID) ppArgv);
 #endif
 
-   if (fDebug) 
-   {
-      // Running as EXE not as service, just run the service for debugging
-	  FiveLoavesServiceMain(0, NULL);
-   }
-   if (bRun) 
-   {
-		fStartService = 1;
-   }
+	if (bInstall)
+	{
+		InstallService();
+	}
+	if (bRemove)
+	{
+		RemoveService();
+	}
+	if (fDebug) 
+	{
+		// Running as EXE not as service, just run the service for debugging
+		FiveLoavesServiceMain(0, NULL);
+	}
+	if (bRun) // run will run the service in the current process 
+	{
+		bStartService = 1;
+	}
+	if (bStart) // start will use SCM to start a new process as a service
+	{
+		StartService();
+		return 0;
+	}
+	if (bStop) // start will use SCM to start a new process as a service
+	{
+		StopService();
+		return 0;
+	}
+	if (bManual)
+	{
+		SetServiceAutoStartup(0);
+		return 0;
+	}
+	if (bAuto)
+	{
+		SetServiceAutoStartup(1);
+		return 0;
+	}
 
-   strcpy(pzServer,strServerName);
-   if (fStartService) 
-   {
-      SERVICE_TABLE_ENTRY ServiceTable[] = {
-         { pzServer, FiveLoavesServiceMain },
-         { NULL,        NULL }   // End of list
-   };
-   StartServiceCtrlDispatcher(ServiceTable);
+	strcpy(pzServer,strServerName);
+	if (bStartService) 
+	{
+		SERVICE_TABLE_ENTRY ServiceTable[] = {
+			{ pzServer, FiveLoavesServiceMain },
+			{ NULL,        NULL }   // End of list
+	};
+	StartServiceCtrlDispatcher(ServiceTable);
    
    }
-   return(0);
+   return 0;
 }
 
 
 //////////////////////////////// End Of File /////////////////////////////////
-
-
-

@@ -182,3 +182,11 @@ Feb 19 - Set the VS2012 Warning Level to 4, reviewed all the output, made variou
 Feb 19 - Added (/EHa) to all the example programs in the VS2012 workspace, 
 Feb 19 - commented the need for (/EHa) in ExceptionHandlerScope() in ExceptionHandler.h where the compiler warning is generated
 Mar 6 - added TheOIDProtocol example
+Mar 7 - removed SpookyHash Timed Rotating vs FVN = FVN is over 2x faster.  Raised default hash table size in ExIndexObjects
+Mar 7 - GHash is essentially equal to GSparshHash according to data from sample program ExIndexObjects in Win64
+Mar 18 - Made MANY changes with regard to using ServerCore.cpp within your own application, see all the new files in XMLFoundation/Servers/core/
+Mar 18 - added many new features to Windows Service (start, stop, auto, manual, install, remove)
+Mar 18 - updates to the Command Shell, and disabled the 'si' command.
+Mar 18 - Added documentation updates to code everywhere I touched, the newer comments in GString.h are helpful and humorous
+Mar 18 - Fixed a bug in the GBTreeIterator, I had two pop()'s where i needed top()'s - its fixed now.
+Mar 19 - Added Reading and Writing of XML to GProfile where previously it used only INI format                                                                                                                   

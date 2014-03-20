@@ -96,6 +96,54 @@ SOURCE=.\Console.cpp
 SOURCE=..\Core\ServerCore.cpp
 # PROP Exclude_From_Build 1
 # End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomGlobalInternals.cpp
+
+!IF  "$(CFG)" == "5Loaves - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "5Loaves - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomGlobals.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomHTTP.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomProfileInit.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomProfileSetNotify.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomProfileUpdate.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomServerStart.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\Core\ServerCoreCustomServerStop.cpp
+# PROP Exclude_From_Build 1
+# End Source File
 # End Group
 # End Target
 # End Project

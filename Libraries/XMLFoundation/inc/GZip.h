@@ -1,3 +1,5 @@
+#ifndef _G_ZIP_HEADER_INCLUDED__
+#define _G_ZIP_HEADER_INCLUDED__
 // nLevel
 // ----------------------
 // Z_NO_COMPRESSION		 0
@@ -30,3 +32,4 @@ int GZipBuffToBuffDecompress (
       unsigned int  sourceLen
    );
 
+#endif //_G_ZIP_HEADER_INCLUDED__

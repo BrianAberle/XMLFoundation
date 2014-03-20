@@ -72,6 +72,8 @@ XMLObjectCache::~XMLObjectCache()
 	gthread_mutex_destroy(&m_csState);
 	gthread_mutex_destroy(&m_csForeign);
 	gthread_mutex_destroy(&m_csData);
+	
+	_gthread_processTerminate();
 }
 
 // findObject() returns an object from the cache or null if the 

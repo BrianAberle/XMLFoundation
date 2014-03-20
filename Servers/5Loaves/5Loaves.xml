@@ -1,0 +1,37 @@
+<configuration>
+
+	<section name="Perl">
+		<setting name="Path" value="C:\XMLFoundation\Examples\Perl"/>
+	</section>
+	<section name="Python">
+		<setting name="Path" value="C:\XMLFoundation\Examples\Python"/>
+	</section>
+	<section name="TXML">
+		<setting name="Drivers" value="C:\XMLFoundation\Drivers"/>
+	</section>
+	<section name="CStdCall">
+		<setting name="Path" value="C:\XMLFoundation\Examples\C++\PluginExample"/>
+	</section>
+	<section name="System">
+		<setting name="Pool" value="20"/>
+		<setting name="ProxyPool" value="0"/>
+	</section>
+	<section name="HTTP">
+		<setting name="Port" value="8088"/>
+		<setting name="Enable" value="yes"/>
+		<setting name="Home" value="c:\XMLFoundation"/>
+		<setting name="Index" value="XMLFoundation2010.html"/>
+		<setting name="EnableServerExtensions" value="yes"/>
+		<setting name="ServerPlugin1" value="/Test2WWWPage|CStdCall|PluginExample.so|PluginExample|Test2"/>
+		<setting name="ServerPlugin2" value="/Test3WWWPage|CStdCall|PluginExample.so|PluginExample|Test3"/>
+		<setting name="ServerPlugin3" value="/Test4WWWPage|CStdCall|PluginExample.so|PluginExample|Test4"/>
+		<setting name="ServerPlugin4" value="/Test5WWWPage|CStdCall|PluginExample.so|PluginExample|Test5"/>
+		<setting name="ServerPlugin5" value="/Test7WWWPage|CStdCall|PluginExample.dll|PluginExample|Test7"/>
+		<setting name="ServerPlugin6" value="/Page1|CStdCall|PluginExample.so|PluginExample|Page1"/>
+		<setting name="ServerPlugin7" value="/Page2|CStdCall|PluginExample.so|PluginExample|Page2"/>
+		<setting name="ServerPlugin8" value="/Page3|CStdCall|PluginExample.so|PluginExample|Page3"/>
+		<setting name="ServerPlugin9" value="/Page4|Perl|Example.pl|Example|Page4"/>
+		<setting name="ServerPlugin10" value="/PagePerl|Perl|Example.pl|Example|showtime"/>
+		<setting name="ServerPlugin11" value="/PagePython|Python|Example.py|Example|SayHello"/>
+	</section>
+</configuration>

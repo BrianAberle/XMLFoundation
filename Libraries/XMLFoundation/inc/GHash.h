@@ -26,7 +26,6 @@ protected:
 	   __int64	m_nCount;
 	   __int64	m_nHashTableSize;
 	   __int64	m_nDeferDestruction;
-	   int m_nCollisionReduction;
 
 	   void InitTable();
 	   friend class GHashIterator; // GHash Iterator Class
@@ -68,9 +67,9 @@ inline void *RemoveKey(unsigned __int64	key, __int64 nOccurance = 0) const { ret
 	void Destruction();
 
 	// Construct the Hash with a prime number.  For very large data sets you may want
-	// one of these primes: 4441, 8123, 11777, 17017
+	// one of these primes: 4441, 8123, 11777, 17017, 170777
 	// or a smaller prime :    7, 101, 503, 1009
-	GHash(unsigned int nPrime = 2503, int nCollisionReduction = 0);
+	GHash(unsigned int nPrime = 2503);
 	~GHash();
 };
 

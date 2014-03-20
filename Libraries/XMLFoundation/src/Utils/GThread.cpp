@@ -2844,8 +2844,7 @@ gthread_key_delete (gthread_key_t key)
 
 
 
-void
-_gthread_processTerminate (void)
+void _gthread_processTerminate (void)
      /*
       * ------------------------------------------------------
       * DOCPRIVATE
