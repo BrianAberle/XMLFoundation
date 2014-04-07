@@ -3,7 +3,7 @@
 
 class LowLevelStaticController : public DataController
 {
-	int m_nBytesIn;
+	unsigned int m_nBytesIn;
 	int m_BytesExpected;
 	int m_fd;
 	char *m_Buf1;

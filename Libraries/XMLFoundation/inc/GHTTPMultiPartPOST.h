@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -49,7 +49,7 @@ public:
 	~FormPart() {if (m_bOwns == 1) delete strData; };
 };
 
-class CMultiPartForm
+class GMultiPartForm
 {
 	DataController *m_pPIC;
 	char *m_pzContent;
@@ -64,9 +64,9 @@ class CMultiPartForm
 	int m_nLastError;
 	GString m_strLastError;
 public:
-	~CMultiPartForm();
+	~GMultiPartForm();
 	
-	CMultiPartForm(DataController* pPIC, const char *pzHeader, const char *pzContent);
+	GMultiPartForm(DataController* pPIC, const char *pzHeader, const char *pzContent);
 	void MapArgument(const char *pzArgName, GString *pstrDest);
 	void MapArgumentToFile(const char *pzArgName, const char *pzPathAndFileName);
 	FormPart *AddArgument(const char *pzArgName, int nEstimatedSize = 256);

@@ -500,6 +500,14 @@ SOURCE=..\..\..\Libraries\XMLFoundation\src\Utils\GString.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Libraries\XMLFoundation\src\Utils\GString0.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Libraries\XMLFoundation\src\Utils\GString32.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Libraries\XMLFoundation\src\Utils\GStringList.cpp
 # End Source File
 # Begin Source File

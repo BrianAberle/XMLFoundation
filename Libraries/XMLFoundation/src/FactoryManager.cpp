@@ -39,9 +39,12 @@ XMLObjectFactoryManager::~XMLObjectFactoryManager()
 	for( __int64 nArrayIndex=0; nArrayIndex<nCount; nArrayIndex++ )
 	{
 		MemberDescriptor *pMD = (MemberDescriptor *) m_factoryList.GetAt(nArrayIndex);
-		delete[] (char *)((pMD->m_Member).pClassName);
-		// specify the global delete 
-		::delete pMD;
+		if (pMD)
+		{
+			delete[] (char *)((pMD->m_Member).pClassName);
+			// specify the global delete 
+			::delete pMD;
+		}
 	}
 }
 

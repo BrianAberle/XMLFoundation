@@ -101,7 +101,7 @@ long pascal SetConfigFile(const char *pzStartConfigFile)
 {
 	try
 	{
-		SetProfile(new GProfile(pzStartConfigFile,""));
+		SetProfile(new GProfile(pzStartConfigFile,0));
 	}
 	catch ( GException &e )
 	{

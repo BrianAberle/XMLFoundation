@@ -2555,8 +2555,7 @@ FAIL0:
 }
 
 
-void
-gthread_exit (void *value_ptr)
+void gthread_exit (void *value_ptr)
 {
      /*
       * ------------------------------------------------------
@@ -2609,6 +2608,7 @@ gthread_exit (void *value_ptr)
 #endif
       
       /* Never reached */
+	  return;
     }
 
   self->exitStatus = value_ptr;

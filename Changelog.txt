@@ -189,4 +189,22 @@ Mar 18 - added many new features to Windows Service (start, stop, auto, manual, 
 Mar 18 - updates to the Command Shell, and disabled the 'si' command.
 Mar 18 - Added documentation updates to code everywhere I touched, the newer comments in GString.h are helpful and humorous
 Mar 18 - Fixed a bug in the GBTreeIterator, I had two pop()'s where i needed top()'s - its fixed now.
-Mar 19 - Added Reading and Writing of XML to GProfile where previously it used only INI format                                                                                                                   
+Mar 19 - Added Reading and Writing of XML to GProfile where previously it used only INI format
+Mar 20 - fixed a small memory leak in XMLObject, and added call to gthread_process_initialize() from global 'dtor
+Mar 21 - added GlobalKeyPartLists to XMLObject it removed a non-growing memory leak(it wasnt really a problem but looks ugly in memory diagnostic tools)
+Mar 21 - added new example program ContainOrInherit
+Mar 21 - fixed ~XMLRelationshipWrapper().  It works just the same - but the code is better. Ran all regression tests
+Mar 21 - added all the extern's at the bottom of AbstractionGeneric.h, once used only buy XMLObject they can be used anywhere.
+Mar 21 - added a new example program CustomHTTPService that uses the new ServerCore hooks
+Mar 22 - More work on the CustomHTTPService example program
+Mar 22 - added another delete of GlobalKeyPartLists (just like Mar 21 fix - but for COM and CORBA also)
+Mar 22 - Renamed CMultiPartForm to GMultiPartForm, heavily commented GHTTPMultiPartPost.cpp 
+Mar 26 - widened XMLObject::ReStoreState(__int64 oid) to 64 bit
+Mar 28 - reorganized the article file, now docs/index.html for easier publication
+Mar 30 - As older followers of XMLFoundation know I  sometimes publish an audio .mp3 file, see XML2.mp3 in the root
+Apr  4 - Fixed a bug regarding empty argument values in InterfaceInstance::GetMethodParams()
+Apr5-6 - Ran the Microsoft Code Analysis in MSDev2012, reviewed all output silenced some warnings, added a few if(!Null) checks
+Apr5-6 - Added two new utility classes GString0, and GString32, modified XMLObject and GString for them
+Apr5-6 - see note under [m_pzkTheWord] in [IndexObjects.cpp] about why the new GStrings were created.
+Apr5-6 - fixed the MSVC2012 project for CustomHTTPService to properly exclude the files from the build.
+

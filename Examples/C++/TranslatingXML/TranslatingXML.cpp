@@ -94,6 +94,10 @@ public:							// make public here for example simplicity - this is not required
 		MapMember( &m_strString10,	"String10","red*=Red,Mary Jane=Green,grass=Green,					 ",							"1=One,2=Two,777=Root,any*=anyVALUE,XML_EMPTY_VALUE=zzzzzzz");
 		MapMember( &m_strString11,	"String11","red*=Red,Mary Jane=Green,grass=Green,XML_DEFAULT=We Know ",							"1=One,2=Two,777=Root,any*=anyVALUE");
 		MapMember( &m_strString12,	"String12","red*=Red,Mary Jane=Green,grass=Green,XML_DEFAULT=We Know,XML_EMPTY_VALUE=Blue",		"1=One,2=Two,777=Root,any*=anyVALUE");
+
+		// this one MapMember handles all string in the string list - unlike the individual per string maps above
+		MapMember( &m_strList,		"StringList",	"Wrapper",  "red*=Red,Mary Jane=Green,grass=Green,XML_EMPTY_VALUE=Blue",						"Green=G.G.G.Green,Red=Bloody Red,777=Root,pur*=Purp");
+
 		MapMember( m_szNative, "FixedBuffer",sizeof(m_szNative), "red*=Red,Mary Jane=Green,grass=Green"								"1=One,2=Two,777=Root,any*=anyVALUE");
 		MapMember( m_szNative2,"FixedBuffer2",sizeof(m_szNative2),"red*=01234567899999,Mary Jane=Green,grass=Green"								"1=One,2=Two,777=Root,any*=anyVALUE");
 
@@ -107,8 +111,6 @@ public:							// make public here for example simplicity - this is not required
 		MapMember( &m_nInteger7,	"Number7", "1=10,2=20,3=777,one=10,two=20,three=777,XML_EMPTY_VALUE=-777,XML_DEFAULT=1234567",	"10=100,20=200,777=21");
 		MapMember( &m_nInteger8,	"Number8", "1=10,2=20,3=777,one=10,two=20,three=777,					 XML_DEFAULT=1234567",	"10=100,20=200,777=21");
 
-		// this one MapMember handles all string in the string list - unlike the individual per string maps above
-		MapMember( &m_strList,		"StringList",	"Wrapper",  "red*=Red,Mary Jane=Green,grass=Green,XML_EMPTY_VALUE=Blue",						"Green=G.G.G.Green,Red=Bloody Red,777=Root,pur*=Purp");
 
 		MapMember( &m_strArray,		"IntArray", "Wrapper2", "1=10,2=20,3=777,one=10,two=20,three=777,XML_EMPTY_VALUE=-777,XML_DEFAULT=7777777",	"10=100,20=200,777=Three Sevens > Numbers");
 		MapAttribute(&m_strColor,	"Color");

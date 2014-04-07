@@ -269,7 +269,7 @@ long C5LoavesCtrl::SetConfigFile(LPCTSTR StartConfigFile)
 {
 	try
 	{
-		SetProfile(new GProfile(StartConfigFile,""));
+		SetProfile(new GProfile(StartConfigFile,0));
 	}
 	catch ( GException &e )
 	{

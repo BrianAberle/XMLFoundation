@@ -27,14 +27,12 @@ static char SOURCE_FILE[] = __FILE__;
 #include "RelationshipWrapper.h"
 #include "AbstractionsGeneric.h"
 #include <stdio.h> // for sprintf() / sscanf()
-
+#include <string.h> // for: strlen()
 #ifdef _IOS
 	#include <stdlib.h> // for malloc()
 #else
 	#include <malloc.h> // for malloc()
 #endif
-
-
 
 #ifdef _WIN32
 	#define strcasecmp	_stricmp
@@ -43,22 +41,28 @@ static char SOURCE_FILE[] = __FILE__;
 	#include <strings.h> // for strcasecmp()
 	#define LONG_ONE 1LL
 #endif
-
-#include <string.h> // for: strlen()
-
 #ifndef ASSERT
 	#define ASSERT(f)    ((void)0)
 #endif
 
+GlobalKeyPartLists g_KeyPartsListCleanup;
+
+
+
 // Global, stateless, thread-safe,  abstraction handlers:
+// -------------------------------
 GenericStringAbstract gGenericStrHandler;
+GenericStringAbstract0 gGenericStr0Handler;
+GenericStringAbstract32 gGenericStr32Handler;
 GStringListAbstraction gGStringListHandler;
 GArrayAbstraction gGArrayHandler;
 GenericListAbstraction gGListHandler;
-
 GHashAbstraction gGHashHandler;
 GQSortAbstraction gGQSortHandler;
 GBTreeAbstraction gGBTreeHandler;
+// -------------------------------
+
+
 
 
 class DefaultDataHandler : public XMLObjectDataHandler
@@ -683,6 +687,25 @@ void XMLObject::MapMember(GString *pValue,const char *pTag, const char *pzTransl
 	}
 	XMLObject::MapMember(pValue,pTag,&gGenericStrHandler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
 }
+void XMLObject::MapMember(GString0 *pValue,const char *pTag, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
+{
+	if(m_bCountingMemberMaps)
+	{
+		GetMemberMapCount(1);
+		return;
+	}
+	XMLObject::MapMember(pValue,pTag,&gGenericStr0Handler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
+}
+void XMLObject::MapMember(GString32 *pValue,const char *pTag, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
+{
+	if(m_bCountingMemberMaps)
+	{
+		GetMemberMapCount(1);
+		return;
+	}
+	XMLObject::MapMember(pValue,pTag,&gGenericStr32Handler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
+}
+
 void XMLObject::MapMember(void *pValue,const char *pTag,StringAbstraction *pHandler,const char *pzTranslationMapIn,const char *pzTranslationMapOut,int nTranslationFlags)
 {
 	if(m_bCountingMemberMaps)
@@ -1142,6 +1165,24 @@ void XMLObject::MapAttribute(GString *pstrValue,const char *pTag, const char *pz
 	}
 	MapAttribute(pstrValue,pTag,&gGenericStrHandler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
 }
+void XMLObject::MapAttribute(GString0 *pstrValue,const char *pTag, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
+{
+	if(m_bCountingMemberMaps)
+	{
+		GetMemberMapCount(1);
+		return;
+	}
+	MapAttribute(pstrValue,pTag,&gGenericStr0Handler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
+}
+void XMLObject::MapAttribute(GString32 *pstrValue,const char *pTag, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
+{
+	if(m_bCountingMemberMaps)
+	{
+		GetMemberMapCount(1);
+		return;
+	}
+	MapAttribute(pstrValue,pTag,&gGenericStr32Handler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
+}
 
 void XMLObject::MapAttribute(void *pValue,const char *pTag,StringAbstraction *pHandler, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
 {
@@ -1495,16 +1536,10 @@ const char *XMLObject::ToXML(__int64 nPreAllocSize /*=4096*/, unsigned int nSeri
 	return *m_pToXMLStorage;
 }
 
-void XMLObject::ReStoreState(long oid)
+void XMLObject::ReStoreState(__int64 oid)
 {
 	GString strOid;
-	strOid.Format("%ld",(int)oid);
-	ReStoreState((const char *)strOid);
-}
-void XMLObject::ReStoreState(int oid)
-{
-	GString strOid;
-	strOid.Format("%d",(int)oid);
+	strOid << oid;
 	ReStoreState((const char *)strOid);
 }
 void XMLObject::ReStoreState(const char * oid)
@@ -2041,7 +2076,10 @@ void XMLObject::LoadMemberMappings()
 			}
 			// now rather than calling new() once for each MapMember called, we will only call malloc() 1 time.
 			// The single allocation will hold an array of 1 MemberDescriptor for each call to MapMember()
-			m_pMemberDescriptorArray = malloc(sizeof(MemberDescriptor) * nArraySize);
+			if (nArraySize)
+				m_pMemberDescriptorArray = malloc(sizeof(MemberDescriptor) * nArraySize);
+			else
+				m_pMemberDescriptorArray = 0; // array size can be 0
 		}
 		// now call MapXMLTagsToMembers() again and now we will explicitly call the 'ctor 
 		// [nArraySize] times on the memory at [m_pMemberDescriptorArray]
@@ -3060,17 +3098,20 @@ int XMLObject::CopyState(XMLObject *pCopyFrom)
 						}
 
 						// finally, add Objects from pSrcMapDataStruct into pDestMapDataStruct (if they are not already there)
-						xmlObjectIterator iterFinal = 0;
-						XMLObject *pOFinal = pSrcMapDataStruct->GetFirstContainedObject(&iterFinal);
-						while (pOFinal)
+						if (pSrcMapDataStruct) // note pSrcMapDataStruct is always non null
 						{
-							if ( !pDestMapDataStruct->ObjectExists( pOFinal ) )
+							xmlObjectIterator iterFinal = 0;
+							XMLObject *pOFinal = pSrcMapDataStruct->GetFirstContainedObject(&iterFinal);
+							while (pOFinal)
 							{
-								pDestMapDataStruct->AddContainedObject( pOFinal );
-								pOFinal->IncRef();
+								if ( !pDestMapDataStruct->ObjectExists( pOFinal ) )
+								{
+									pDestMapDataStruct->AddContainedObject( pOFinal );
+									pOFinal->IncRef();
+								}
+								
+								pOFinal = pSrcMapDataStruct->GetNextContainedObject(iterFinal);
 							}
-							
-							pOFinal = pSrcMapDataStruct->GetNextContainedObject(iterFinal);
 						}
 
 					}

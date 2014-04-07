@@ -57,6 +57,7 @@ public:
 			// the ObjCacheQuery was decrementing the reference count on the result set objects.
 			// 2014 Note: Search for "This was bad.   Fixed 12/21/2013" in ProcedureCall.cpp.
 			// That fix likely eliminates the need for this - need to research
+			// note: see ~XMLRelationshipWrapper()
 			XMLObject *pThis = (XMLObject *)this;
 			pThis->ModifyObjectBehavior(PREVENT_AUTO_DESTRUCTION,0); 
 

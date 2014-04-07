@@ -14,6 +14,8 @@ NoLibraryLink: \
 	GProfile.o \
 	GStack.o \
 	GString.o \
+	GString0.o \
+	GString32.o \
 	GStringList.o \
 	GDirectory.o \
 	GPerformanceTimer.o \
@@ -62,6 +64,8 @@ NoLibraryLink: \
 		GProfile.o \
 		GStack.o \
 		GString.o \
+		GString0.o \
+		GString32.o \
 		GStringList.o \
 		GDirectory.o \
 		GPerformanceTimer.o \
@@ -127,6 +131,12 @@ GStack.o: ../../../Libraries/XMLFoundation/src/Utils/GStack.cpp
 
 GString.o: ../../../Libraries/XMLFoundation/src/Utils/GString.cpp
 	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GString.cpp -o ./GString.o
+
+GString0.o: ../../../Libraries/XMLFoundation/src/Utils/GString0.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GString0.cpp -o ./GString0.o
+
+GString32.o: ../../../Libraries/XMLFoundation/src/Utils/GString32.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GString32.cpp -o ./GString32.o
 
 GStringList.o: ../../../Libraries/XMLFoundation/src/Utils/GStringList.cpp
 	$(CC) $(CPPFLAGS) $(INCDIR) ../../../Libraries/XMLFoundation/src/Utils/GStringList.cpp -o ./GStringList.o

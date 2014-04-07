@@ -24,8 +24,8 @@
 #include "GBTree.h"
 #include "StringAbstraction.h"
 #include "GString.h"
-
-
+#include "GString0.h"
+#include "GString32.h"
 
 // there is only 1 instance of this class.
 class GenericStringAbstract : public StringAbstraction
@@ -53,7 +53,57 @@ public:
 	}
 };
 
+// there is only 1 instance of this class.
+class GenericStringAbstract0 : public StringAbstraction
+{
+public:
+	int isEmpty(userString pString)
+	{
+		return (((GString0 *)pString)->IsEmpty());
+	}
+	__int64 length(userString pString)
+	{
+		return ((GString0 *)pString)->Length();
+	}
+	void assign(userString pString, const char *pzValue)
+	{
+		*((GString0 *)pString) = pzValue;
+	}
+	void append(userString pString, const char *pzValue)
+	{
+		*((GString0 *)pString) += pzValue;
+	}
+	const char *data(userString pString)
+	{
+		return (const char *)*((GString0 *)pString);
+	}
+};
 
+// there is only 1 instance of this class.
+class GenericStringAbstract32 : public StringAbstraction
+{
+public:
+	int isEmpty(userString pString)
+	{
+		return (((GString32 *)pString)->IsEmpty());
+	}
+	__int64 length(userString pString)
+	{
+		return ((GString32 *)pString)->Length();
+	}
+	void assign(userString pString, const char *pzValue)
+	{
+		*((GString32 *)pString) = pzValue;
+	}
+	void append(userString pString, const char *pzValue)
+	{
+		*((GString32 *)pString) += pzValue;
+	}
+	const char *data(userString pString)
+	{
+		return (const char *)*((GString32 *)pString);
+	}
+};
 
 
 //
@@ -474,5 +524,18 @@ public:
 		Iterator = 0;
 	}
 };
+
+// The one and only instance exists in xmlObject.cpp - there is no AbstractionsGeneric.cpp
+extern GenericListAbstraction gGListHandler; 
+extern GenericStringAbstract gGenericStrHandler;
+extern GenericStringAbstract0 gGenericStr0Handler;
+extern GenericStringAbstract32 gGenericStr32Handler;
+extern GStringListAbstraction gGStringListHandler;
+extern GArrayAbstraction gGArrayHandler;
+extern GenericListAbstraction gGListHandler;
+extern GHashAbstraction gGHashHandler;
+extern GQSortAbstraction gGQSortHandler;
+extern GBTreeAbstraction gGBTreeHandler;
+
 
 #endif //_XML_GENERIC_LIST_ABSTRACTION

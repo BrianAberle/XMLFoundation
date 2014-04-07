@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -21,7 +21,7 @@
 #endif 
 
 
-CMultiPartForm::~CMultiPartForm()
+GMultiPartForm::~GMultiPartForm()
 {
 	if (m_nLastError != 0)
 	{
@@ -44,7 +44,7 @@ CMultiPartForm::~CMultiPartForm()
 	}
 }
 	
-CMultiPartForm::CMultiPartForm(DataController* pPIC, const char *pzHeader, const char *pzContent)
+GMultiPartForm::GMultiPartForm(DataController* pPIC, const char *pzHeader, const char *pzContent)
 {
 	m_pzContent = (char *)pzContent;
 	m_pPIC = pPIC;
@@ -55,21 +55,21 @@ CMultiPartForm::CMultiPartForm(DataController* pPIC, const char *pzHeader, const
 		m_strEndBoundary << "\r\n--" << m_strBoundary;
 	}
 	m_nBytesInBuffer = m_pPIC->GetTotalBytesIn();
-	m_nRemainingData = m_pPIC->GetExpectedDataSize() - m_nBytesInBuffer;
+	m_nRemainingData = m_pPIC->GetExpectedDataSize(); // - m_nBytesInBuffer; This depends on how the DataController was setup.
 	m_pzContentIndex = 0;
 	m_bFinished = 0;
 	m_bOwnMemory = 0;
 	m_nLastError = 0;
 }
 
-void CMultiPartForm::MapArgument(const char *pzArgName, GString *pstrDest)
+void GMultiPartForm::MapArgument(const char *pzArgName, GString *pstrDest)
 {
 	FormPart *p = new FormPart(pstrDest);
 	p->strPartName = pzArgName;
 	m_Parts.insert(pzArgName,p);
 }
 
-void CMultiPartForm::MapArgumentToFile(const char *pzArgName, const char *pzPathAndFileName)
+void GMultiPartForm::MapArgumentToFile(const char *pzArgName, const char *pzPathAndFileName)
 {
 	FormPart *p = new FormPart(32767);
 	p->strDestFileName = pzPathAndFileName;
@@ -78,26 +78,26 @@ void CMultiPartForm::MapArgumentToFile(const char *pzArgName, const char *pzPath
 }
 
 
-FormPart *CMultiPartForm::AddArgument(const char *pzArgName, int nEstimatedSize/* = 256*/)
+FormPart *GMultiPartForm::AddArgument(const char *pzArgName, int nEstimatedSize/* = 256*/)
 {
 	FormPart *p = new FormPart(nEstimatedSize);
 	p->strPartName = pzArgName;
 	m_Parts.insert(pzArgName,p);
 	return p;
 }
-const char *CMultiPartForm::GetLastError(int *pnErrorCode/* = 0*/)
+const char *GMultiPartForm::GetLastError(int *pnErrorCode/* = 0*/)
 {
 	if (pnErrorCode)
 		*pnErrorCode = m_nLastError;
 	return m_strLastError;
 }
-int CMultiPartForm::GetAll()
+int GMultiPartForm::GetAll()
 {
 	while(ReadNext(0));
 	return (m_bFinished) ? 1 : 0; // 1 = success, 0 = error
 }
 
-int CMultiPartForm::ReadNext(FormPart **ppPart)
+int GMultiPartForm::ReadNext(FormPart **ppPart)
 {
 	int nReadMore = 0;
 RETRY:
@@ -128,6 +128,7 @@ RETRY:
 		}
 		else
 		{
+			// parse out the name of this multipart section
 			char *p = stristr(pHeader->Buf(),"name=");
 			if (p)
 			{
@@ -139,6 +140,7 @@ RETRY:
 			}
 		}
 
+		// if we parsed out the name, [strName] holds the value of the section we are currently parsing
 		if (strName.Length())
 		{
 			pFormPart = (FormPart *)m_Parts.search(strName);
@@ -146,52 +148,59 @@ RETRY:
 			{
 				pFormPart = AddArgument(strName);
 			}
+			// also get the original filename uploaded by the browser
 			char *p = stristr(pHeader->Buf(),"filename=");
 			if (p)
 			{
 				char *pQuote = strpbrk(p,"\"");
 				if (pQuote)
 				{
+					// and store that file name in [pFormPart->strSourceFileName ]
 					pFormPart->strSourceFileName.SetFromUpTo(pQuote+1,"\"");
 				}
 			}
 
-
 			__int64 nOffset = m_strBoundary.Length() + 2 + pHeader->Length() + 2;
+			
+			// if bIsDiskFile == true then we flush the buffer to disk else we stack it up in the buffer
 			bIsDiskFile = pFormPart->strDestFileName.Length();
 			if (bIsDiskFile)
 			{
+				// if the destination file existed we would otherwise append to it without this line of code 
+				// that could be desired behavior in rare cases
 #ifdef _WIN32
-				_unlink(pFormPart->strDestFileName);  // if the destination file existed we would otherwise append to it without this line of code - that could be desired behavior in rare cases
+				_unlink(pFormPart->strDestFileName);  
 #else
-				unlink(pFormPart->strDestFileName);  // if the destination file existed we would otherwise append to it without this line of code - that could be desired behavior in rare cases
+				unlink(pFormPart->strDestFileName);  
 #endif
 			}
 
 			__int64 nLen = m_strEndBoundary.Length();
 			while(1)
 			{
+				// Look for the boundary
 				if ( memcmp(&pStart[nOffset],m_strEndBoundary, (unsigned int)nLen) == 0)
 				{
-					// finished.
+					// finished reading the data for this formpart[strName]
 					m_pzContentIndex += ( nOffset );
 					m_pzContentIndex += 2;
 					nSuccess = 1;
 					break;
 				}
-				else
+				else // add 1 byte to the destination data for this FormPart, and increment to the next byte
 				{
 					pFormPart->strData->write( &pStart[nOffset++], 1 );
 				}
 
-
+				// if we have reached the end of the data chunk we are parsing
 				if (nOffset + m_pzContentIndex  == m_nBytesInBuffer)
 				{
-					// we could not set it, get more data if there is more
+					// get more data if there is more
 					if ( m_nRemainingData > 0 )
 					{
 						if (bIsDiskFile)
 						{
+							// flush out the bit we do have to disk.
 							if ( !pFormPart->strData->ToFileAppend( pFormPart->strDestFileName, 0) )
 							{
 								m_strLastError = "Failed to write to file: ";
@@ -204,9 +213,13 @@ RETRY:
 								*pFormPart->strData = ""; // reset the GString to 0 size, retain the memory allocation
 							}
 						}
+						
+						//
+						// Get the next block of data, a full 64000 bytes if there is that much
 						int nTemp;
 						int nRslt = m_pPIC->NextDataChunk(&nTemp);
 						m_nBytesInBuffer = nTemp;
+
 						if (nRslt == -1)
 						{
 							// the connection has been broken
@@ -216,6 +229,7 @@ RETRY:
 						}
 						else if (nRslt == 1)
 						{
+							// set parsing values to the beginning of this new block we just fetched 
 							m_nRemainingData -= m_nBytesInBuffer;
 							pStart = m_pPIC->GetBuffer1();
 							pStart[m_nBytesInBuffer] = 0;
@@ -234,6 +248,8 @@ RETRY:
 							// there is no more data here yet
 						}
 					}
+					
+					// there is no more data to parse
 					break;
 				}
 			}

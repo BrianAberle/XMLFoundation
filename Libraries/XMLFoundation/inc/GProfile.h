@@ -18,8 +18,10 @@
 // The Windows Registry is rightly called a database, It has it's own format.  
 // GProfile has can use either INI or XML format.
 //
-// From 2000 up utill 2014 GProfile used only the .INI file format which is VERY easy to hand edit,
+// From 2000 up until 2014 GProfile used only the .INI file format which is VERY easy to hand edit,
 // and it is VERY easy to read.  In both categories, Readability and Hand-editability INI wins over XML.
+//
+// NOTE: search for "Converting XML to INI"   or "Converting INI to XML" in /Servers/5Loaves/Console.cpp
 //
 ///////////////////////////////////////////////////////////////////
 // This is the exact technical definition of INI format:
@@ -88,9 +90,9 @@
 //
 #include "GStringList.h"
 #include "GBTree.h"
+#include "RelationshipWrapper.h"
 
 
-#include "xmlObject.h"
 class GProfileEntry : public XMLObject
 {
 public:
@@ -105,13 +107,13 @@ class GProfileSection : public XMLObject
 {
 public:
 	GString		m_strName;
-	GList		m_lstNVP;
+	GList		m_lstNVP; // list of Name Value Pairs in GProfileEntry
 	virtual void MapXMLTagsToMembers();
 	DECLARE_FACTORY(GProfileSection, section)
 };
 
 
-class GProfile : public XMLObject
+class GProfile
 {
 	typedef int(*fnChangeNotify)(const char *,const char *,const char *);
 	GBTree	*m_pTreeNotify;
@@ -119,6 +121,8 @@ class GProfile : public XMLObject
 	long SetConfig(const char *szSection, const char *szEntry, const char *nValue, short bSetDefault);
 	GStringList lstChangeNotifications;
 	bool m_bIsXML; // the storage format is either INI or XML
+	XMLRelationshipWrapper m_objectContainer;
+
 public:
 	// RegisterChangeNotification usage:
 	// add this global function in your code:
@@ -296,8 +300,8 @@ public:
 	GProfile();
 	~GProfile();
 
-	virtual void MapXMLTagsToMembers();
-	DECLARE_FACTORY(GProfile, configuration)
+//	virtual void MapXMLTagsToMembers();
+//	DECLARE_FACTORY(GProfile, configuration)
 };
 /*
 class GProfileEntryIterator

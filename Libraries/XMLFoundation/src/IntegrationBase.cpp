@@ -277,27 +277,33 @@ GStringList* InterfaceInstance::GetMethodParams(const char *pzObject, const char
 	const char *pzLists = strLists;
 
 	// if there are parameters (because both lists are empty)
-	if ( memcmp(pzLists,"!!",8) != 0 )
+	if ( memcmp(pzLists,"!!",2) != 0 )
 	{
 		// find the 'end' of the first list
 		char *pListSeperator = (char *)strstr(pzLists,"!");
-		*pListSeperator = 0;
-		// load m_pParamNameList from the serialized list data
-		m_pParamNameList.DeSerialize("&",pzLists);
+		if (pListSeperator)
+		{
+			*pListSeperator = 0;
+			// load m_pParamNameList from the serialized list data
+			m_pParamNameList.DeSerialize("&",pzLists);
 		
-		// advance to the next list
-		pListSeperator += 4;	// 4 is the size of the list terminator "&&&&"
-		// find it's end
-		char *pListTerminator = (char *)strstr(pListSeperator,"!");
-		*pListTerminator = 0;
+			// advance to the next list
+			pListSeperator += 4;	// 4 is the size of the list terminator "&&&&"
+			// find it's end
+			char *pListTerminator = (char *)strstr(pListSeperator,"!");
+			if (pListTerminator)
+			{
+				*pListTerminator = 0;
 
-		// load m_pParamTypeList from the serialized list data
-		m_pParamTypeList.DeSerialize("&",pListSeperator);
+				// load m_pParamTypeList from the serialized list data
+				m_pParamTypeList.DeSerialize("&",pListSeperator);
 		
-		// advance past the end of the 2nd list.
-		pListTerminator += 4;
-		// set the return type
-		m_strReturnType = pListTerminator;
+				// advance past the end of the 2nd list.
+				pListTerminator += 4;
+				// set the return type
+				m_strReturnType = pListTerminator;
+			}
+		}
 	}
 	else
 	{

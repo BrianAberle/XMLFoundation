@@ -108,6 +108,15 @@ public:
 	//note: all your memory is consumed by this variable.  32 bytes per instance of this object = Gigabytes
 	//note: {P}ointer to a {Z}ero terminated {K}ey part - TheWord
 	char m_pzkTheWord[32];
+
+	// Note that we cannot use a GString inplace of m_pzkTheWord, because a GString makes a 64 byte 
+	//    default allocation.   That would double the application memory use, plus add GString object overhead.
+	// We would conserve much memory by using a GString32 over a GString, if there are many instances 
+	// that never contain > 32 bytes. 
+	// The direct char[] map to m_pzkTheWord has no overhead, we can use that if we dont need GString.
+	
+
+
 	__int64  m_nkCount;
 	unsigned char m_Bits;
 

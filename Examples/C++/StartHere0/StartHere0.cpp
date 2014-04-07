@@ -48,7 +48,9 @@ public:							// make public here for example simplicity - this is not required
 
 		MapMemberBit( &m_bits,		"Seven77thBit", 7, "False,No,Off,0",  "True,Yes,On,1");
 		MapMemberBit( &m_bits,		"OnItsSide8",   8, "Black",			  "White");
-		MapMemberBit( &m_bits,		"Fifty5",		55, "no",			  "yes"); // if 55 is out of range - it will not map - see error log.  Use the 64 bit m_bits, and it maps.
+		// if 55 is out of range - it will not map - see error log.  Use the 64 bit m_bits, and it maps.
+		MapMemberBit( &m_bits,		"Fifty5",		55, "no",			  "yes"); 
+		
 	}
 	
 	// 'this' type, followed by the XML Element name, normally DECLARE_FACTORY() is in an .h file
@@ -88,9 +90,11 @@ char pzXML[] =
 #endif
 
 
-
+#include "GString0.h"
+#include "GString32.h"
 int main(int argc, char* argv[])
 {
+
 
 	MyCustomObject O;
 	O.FromXMLX(pzXML);

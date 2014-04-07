@@ -1,0 +1,21 @@
+CC = g++
+CPPFLAGS = -maccumulate-outgoing-args -w -c -D_INTEL -D_LINUX -D_LINUX64 -D_NO_EXCEPT -I../../Libraries/XMLFoundation/inc
+COPY = cp
+
+TransactXML: \
+	clear \
+	Console.o 
+	 
+	$(CC) \
+		-o CustomHTTPServiceConsole \
+		-L../../Libraries/XMLFoundation/Build \
+		Console.o \
+		-lpthread -lnsl -ldl -lXMLFoundation
+
+CustomHTTPServiceConsole.o: ./CustomHTTPServiceConsole.cpp
+	$(CC) $(CPPFLAGS) ./CustomHTTPServiceConsole.cpp -o ./CustomHTTPServiceConsole.o
+
+
+clear:
+	clear
+

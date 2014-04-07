@@ -48,7 +48,6 @@ char pzXML[] =
 "</Thing>";
 
 
-
 void ObjectDataAndCDataExample()
 {
 	MyCustomObject O;
@@ -177,134 +176,6 @@ void NewKindsOfMemberMapsIn2012()
 }
 
 
-// ******************************************************************
-// ******************************************************************
-// ******************************************************************
-class CMatter : public XMLObject
-{
-public:
-	GString m_strWeight;
-	virtual void MapXMLTagsToMembers()
-	{
-		MapMember(&m_strWeight,	"Weight");
-	}
-	DECLARE_FACTORY(CMatter, Matter) 
-	CMatter(){} 
-	~CMatter(){};
-};
-IMPLEMENT_FACTORY(CMatter, Matter)
-//------------------------------------------------
-class CLife : public CMatter 
-{
-public:
-	GString m_strDNA;
-	virtual void MapXMLTagsToMembers()
-
-	{
-		MapMember(	&m_strDNA,	"DNA");
-		CMatter::MapXMLTagsToMembers(); // explicit base class call
-	}
-	
-	DECLARE_FACTORY(CLife, Life) 
-		CLife(){   }
-	~CLife(){};
-};
-IMPLEMENT_FACTORY(CLife, Life)
-//------------------------------------------------
-class CHuman : public CLife
-{
-public:
-	GString m_strFingerPrint;
-	GString m_strGender;
-
-	virtual void MapXMLTagsToMembers()
-	{
-		MapMember(&m_strFingerPrint,"FingerPrint");
-		MapMember(&m_strGender,"Gender");
-		CLife::MapXMLTagsToMembers(); // explicit base class call
-	}
-	
-	DECLARE_FACTORY(CHuman, Human) 
-
-	CHuman(){} 
-	~CHuman(){};
-};
-IMPLEMENT_FACTORY(CHuman, Human)
-//------------------------------------------------
-char pzXML3[] = 
-"<Human>"
-	"<Gender>Male</Gender>"
-	"<DNA>1101010001010101101011000010101010</DNA>"
-	"<FingerPrint>Unique</FingerPrint>"
-	"<Weight>777</Weight>"
-"</Human>";
-
-
-
-void MappingAndInheritance()
-{
-	CHuman O;
-	O.FromXMLX(pzXML3);
-	
-	GString strDebug;
-	strDebug << "\n\n\nGender:" << O.m_strGender << "      FingerPrint:" 
-			 << O.m_strFingerPrint << "\n" << "DNA:" << O.m_strDNA 
-			 << "      Weight:" << O.m_strWeight << "\n\n";
-	printf(strDebug);
-//////////////////////
-// Gender:Male      FingerPrint:Unique
-// DNA:1101010001010101101011000010101010      Weight:777	
-//////////////////////
-
-
-
-	printf(O.ToXML());
-//////////////////////
-//<Human>
-//        <FingerPrint>Unique</FingerPrint>
-//		  <Gender>Male</Gender>
-//        <DNA>1101010001010101101011000010101010</DNA>
-//        <Weight>777</Weight>
-//</Human>	
-//////////////////////
-
-	CLife life;
-	//Notice that CLife is being created with pzXML3, that is the 
-	//same xml that the CHuman was created with.
-	life.FromXML(pzXML3);// Gender and FingerPrint are now unmapped data
-	strDebug.Empty();
-	strDebug << "\n\nDNA:"	<< life.m_strDNA << "      " 
-			 << "Weight:"	<< life.m_strWeight << "\n\n";
-	printf(strDebug);
-//////////////////////
-// DNA:1101010001010101101011000010101010      Weight:777
-//////////////////////
-
-
-	printf(life.ToXML());
-//////////////////////
-//<Life>
-//        <DNA>1101010001010101101011000010101010</DNA>
-//        <Weight>777</Weight>
-//</Life>
-//////////////////////
-
-/*
-So- for example, you may create an object CPlant that like
-the CHuman is derived from CLife.  A CPlant would contain
-the elements of CLife (DNA) and of CMatter (Weight) by inheritance.
-
-If each XML message represents a transaction it is wise
-to map the commonalities of all transactions, or groups of
-transactions into a base class that allows derivatives
-to inherit the base elements of the transaction that
-will only be maintained in one place.
-*/
-}
-
-// ******************************************************************
-// ******************************************************************
-// ******************************************************************
 
 
 
@@ -499,9 +370,52 @@ try
 
 	NewKindsOfMemberMapsIn2012();
 
-	MappingAndInheritance();
-
 	MapUnionStructAndEnum();
+
+
+	// A Note on the 2 new classes, GString0 and GString32 added to the XMLFoundation on 4/6/2014,
+	// normally you will not bother with anything but a GString, the difference between the various
+	// GStrings types is ONLY the size of the base allocation.  If the objects data can fit inside
+	// the size of the GString object you selected, then you are rewarded with performance by avoiding a call to new()
+	// If you No data or Small data into a GString then you are punished with excess memory use, 
+	// often its a small punishment we choose to bear to avoid the worse punishment of the performance penalty for calling new().
+	// Life is all about tradeoffs. 
+
+	// sizeof(GString0)  ==  48
+	// sizeof(GString32) ==  80
+	// sizeof(GString)   == 112
+	int a = sizeof(GString0);
+	int b = sizeof(GString32);
+	int c = sizeof(GString);
+
+	GString0 zero;
+	GString0 zero2;
+	zero2 << "zero"; // this is slow, step through it and watch call new() 3 times to assign the value - you should pre-alloc a GString0 when you use it.
+	GString one("one");
+	GString32 two("two");
+	
+	GString three = "X" + zero + "X" + zero2 + "X" + one + "X" + two;
+	GString four;
+	four << "X" << zero << "X" << zero2 << "X" << one << "X" << two;
+	GString five;
+	five += "X";
+	five += zero;
+	five += "X";
+	five += zero2;
+	five += "X";
+	five += one;
+	five += "X";
+	five += two;
+
+	if (three != four)
+	{
+		printf("this cant happen");
+	}
+	if (five != four)
+	{
+		printf("this cant happen");
+	}
+
 
 }
 catch( GException &rErr )

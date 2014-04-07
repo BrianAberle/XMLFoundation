@@ -1,7 +1,29 @@
 // put your code own code in this file and replace this example...
 
-// this file is also at the global scope just like ServerCoreCustomGlobal.cpp, however
-// this file is positioned after the declaration of ServerCore.cpp thread state internal
-// structures - so if you need to access them - this is where to do it.
+// this file is at the global scope after the declaration of ServerCore.cpp's
+// thread state internal structures - so if you need to access them - you can.
+//
+// showActiveThreads(), KillTid(), Tracing and more is available from this hook
+//
+// You can #include<xxxxx.h> any header files you need
 
-// ShowActiveThreads(), KillTid(), Tracing and more is available from this hook
+// put your code own code in this file and replace this example...
+	
+GString g_MyExampleGlobalString;
+
+class CMyGlobalClassExample
+{
+public:
+	int m_Int;
+	void foo(int i)
+	{
+		if (i == 1)
+		{
+			showActiveThreads();
+		}
+	}
+	CMyGlobalClassExample()
+	{
+		m_Int=777;
+	}
+} g_MyExample;

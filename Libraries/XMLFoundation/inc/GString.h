@@ -60,32 +60,22 @@
 
 
 // Set this size to fit your own application.  Speed vs memory tradeoff - try to avoid most re-allocs during XML Parsing
-// If you change the value, you must rebuild the library and your application.
-// class GString
+// If you change the value, you must rebuild the library and your application.  This is the default size of the GString
+// as you modify GSTRING_INITIAL_SIZE you will see the value of sizeof(GString) to change accordingly.
 #define GSTRING_INITIAL_SIZE		64
 
-// I would like to have other Sized GStrings....
-// They need to be a unique type, as the sizeof() each one will vary.
+
+// GString32 uses a 32 byte initial buffer
+class GString32;
+// GString0 uses no initial stack buffer, empty strings use less memory, they are SLOW to assign unless you preallocate them.
+class GString0;
+
+// sizeof(GString0)  ==  48
+// sizeof(GString32) ==  80
+// sizeof(GString)   == 112
 
 
-//#define GSTRING_INITIAL_SIZE_8		8
-//#define GSTRING_INITIAL_SIZE_32		32
-//#define GSTRING_INITIAL_SIZE_4K		4096
-//#define GSTRING_INITIAL_SIZE_MB		1048576
-//#define GSTRING_INITIAL_SIZE_GB		1073741824
-
-
-// To "hand templatize" a GString with various sized _initial allocations
-class GStringType
-{
-protected:
-	char *_initialbuf;
-	GStringType(){}
-	virtual ~GStringType(){}
-};
-
-// we 'want' protected not public derivation from GStringType, however because GException is derived from a GString and we 'throw' GStrings the public base class is required.  This is why GString is X rated, it makes everything public.
-class GString  : public GStringType
+class GString 
 {
 public: 
 	// _str and _len are conceptually protected, or private.  Best advice: UNDERSTAND HOW GSTRING WORKS.
@@ -122,18 +112,19 @@ protected:
 	int _growby;	// size of memory growth chunks.
 	void resize(); // grows _max and moves data from old memory to new larger contiguous memory
 
-	// allocated along with 'this' to reduces malloc/free calls.
+	// _initialbuf is allocated along with 'this' to reduces malloc/free calls.
 	// When a GString < DEFAULT_INITIAL_SIZE bytes is constructed, _initialbuf is used.
 	// As the string grows beyond DEFAULT_INITIAL_SIZE, _strIsOnHeap becomes true and
 	// _str no longer points into _initialbuf, but now is on the heap.
-	char _initialAllocation[GSTRING_INITIAL_SIZE];
+	//
+	char _initialbuf[GSTRING_INITIAL_SIZE]; // do not access this variable, use _str
 
 	short _strIsOnHeap; // 0 when we're working in our _initialbuf
 					  // 1 when were working in memory we allocated OR own
 					  // 2 when working in Attached() memory
 
 public:
-	// System wide GString settings that affect all GStrings on all threads
+	// System wide GString settings that affect all GStrings and GString32s on all threads
 	static GString	g_FloatFmt;			// "%.7g"
 	static GString	g_DoubleFmt;		// "%.7g"
 	static GString	g_LongDoubleFmt;	// "%.7Lg"
@@ -145,6 +136,7 @@ public:
 	GString(__int64 nInitialSize = GSTRING_INITIAL_SIZE, int nGrowByAllocationSize = -1);
 
 	// constructs a copy of the source string 
+	GString(const GString32 &src);
 	GString(const GString &src);
 	GString(const GString &src, __int64 nSourceCount);
 
@@ -205,6 +197,7 @@ public:
 	// note: pzSource may contain nulls, binary or unprintable bytes.  nSourceBytes is the length and
 	// GString never tries to strlen(pzSource) to determine the size.
 	void Attach(const char *pzSource, __int64 nSourceBytes, __int64 nSourceMemorySize, int nOwn);
+	
 
 
 	// WriteOn() overwrites any existing value with n bytes from the src 
@@ -227,11 +220,11 @@ public:
 
 	
 	// Load this GString from a file and replace any contents in this GString - returns 1 for success, 0 for fail
-	virtual bool FromFile(const char* pzFileName, bool bThrowOnFail = 1);
+	bool FromFile(const char* pzFileName, bool bThrowOnFail = 1);
 	// Append the contents of the specified file to the end of this GString - returns 1 for success, 0 for fail
 	bool FromFileAppend(const char* pzFileName, bool bThrowOnFail = 1);
 	// Save this GString to a file - overwrite if file exists
-	virtual bool ToFile(const char* pzFileName, bool bThrowOnFail = 1);
+	bool ToFile(const char* pzFileName, bool bThrowOnFail = 1);
 	// Append this GString to a file - create file if not existing  returns 1 for success, 0 for failure
 	bool ToFileAppend(const char* pzFileName, bool bThrowOnFail = 1);
 
@@ -355,7 +348,7 @@ public:
 	// There is no Max length to a GString.  
 	// This is the Maximum length that the string may grow until the next memory allocation
 	// or said differently, it is the heap/stack allocation size of _str
-	__int64 GetMaxLength() const { return _max; }
+	inline __int64 GetMaxLength() const { return _max; }
 
 	// Reset() will empty the GString, and release any heap allocation it has made.
 	// Only in a rare situation would you want to Reset(), that would be when you no longer want the
@@ -733,6 +726,8 @@ public:
 	GString & operator=(double);
 	GString & operator=(long double);
 	GString & operator=(const GString &);
+	GString & operator=(const GString0 &);
+	GString & operator=(const GString32 &);
 
 	// append operators, enables a GString to mimic an ostream for simple porting to faster GStrings
 	GString & operator<<(unsigned __int64);
@@ -752,6 +747,8 @@ public:
 	GString & operator<<(double);
 	GString & operator<<(long double);
 	GString & operator<<(const GString &);
+	GString & operator<<(const GString0 &);
+	GString & operator<<(const GString32 &);
 
 	GString & operator+=(unsigned __int64);
 	GString & operator+=(__int64);
@@ -770,6 +767,8 @@ public:
 	GString & operator+=(double);
 	GString & operator+=(long double);
 	GString & operator+=(const GString &);
+	GString & operator+=(const GString0 &);
+	GString & operator+=(const GString32 &);
 
 	// friend functions for addition
 	friend GString operator+(GString &, GString &);
@@ -784,6 +783,24 @@ public:
 	friend GString operator+(GString &, signed char);
 	friend GString operator+(signed char, GString &);
 
+	friend GString operator+(GString &, GString32 &);
+	friend GString operator+(GString32 &, GString &);
+	friend GString operator+(GString0 &, GString &);
+	friend GString operator+(GString &, GString0 &);
+
+
+	friend GString operator+(GString32 &, const char *);
+	friend GString operator+(GString32 &_p1, GString32 &_p2);
+	friend GString operator+(const char *_p1, GString32 &_p2);
+	friend GString operator+(GString32 &_p1, const signed char *_p2);
+	friend GString operator+(const signed char *_p1, GString32 &_p2);
+
+	friend GString operator+(GString0 &_p1, const char *_p2);
+	friend GString operator+(const char *_p1, GString0 &_p2);
+	friend GString operator+(GString0 &_p1, const signed char *_p2);
+	friend GString operator+(const signed char *_p1, GString0 &_p2);
+
+
 	// Comparative operators with other GString classes
 	int operator >  (const GString &) const;
 	int operator >= (const GString &) const;
@@ -791,6 +808,22 @@ public:
 	int operator <  (const GString &) const;
 	int operator <= (const GString &) const;
 	int operator != (const GString &) const;
+
+	// Comparative operators with other GString0 classes
+	int operator >  (const GString0 &) const;
+	int operator >= (const GString0 &) const;
+	int operator == (const GString0 &) const;
+	int operator <  (const GString0 &) const;
+	int operator <= (const GString0 &) const;
+	int operator != (const GString0 &) const;
+
+	// Comparative operators with other GString32 classes
+	int operator >  (const GString32 &) const;
+	int operator >= (const GString32 &) const;
+	int operator == (const GString32 &) const;
+	int operator <  (const GString32 &) const;
+	int operator <= (const GString32 &) const;
+	int operator != (const GString32 &) const;
 
 	// Comparative operators with char *'s
 	int operator >  (const char *) const;

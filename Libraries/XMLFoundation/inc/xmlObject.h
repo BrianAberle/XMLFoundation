@@ -204,8 +204,7 @@ public:
 	}
 
 	// state attachment/detatchment from StateCache
-	void ReStoreState(long oid);
-	void ReStoreState(int oid);
+	void ReStoreState(__int64 oid);
 	void ReStoreState(const char * oid);
 	void StoreState();
 
@@ -368,6 +367,8 @@ public:
 	void MapAttribute(int *pValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 	// Map a string, see StringAbstraction.h for interface and samples
 	void MapAttribute(GString *pstrValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
+	void MapAttribute(GString0 *pstrValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
+	void MapAttribute(GString32 *pstrValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 	void MapAttribute(void *pValue,const char *pTag,StringAbstraction *pHandler, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 
 	// Map a bool, char, short, int ,long int, or very long int
@@ -387,6 +388,8 @@ public:
 
 	// Map a string, see StringAbstraction.h for interface and samples
 	void MapMember(GString *pValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
+	void MapMember(GString0 *pValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
+	void MapMember(GString32 *pValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 	void MapMember(void *pValue,const char *pTag,StringAbstraction *pHandler, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 
 	// Map an object into a hash table, binary tree, or QSort array
@@ -680,6 +683,23 @@ public:
 #define XSPRINTF sprintf
 #endif
 
+class GlobalKeyPartLists
+{
+public:
+	GList m_lst;
+	GlobalKeyPartLists(){}
+	~GlobalKeyPartLists()
+	{
+		GListIterator it(&m_lst);
+		while (it())
+		{
+			delete (GList *)it++;
+		}
+	}
+};
+
+extern GlobalKeyPartLists g_KeyPartsListCleanup; // in xmlObject.cpp
+
 
 #define IMPLEMENT_FACTORY_NO_REG(class_name, xml_tag)					\
 int class_name::GetMemberMapCount(char bIncrement)						\
@@ -696,7 +716,10 @@ GList *class_name::GetOIDKeyPartList(bool bNew)							\
 {																		\
 	static GList *class_name##OIDList = 0;								\
 	if (bNew && class_name##OIDList == 0)								\
+	{																	\
 		class_name##OIDList = new GList();								\
+		g_KeyPartsListCleanup.m_lst.AddLast(class_name##OIDList);		\
+	}																	\
 	return class_name##OIDList;											\
 }																		\
 class_name * class_name::Attach(int nOid)								\
@@ -771,7 +794,10 @@ GList *class_name::GetOIDKeyPartList(bool bNew)							\
 {																		\
 	static GList *class_name##OIDList = 0;								\
 	if (bNew && class_name##OIDList == 0)								\
+	{																	\
 		class_name##OIDList = new GList();								\
+		g_KeyPartsListCleanup.m_lst.AddLast(class_name##OIDList);		\
+	}																	\
 	return class_name##OIDList;											\
 }																		\
 const char * class_name::GetVirtualTag()								\

@@ -72,6 +72,36 @@ Package=<4>
 
 ###############################################################################
 
+Project: "ContainOrInherit"=".\Examples\C++\ContainOrInherit\ContainOrInherit.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "CustomHTTPService"=.\Servers\CustomHTTPService\CustomHTTPService.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "ExATLCOM"=".\Examples\C++\ExATLCOM\ExATLCOM.dsp" - Package Owner=<4>
 
 Package=<5>

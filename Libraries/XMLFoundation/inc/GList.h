@@ -158,11 +158,18 @@ public:
 	// The current node does not change.
 	void AddAfterCurrent( void *data );
 
+
+	// Note this compile error that can happen using AddHead() or Addtail() if try to add an object privately derived
+	//
+	// m_lst.AddLast(p);
+	// GProfile.cpp(251) : error C2243: 'type cast' : conversion from 'class MyClass *' to 'class XMLObject *' exists, but is inaccessible
+	// class MyClass : private XMLObject    <---Notice the  'private' in the declaration of MyClass
+	// m_lst.AddLast((void *)p);            <---This will compile, as you can see that is the implementation - which generally reduces typecasting
+	//	
 	// add data to the beginning of the list.
 	// The first node becomes the new node.
 	void AddHead( void * );
 	void AddHead( XMLObject *pO) {AddHead((void *)pO);}
-
 	// add data to the end of the list.
 	// The last node becomes the new node.
 	void AddLast( void * );

@@ -16,7 +16,7 @@
 #include "XMLFoundation.h"	// lists, sorts, xmlparser, object factory, cipher, compression, and other app framework tools
 
 // comment out the following line to allow JIT Debugging(just In Time) to be hooked by your debugger
-#define _XMLF_JIT_
+//#define _XMLF_JIT_
 
 
 #ifdef _WIN32 // Windows 32 bit, 64 bit, Windows Mobile, and Windows Phone all define _WIN32
@@ -87,13 +87,6 @@ GList g_lstActivePlugins;
 		#pragma comment(lib, "../../Libraries/Xfer.lib")	
 	#endif
 #else
-	// ServerCoreCustomGlobals.cpp will contain your own customized extensions to ServerCore.cpp
-	// In your project (or makefile) NO NOT add ServerCoreCustomGlobals.cpp unless you select "Exclude From Build"
-	// in the properties for the file "ServerCoreCustomGlobals.cpp" - see the 5Loaves project in /Servers/5Loaves
-	// NOTE: This file should exist in the same directory as ServerCore.cpp
-//	#ifdef __CUSTOM_CORE__
-//		#include "ServerCoreCustomGlobals.cpp"
-//	#endif
 #endif //___XFER
 
 #include "SwitchBoard.h"		
@@ -147,20 +140,28 @@ GList g_lstActivePlugins;
 #define ATTRIB_UNUSED_BIT16				0x8000
 #endif
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Turn off Nagle Algorithm.  This is a major item to note with respect to performance within Internet protocols.  
+// The Nagle Algorithm is all about improving performance of TCP applications via a generalized buffering algorithm.
+// ServerCore uses it's own buffering system.  There are two "Large" system buffers.  Go ask Nagle.  Mine are big.
+// Large is relative to year and device.  Nagle didnt have 2 64k system buffers.  I buffer better than Nagle, 
+// especially considering that all of the protocols I have implemented via ServerCore 'hooks' (designed after ServerCore)
+// use the reserved system buffers within the protocol design.  Nagle generally improves TCP application performance
+// however Nagle can't help this server - it only slows it down and wastes memory.
 #ifndef TCP_NODELAY 
-	#define TCP_NODELAY 1   // turn off Nagle Algorithm
+	#define TCP_NODELAY 1   
 #endif
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-//function prototypes and global variables
+// These are 3 Major Logic threads that a connection uses.  Needless to say - they use thread synchronization
 void *clientThread(void *);
 void *ProxyHelperThread(void *);
 void *listenThread(void *);
 
-
+// The FilePoster example uses this, this functioning "switchboard" implementation has changed little since since 2002.
 SwitchBoard			g_SwitchBoard;
-//extern GString g_strXferSwitchPath; // in XferSwitchBoard.cpp
 
+// global variables
 int g_bEnableXferSwitchBoard = 0;
 GString g_strMessagingSwitchPath;
 int g_bEnableMessagingSwitchboard = 0; 
@@ -1205,7 +1206,7 @@ class ThreadStartupData
 	ThreadStartupData *pNext;
 public:
 	int nState; // -2 bind error, -1 permission error, 0 stopped, 1 ready, 2 waiting, 3 servicing
-	int nProtocol; // 0 Root, 1 HTTP, 2 Proxy/Tunnel, 3 File Xfer, 4 TXML, 5 TXML&HTTP, 6 Remote-WS, 7 Reserved, 8 Messaging, 9 PrivateSurf, 10 PortBlock, 11 HTTPProxy, 12 OpenSurf
+	int nProtocol; // 0 Root, 1 HTTP, 2 Proxy/Tunnel, 3 Xfer, 4 TXML, 5 TXML&HTTP, 6 Remote-WS, 7 Reserved, 8 Messaging, 9 PrivateSurf, 10 PortBlock, 11 HTTPProxy, 12 OpenSurf
 	int nInstanceLimit; // 0 is no limit, 1 services a single transaction at a time.
 	int nPort;
 	int sockfd;	// the handle to the port listener
@@ -5561,7 +5562,6 @@ THREAD_EXIT:
 				strTime << nElapsed << "ms"; // milliseconds less than 5000
 			
 			// note: on Windows - transactions that complete in the < 50 millisecond range on slower CPU's have been seen to report an elapsed time of 0.
-			// This is because of the timer resolution in the kernel, and the only way to get a more accurate resolution is to count CPU cycles.
 			// Use GPerformanceTimer in GPerformanceTimer.h if you want to count clock ticks per transaction.  
 			GString strInfo;
 			strInfo.Format("Closed Outbound [%d:%s] (tid:%d  %s) code[%d:%d]",(int)nProxyToPort,(const char *)strProxyToServer,td->nThreadID,strTime.Buf(),(int)nCloseCode,(int)SOCK_ERR);
@@ -5583,8 +5583,6 @@ THREAD_EXIT:
 		sockBuffer = 0;
 		td->Buf1 = 0;
 		td->Buf2 = 0;
-
-
 	}
  	else
 	{
@@ -6453,8 +6451,10 @@ KEEP_ALIVE:
 			goto CLOSE_CONNECT;
 		}
 
-		//int nHTTPHeaderLength = pContent - sockBuffer;
-		//int nHTTPContentAcquired = nBytes - nHTTPHeaderLength;
+		//
+		// These are useful values for the ServerCoreCustomHTTP.cpp hook
+		int nHTTPHeaderLength = pContent - sockBuffer;
+		int nHTTPContentAcquired = nBytes - nHTTPHeaderLength;
 
 
 
@@ -9202,7 +9202,8 @@ int server_started_port(int nPort)
 
 
 
-// WARNING:Never set a monitored value from this callback or you may be in infinite recursion.
+// WARNING:Never set a monitored value inside the GProfile from inside this callback or you may be in infinite recursion.
+// This will be called automatically for GProfile entries registered with RegisterChangeNotification()
 int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNewValue)
 {
 	GString strEntry(pzEntry);
@@ -9418,9 +9419,6 @@ void AssignSystemProfileValues()
 	g_strProxyAuthSysName = GetProfile().GetStringOrDefault("Xfer","ProxyAuthSystemName","sys");
 	g_bRequireSysID = GetProfile().GetBoolOrDefault("Xfer","RequireSysId",0);
 #endif // ___XFER
-#ifdef __CUSTOM_CORE__
-	#include "ServerCoreCustomProfileInit.cpp"
-#endif
 	
 	g_strMessagingSwitchPath = GetProfile().GetPath("SwitchBoardServer","Name",false);
 	g_bEnableMessagingSwitchboard = GetProfile().GetBoolean("SwitchBoardServer","Enable",false);
@@ -9537,7 +9535,6 @@ int server_start(const char *pzStartupMessage = 0)
 #ifdef __CUSTOM_CORE__
 	#include "ServerCoreCustomServerStart.cpp"
 #endif
-
 
 try
 {
@@ -9672,6 +9669,9 @@ try
 	}
 
 // HOOK:protocol init
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomProtocolInit.cpp"
+#endif
 
 
 
@@ -9785,6 +9785,11 @@ try
 	gthread_create(&listen_thr,	NULL, SwitchBoardPoll, (void *)0 );
 
 	gthread_create(&listen_thr,	NULL, SystemTrace, (void *)0 );
+// HOOK:protocol init
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomServerStarted.cpp"
+#endif
+
 }
 
 catch( GException &rErr )

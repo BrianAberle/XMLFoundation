@@ -415,7 +415,7 @@ extern "C" __declspec(dllexport) void Test7(void *pHandle, DriverExec Exec,
 
 	// CMultiPartForm makes it very easy to extract the individual data segments from HTTP multipart messages
 	// there are several usage examples that follow
-	CMultiPartForm p(&PIC, pzHTTPHeader, pzContent);
+	GMultiPartForm p(&PIC, pzHTTPHeader, pzContent);
 
 
 /*

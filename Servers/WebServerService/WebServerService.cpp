@@ -323,7 +323,7 @@ if (!bPasswordCompileEmbedded)
 					{
 						GString strCfgData;
 						strCfgData.Format(pzBoundStartupConfig,(const char *)strRoot,(const char *)strPort);
-						SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
+						SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length(), 0));
 
 						if (!server_start())
 						{

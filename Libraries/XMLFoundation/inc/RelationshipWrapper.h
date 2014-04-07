@@ -26,6 +26,8 @@ enum ContainedType
 };
 
 #include "MemberDescriptor.h"
+#include "xmlObject.h"
+
 class XMLRelationshipWrapper : public XMLObject
 {
 	XMLRelationshipWrapper(){/*never used*/}
@@ -50,7 +52,12 @@ public:
 	{
 		// added 12/28/2009 because a list wrapped in a RelationShipWrapper was decrementing twice in ~XMLObject
 		// once in ReferenceChangeChildren(), then a second time when this owning object was destroyed
-		ModifyObjectBehavior(PREVENT_AUTO_DESTRUCTION,0);
+		// this line may be removed pending research.
+		// note: see ~ObjQuery()
+
+		// ModifyObjectBehavior(PREVENT_AUTO_DESTRUCTION,0);
+		// Note: on 3/21/2014 this line was added and the above line removed
+		UnMapMembers();
 	};
 	virtual const char *GetVirtualType() 
 	{ 
@@ -89,7 +96,7 @@ public:
 	};
 	
 	// XMLRelationshipWrapper is a pseudo-Object used for grouping like members.
-	// this is used only by XMLObject to build "wrapper classes"
+	// this is used by XMLObject to build "wrapper classes"
 	// AddReference is overloaded for each "mappable-wrappable" type.
 	void AddReference(const char *pzTag, void *pList,ListAbstraction *pHandler,ObjectFactory pFactory, int bFirstMap)
 	{
@@ -101,6 +108,8 @@ public:
 		MemberDescriptor *pMD = (MemberDescriptor *)m_lstMembers.Last(); 
 		pMD->m_bFirstMap = bFirstMap;
 	}
+
+
 	void AddReference(const char *pzTag, XMLObject **ppObj, ObjectFactory pFactory )
 	{
 		m_nContainedType = ContainedType_XMLObject_Ptr;
@@ -132,8 +141,7 @@ public:
 		MapMember( pIntegerArray,pzElementName, pHandler, 0, pzTranslationMapIn, pzTranslationMapOut, nTranslationFlags);
 	}
 	
-	void AddReference( void *pDataStructure, KeyedDataStructureAbstraction *pHandler, 
-						const char *pObjectName)
+	void AddReference( void *pDataStructure, KeyedDataStructureAbstraction *pHandler, const char *pObjectName)
 	{
 		m_nContainedType = ContainedType_KeyedDataStructureAbstraction;
 		m_pData = pDataStructure;

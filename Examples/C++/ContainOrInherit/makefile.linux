@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+ContainOrInherit: \
+	clear \
+	ContainOrInherit.o
+	 
+	$(CC) \
+		-o ContainOrInherit \
+		-L../../../Libraries/XMLFoundation/Build \
+		ContainOrInherit.o \
+		-lnsl -lXMLFoundation -ldl
+
+ContainOrInherit.o: ./ContainOrInherit.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./ContainOrInherit.cpp -o ./ContainOrInherit.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

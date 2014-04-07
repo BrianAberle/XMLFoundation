@@ -20,7 +20,6 @@ static char SOURCE_FILE[] = __FILE__;
 #include "GException.h"
 #include "GDirectory.h"
 #include "Base64.h"
-//#include <stdlib.h> //for: getenv()
 #include <string.h> //for: memcpy()
 #include <stdio.h>  //for: fopen(),fclose();
 #ifndef _WIN32
@@ -30,17 +29,21 @@ static char SOURCE_FILE[] = __FILE__;
 #include <Windows.h>
 #endif
 #include "TwoFish.h"
+#include "AbstractionsGeneric.h" // for gGListHandler
 
 
 
 
 IMPLEMENT_FACTORY(GProfileSection, section);
 IMPLEMENT_FACTORY(GProfileEntry, setting);
-IMPLEMENT_FACTORY(GProfile, configuration)
-void GProfile::MapXMLTagsToMembers()
-{
-	MapMember(&m_lstSections, GProfileSection::GetStaticTag());
-}
+
+//IMPLEMENT_FACTORY(GProfile, configuration)
+//void GProfile::MapXMLTagsToMembers()
+//{
+//	MapMember(&m_lstSections, GProfileSection::GetStaticTag());
+//}
+
+
 void GProfileEntry::MapXMLTagsToMembers()
 {
 	MapAttribute(&m_strName,"name");
@@ -91,7 +94,9 @@ GProfile &GetProfile()
 
 // create a profile from the supplied file name
 GProfile::GProfile(const char *pzFilePathAndName, bool bIsXML/* = 0 */)
-	: m_bCached(0)
+	: m_bCached(0),
+	  m_objectContainer("configuration")
+
 {
 	m_bIsXML = bIsXML;
 	m_pTreeNotify = new GBTree();
@@ -103,17 +108,34 @@ GProfile::GProfile(const char *pzFilePathAndName, bool bIsXML/* = 0 */)
 }
 
 
+//	MapMember(&m_lstSections, GProfileSection::GetStaticTag());
 //
 // load the profile configuration file yourself, 
 // and create this object "with no disk config file"
+
 GProfile::GProfile(const char *szBuffer, __int64 dwSize, bool bIsXML/* = 0*/)
+: m_objectContainer("configuration")
+
 {
 	m_bIsXML = bIsXML;
 	m_pTreeNotify = new GBTree();
 	if (m_bIsXML)
 	{
-		FromXMLX(szBuffer);
-		m_bCached = true;
+		m_objectContainer.AddReference(GProfileSection::GetStaticTag(), &m_lstSections, &gGListHandler,0,1);
+
+		try
+		{
+			m_objectContainer.FromXML(szBuffer); // note: now [m_lstSections] contains the GProfileSection objects
+			m_bCached = true;
+		}
+		catch(GException &)
+		{
+			// Failed to open a configuration file for this application
+		}
+		catch(...)
+		{
+			// Failed to open a configuration file for this application
+		}
 	}
 	else
 	{
@@ -124,7 +146,9 @@ GProfile::GProfile(const char *szBuffer, __int64 dwSize, bool bIsXML/* = 0*/)
 
 // create an empty profile
 GProfile::GProfile()
-	: m_bCached(0)
+	: m_bCached(0),
+	  m_objectContainer("configuration")
+
 {
 	m_pTreeNotify = new GBTree();
 	m_strFile = "NONE";
@@ -417,7 +441,8 @@ void GProfile::Load()
 
 	if (m_bIsXML)
 	{
-		FromXMLFile(m_strFile);
+		//FromXMLFile(m_strFile);
+		m_objectContainer.FromXMLFile(m_strFile);
 		m_bCached = true;
 		return;
 	}
@@ -522,7 +547,7 @@ long GProfile::WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *
 	{
 		if (bWriteXML)
 		{
-		    *strConfigData << "<configuration>\n";
+		    *strConfigData << "<configuration>";
 		}
 
 		GListIterator itSections(&m_lstSections);

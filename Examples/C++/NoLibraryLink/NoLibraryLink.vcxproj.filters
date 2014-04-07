@@ -159,5 +159,11 @@
     <ClCompile Include="NoLibraryLink.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\XMLFoundation\src\Utils\GString0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Libraries\XMLFoundation\src\Utils\GString32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

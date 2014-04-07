@@ -901,10 +901,13 @@ int main(int argc, char * argv[])
 		}
 		else
 		{
+			///////////////////////////////////////////////////////////////////
 			// 3/19/2014 - when bUseXML is set to 1 it switches the application config file to XML
 			// Notice that it is also passed into GProfile() as the 3rd argument to let it know to expect XML
 			// ------------------------
-			bool bUseXML = 1; // change it to 0 for an INI based application
+			bool bUseXML = 1; // change it to 0 for an INI based application - 
+			//  -- Read the comment at the top of GProfile.cpp --
+			///////////////////////////////////////////////////////////////////
 
 			char *pExt = (bUseXML) ? ".xml" : ".txt";
 			GString strConfigFile(g_szAppName);
@@ -926,11 +929,17 @@ int main(int argc, char * argv[])
 #endif
 	}
 
-	// 3/19/2014  converting INI to XML = set bUseXML to 0, then uncomment this code
-	// ------------------------
+	// 3/19/2014  Converting INI to XML  = set bUseXML to 0, then uncomment this code
+	//           ------------------------
 	// GString s;
 	// GetProfile().WriteCurrentConfig(&s,1);
 	// s.ToFile("c:\\log\\config.xml");
+
+	// 3/20/2014 Converting XML to INI	 = set bUseXML = 1;, then uncomment this code
+	//           ------------------------
+	// GString s;
+	// GetProfile().WriteCurrentConfig(&s,0);
+	// s.ToFile("c:\\log\\config.txt");
 
 	GString strStartupMessage;
 	strStartupMessage << "Using [";

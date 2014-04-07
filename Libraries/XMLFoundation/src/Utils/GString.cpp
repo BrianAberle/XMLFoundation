@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -14,12 +14,13 @@
 static char SOURCE_FILE[] = __FILE__;
 
 #include "GString.h"
+#include "GString0.h"
+#include "GString32.h"
 #include "GException.h"
 #include "GDirectory.h" // only for 1 method, CreatePath()
 #include "GZip.h"		// for Compress() / DeCompress()
 #include "TwoFish.h"	// for Cipher() / DeCipher()
 #include "GProfile.h"	// for Cipher() / DeCipher()
-
 
 #include <string.h> // for: memcpy(), strlen(), strcmp(), memmove(), strchr(), 
 					//      strstr(), strncmp()
@@ -30,8 +31,6 @@ static char SOURCE_FILE[] = __FILE__;
 #include <stdarg.h> // for: va_start(), va_end 
 
 #include <wchar.h> // for: wcslen() in linux
-
-
 
 
 // Global default format specifiers that affect all GStrings
@@ -71,44 +70,44 @@ static void x64toa (
         int is_neg
         )
 {
-        char *p;                /* pointer to traverse string */
-        char *firstdig;         /* pointer to first digit */
-        char temp;              /* temp char */
-        unsigned digval;        /* value of digit */
+        char *p;                // pointer to traverse string 
+        char *firstdig;         // pointer to first digit 
+        char temp;              // temp char 
+        unsigned digval;        // value of digit 
 
         p = buf;
 
         if ( is_neg )
         {
-            *p++ = '-';         /* negative, so output '-' and negate */
+            *p++ = '-';         // negative, so output '-' and negate 
             val = (unsigned __int64)(-(__int64)val);
         }
 
-        firstdig = p;           /* save pointer to first digit */
+        firstdig = p;           // save pointer to first digit 
 
         do {
             digval = (unsigned) (val % radix);
-            val /= radix;       /* get next digit */
+            val /= radix;       // get next digit 
 
-            /* convert to ascii and store */
+            // convert to ascii and store 
             if (digval > 9)
-                *p++ = (char) (digval - 10 + 'a');  /* a letter */
+                *p++ = (char) (digval - 10 + 'a');  // a letter 
             else
-                *p++ = (char) (digval + '0');       /* a digit */
+                *p++ = (char) (digval + '0');       // a digit 
         } while (val > 0);
 
-        /* We now have the digit of the number in the buffer, but in reverse
-           order.  Thus we reverse them now. */
+        // We now have the digit of the number in the buffer, but in reverse
+        //   order.  Thus we reverse them now. 
 
-        *p-- = '\0';            /* terminate string; p points to last digit */
+        *p-- = '\0';            // terminate string; p points to last digit 
 
         do {
             temp = *p;
             *p = *firstdig;
-            *firstdig = temp;   /* swap *p and *firstdig */
+            *firstdig = temp;   // swap *p and *firstdig 
             --p;
-            ++firstdig;         /* advance to next two digits */
-        } while (firstdig < p); /* repeat until halfway */
+            ++firstdig;         // advance to next two digits 
+        } while (firstdig < p); // repeat until halfway 
 }
 
 
@@ -120,7 +119,7 @@ char *Xi64toa ( unsigned __int64 val,char *buf)
 }
 
 // (signed) __int64 to ascii
-char *Xi64toa ( __int64 val,char *buf, int radix /*= 10*/ )
+char *Xi64toa ( __int64 val,char *buf, int radix )
 {
 	if (val < 0)
 	{
@@ -496,7 +495,6 @@ void GString::resize()
 // construct a GString attached to existing memory
 GString::GString(const char *src, __int64 nCnt, __int64 nMax, int nOwn)
 {
-	_initialbuf = _initialAllocation;
 	_initialbuf[0] = 0;
 	_str = (char *)src;
 	_len = nCnt;
@@ -511,7 +509,6 @@ GString::GString(const char *src, __int64 nCnt, __int64 nMax, int nOwn)
 
 GString::GString(__int64 nInitialSize,int nGrowByAllocationSize)
 {
-	_initialbuf = _initialAllocation;
 	CommonConstruct(nInitialSize);
 	_growby = nGrowByAllocationSize;
 }
@@ -519,7 +516,16 @@ GString::GString(__int64 nInitialSize,int nGrowByAllocationSize)
 // constructs a copy of the source string 
 GString::GString(const GString &src )
 {
-	_initialbuf = _initialAllocation;
+	__int64 l = (src._len > GSTRING_INITIAL_SIZE) ? src._len + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
+	CommonConstruct( l );
+
+	_len = ___min(_max, src._len);
+	memcpy(_str, src._str, _len);
+	_str[_len] = 0;
+}
+// constructs a copy of the source string 
+GString::GString(const GString32 &src )
+{
 	__int64 l = (src._len > GSTRING_INITIAL_SIZE) ? src._len + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
 	CommonConstruct( l );
 
@@ -530,7 +536,6 @@ GString::GString(const GString &src )
 
 GString::GString(const GString &src, __int64 nCnt)
 {
-	_initialbuf = _initialAllocation;
 	__int64 l = (src._len > GSTRING_INITIAL_SIZE) ? src._len + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
 	CommonConstruct(l);
 
@@ -542,7 +547,6 @@ GString::GString(const GString &src, __int64 nCnt)
 // constructs a copy of the character string
 GString::GString(const char *src)
 {
-	_initialbuf = _initialAllocation;
 	__int64 srcLen = (src) ? strlen(src) : GSTRING_INITIAL_SIZE;
 	__int64 nInitialSize = (srcLen > GSTRING_INITIAL_SIZE) ? srcLen + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
 
@@ -563,15 +567,17 @@ GString::GString(const char *src)
 
 GString::GString(const wchar_t *src)
 {
-	_initialbuf = _initialAllocation;
 	__int64 srcLen = (src) ? wcslen(src) : GSTRING_INITIAL_SIZE;
 	__int64 nInitialSize = (srcLen > GSTRING_INITIAL_SIZE) ? srcLen + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
 
 	CommonConstruct(nInitialSize);
 
-	for(__int64 i=0;i<srcLen; i++)
+	if (src)
 	{
-		*this << (char)src[i];
+		for(__int64 i=0;i<srcLen; i++)
+		{
+			*this << (char)src[i];
+		}
 	}
 }
 
@@ -580,7 +586,6 @@ GString::GString(const wchar_t *src)
 
 GString::GString(const char *src, __int64 nCnt)
 {
-	_initialbuf = _initialAllocation;
 	__int64 nInitialSize = (nCnt > GSTRING_INITIAL_SIZE) ? nCnt + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
 
 	CommonConstruct(nInitialSize);
@@ -601,7 +606,6 @@ GString::GString(const char *src, __int64 nCnt)
 // constructs a string with ch repeated nCnt times
 GString::GString(char ch, short nCnt)
 {
-	_initialbuf = _initialAllocation;
 	short nInitialSize = (nCnt > GSTRING_INITIAL_SIZE) ? nCnt + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
 	CommonConstruct(nInitialSize);
 
@@ -970,9 +974,37 @@ GString & GString::operator=(const GString & _p)
 	if (_len >= _max)
 		resize();
 	_str[_len] = 0;
+	return *this;
+}
 
 
+GString & GString::operator=(const GString0 & _p)
+{
 
+	for (_len = 0; _len < _p._len; _len++)
+	{
+		if (_len >= _max)
+			resize();
+		_str[_len] = _p._str[_len];
+	}
+	if (_len >= _max)
+		resize();
+	_str[_len] = 0;
+	return *this;
+}
+
+GString & GString::operator=(const GString32 & _p)
+{
+
+	for (_len = 0; _len < _p._len; _len++)
+	{
+		if (_len >= _max)
+			resize();
+		_str[_len] = _p._str[_len];
+	}
+	if (_len >= _max)
+		resize();
+	_str[_len] = 0;
 	return *this;
 }
 
@@ -1332,6 +1364,28 @@ GString & GString::operator+=(const GString & _p)
 	_str[_len] = 0;
 	return *this;
 }
+GString & GString::operator+=(const GString0 & _p)
+{
+	while (_len + _p._len + 1 >= _max)
+		resize();
+
+
+	memcpy(&_str[_len],_p._str,_p._len);
+	_len += _p._len;
+	_str[_len] = 0;
+	return *this;
+}
+GString & GString::operator+=(const GString32 & _p)
+{
+	while (_len + _p._len + 1 >= _max)
+		resize();
+
+
+	memcpy(&_str[_len],_p._str,_p._len);
+	_len += _p._len;
+	_str[_len] = 0;
+	return *this;
+}
 
 GString & GString::operator<<(__int64 _p)
 {
@@ -1662,6 +1716,91 @@ GString & GString::operator<<(const GString & _p)
 	return *this;
 }
 
+
+GString & GString::operator<<(const GString0 & _p)
+{
+	while (_len + _p._len + 1 >= _max)
+		resize();
+
+
+	memcpy(&_str[_len],_p._str,_p._len);
+	_len += _p._len;
+	_str[_len] = 0;
+	return *this;
+}
+GString & GString::operator<<(const GString32 & _p)
+{
+	while (_len + _p._len + 1 >= _max)
+		resize();
+
+
+	memcpy(&_str[_len],_p._str,_p._len);
+	_len += _p._len;
+	_str[_len] = 0;
+	return *this;
+}
+
+
+
+GString operator+(GString &_p1, GString32 &_p2)
+{
+	GString strRet(_p1._len + _p2._len + 1);
+	__int64 i;
+	for (i = 0; i < _p1._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p1._str[i];
+
+	for (i = 0; i < _p2._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p2._str[i];
+
+	strRet._str[strRet._len] = 0;
+
+	return strRet;
+}
+GString operator+(GString &_p1, GString0 &_p2)
+{
+	GString strRet(_p1._len + _p2._len + 1);
+	__int64 i;
+	for (i = 0; i < _p1._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p1._str[i];
+
+	for (i = 0; i < _p2._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p2._str[i];
+
+	strRet._str[strRet._len] = 0;
+
+	return strRet;
+}
+
+GString operator+(GString32 &_p1, GString &_p2)
+{
+	GString strRet(_p1._len + _p2._len + 1);
+	__int64 i;
+	for (i = 0; i < _p1._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p1._str[i];
+
+	for (i = 0; i < _p2._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p2._str[i];
+
+	strRet._str[strRet._len] = 0;
+
+	return strRet;
+}
+GString operator+(GString0 &_p1, GString &_p2)
+{
+	GString strRet(_p1._len + _p2._len + 1);
+	__int64 i;
+	for (i = 0; i < _p1._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p1._str[i];
+
+	for (i = 0; i < _p2._len; strRet._len++, i++)
+		strRet._str[strRet._len] = _p2._str[i];
+
+	strRet._str[strRet._len] = 0;
+
+	return strRet;
+}
+
+
 GString operator+(GString &_p1, GString &_p2)
 {
 	GString strRet(_p1._len + _p2._len + 1);
@@ -1907,6 +2046,74 @@ int GString::operator != (const GString &s) const
 {
 	return strcmp(_str, s._str) != 0;
 }
+
+
+
+
+int GString::operator >  (const GString32 &s) const
+{
+	return strcmp(_str, s._str) > 0;
+}
+
+int GString::operator >= (const GString32 &s) const
+{
+	return strcmp(_str, s._str) >= 0;
+}
+
+int GString::operator == (const GString32 &s) const
+{
+	return strcmp(_str, s._str) == 0;
+}
+
+int GString::operator <  (const GString32 &s) const
+{
+	return strcmp(_str, s._str) < 0;
+}
+
+int GString::operator <= (const GString32 &s) const
+{
+	return strcmp(_str, s._str) <= 0;
+}
+
+int GString::operator != (const GString32 &s) const
+{
+	return strcmp(_str, s._str) != 0;
+}
+
+
+
+
+int GString::operator >  (const GString0 &s) const
+{
+	return strcmp(_str, s._str) > 0;
+}
+
+int GString::operator >= (const GString0 &s) const
+{
+	return strcmp(_str, s._str) >= 0;
+}
+
+int GString::operator == (const GString0 &s) const
+{
+	return strcmp(_str, s._str) == 0;
+}
+
+int GString::operator <  (const GString0 &s) const
+{
+	return strcmp(_str, s._str) < 0;
+}
+
+int GString::operator <= (const GString0 &s) const
+{
+	return strcmp(_str, s._str) <= 0;
+}
+
+int GString::operator != (const GString0 &s) const
+{
+	return strcmp(_str, s._str) != 0;
+}
+
+
 
 int GString::operator >  (const char *s) const
 {

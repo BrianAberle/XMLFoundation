@@ -1,0 +1,13 @@
+[System]
+Pool=20 
+ProxyPool=0 
+
+[HTTP]
+Port=8088
+Enable=yes
+Home=c:\XMLFoundation\
+Index=XMLFoundation2014.html
+
+[CustomHTTP]
+ExampleInteger=1972
+ExampleString=Flying Cats eat Fat Cats

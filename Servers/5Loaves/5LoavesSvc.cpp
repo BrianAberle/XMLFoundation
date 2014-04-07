@@ -648,7 +648,7 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 							if (DecryptMemoryToMemory(strPassword, strCfgData,strCfgData.GetLength(), strDest,  strErrorOut))
 							{
 								// delete the default (and empty) GProfile object and create a new one
-								delete SetProfile(new GProfile((const char *)strDest, strDest.Length()));
+								delete SetProfile(new GProfile((const char *)strDest, strDest.Length(), 0));
 								bSetStartupFile = 1;
 							}
 						}
@@ -691,7 +691,7 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 						strCfgData.FromFile(strFile,0);
 						if (strCfgData.Length())
 						{
-							delete SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
+							delete SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length(), 0));
 					 		bSetStartupFile = 1;
 						}
 					}
