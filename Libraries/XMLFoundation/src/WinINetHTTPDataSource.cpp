@@ -268,7 +268,7 @@ RE_POST:
 		buffer.dwStructSize = sizeof(buffer);
 		char szBuffer[80];
 		DWORD dwLen = _countof(szBuffer);
-		DWORD dwRet;
+		DWORD dwRet = 0;
 		if (!pzHTMLDoc)
 		{
 			static DWORD nCount = (DWORD)strlen(pszEntry);

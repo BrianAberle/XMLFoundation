@@ -73,7 +73,7 @@ BOOL C5LoavesTrayApp::InitInstance()
 			if (FileDecryptToMemory(strPassword, strFile, &pDest, &nDestLen, strErrorOut))
 			{
 				// parse into the profile data structures
-				SetProfile(new GProfile(&pDest[7], nDestLen));
+				SetProfile(new GProfile(&pDest[7], nDestLen, 0));
 				delete pDest;
 				bSetStartupFile = 1;
 			}
@@ -92,7 +92,7 @@ BOOL C5LoavesTrayApp::InitInstance()
 			if (strCfgData.Length())
 			{
 				strFile = "c:\\5Loaves.txt";
-				SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
+				SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length(), 0));
 				bSetStartupFile = 1;
 			}
 		}

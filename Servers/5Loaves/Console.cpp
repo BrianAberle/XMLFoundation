@@ -1,4 +1,4 @@
-//#define ___XFER				http://1drv.ms/1fo7Asp
+//#define ___XFER		//		http://1drv.ms/1fo7Asp    // links to the Xfer binary created on 4/29/2014 
 //#define ___XFER_SRC
 //#define ___XFER_EVAL
 // --------------------------------------------------------------------------
@@ -55,6 +55,10 @@ int g_doneCount;
 #ifdef _AIX
 #include <sys/select.h>
 #endif
+
+// the runtime path and file name of this executable == argv[0]
+char g_ThisEXE[512];
+
 
 // The core server
 // #define SERVERCORE_CUSTOM_HTTP right here to build a Custom HTTP Server using ServerCoreCustomHTTP.cpp
@@ -779,6 +783,7 @@ void server_build_check();
 
 int main(int argc, char * argv[])
 {
+	strcpy(g_ThisEXE,argv[0]);
 // After a new platform port, enable the following code, and compare it to the output of a good build.
 // This will test all the algorithms to be sure they compiled correctly.  The byte ordering is sometimes
 // backwards (or forwards) which causes TwoFish to cipher backwards (or forwards). An executable compiled
@@ -909,7 +914,7 @@ int main(int argc, char * argv[])
 			//  -- Read the comment at the top of GProfile.cpp --
 			///////////////////////////////////////////////////////////////////
 
-			char *pExt = (bUseXML) ? ".xml" : ".txt";
+			const char *pExt = (bUseXML) ? ".xml" : ".txt";
 			GString strConfigFile(g_szAppName);
 			strConfigFile << pExt;
 

@@ -59,6 +59,196 @@ static char SOURCE_FILE[] = __FILE__;
 	#include <sys/types.h>
 #endif
 
+#ifdef WINCE
+
+#define TIME_ZONE_ID_INVALID 0xFFFFFFFF
+
+static int _DayLightCompareDate( const LPSYSTEMTIME date, const LPSYSTEMTIME compareDate)
+{
+    int limit_day;
+
+    if (compareDate->wYear != 0)
+    {
+        if (date->wMonth < compareDate->wMonth)
+            return -1; /* We are in a year before the date limit. */
+
+        if (date->wMonth > compareDate->wMonth)
+            return 1; /* We are in a year after the date limit. */
+    }
+
+    if (date->wMonth < compareDate->wMonth)
+        return -1; /* We are in a month before the date limit. */
+
+    if (date->wMonth > compareDate->wMonth)
+        return 1; /* We are in a month after the date limit. */
+
+    if (compareDate->wDayOfWeek <= 6)
+    {
+       SYSTEMTIME tmp;
+       FILETIME tmp_ft;
+
+       /* compareDate->wDay is interpreted as number of the week in the month. */
+       /* 5 means: the last week in the month */
+       int weekofmonth = compareDate->wDay;
+
+         /* calculate day of week for the first day in the month */
+        memcpy(&tmp, date, sizeof(SYSTEMTIME));
+        tmp.wDay = 1;
+        tmp.wDayOfWeek = -1;
+
+        if (weekofmonth == 5)
+       {
+             /* Go to the beginning of the next month. */
+            if (++tmp.wMonth > 12)
+            {
+                tmp.wMonth = 1;
+                ++tmp.wYear;
+            }
+        }
+
+        if (!SystemTimeToFileTime(&tmp, &tmp_ft))
+            return -2;
+
+        if (weekofmonth == 5)
+        {
+          __int64 t, one_day;
+
+          t = tmp_ft.dwHighDateTime;
+          t <<= 32;
+          t += (UINT)tmp_ft.dwLowDateTime;
+
+          /* substract one day */
+          one_day = 24*60*60;
+          one_day *= 10000000;
+          t -= one_day;
+
+          tmp_ft.dwLowDateTime  = (UINT)t;
+          tmp_ft.dwHighDateTime = (UINT)(t >> 32);
+        }
+
+        if (!FileTimeToSystemTime(&tmp_ft, &tmp))
+            return -2;
+
+       if (weekofmonth == 5)
+       {
+          /* calculate the last matching day of the week in this month */
+          int dif = tmp.wDayOfWeek - compareDate->wDayOfWeek;
+          if (dif < 0)
+             dif += 7;
+
+          limit_day = tmp.wDay - dif;
+       }
+       else
+       {
+         /* calulcate the matching day of the week in the given week */
+          int dif = compareDate->wDayOfWeek - tmp.wDayOfWeek;
+          if (dif < 0)
+             dif += 7;
+
+          limit_day = tmp.wDay + 7*weekofmonth + dif;
+       }
+    }
+    else
+    {
+      limit_day = compareDate->wDay;
+   }
+
+    if (date->wDay < limit_day)
+        return -1;
+
+    if (date->wDay > limit_day)
+        return 1;
+
+    return 0;   /* date is equal to the date limit. */
+}
+
+
+
+static BOOL _GetTimezoneBias( const LPTIME_ZONE_INFORMATION lpTimeZoneInformation,  LPSYSTEMTIME  lpSystemTime, LONG* pBias)
+{
+    int ret;
+    BOOL beforedaylightsaving, afterdaylightsaving;
+    BOOL daylightsaving = FALSE;
+    LONG bias = lpTimeZoneInformation->Bias;
+
+    if (lpTimeZoneInformation->DaylightDate.wMonth != 0)
+    {
+        if (lpTimeZoneInformation->StandardDate.wMonth == 0 ||
+            lpTimeZoneInformation->StandardDate.wDay<1 ||
+            lpTimeZoneInformation->StandardDate.wDay>5 ||
+            lpTimeZoneInformation->DaylightDate.wDay<1 ||
+            lpTimeZoneInformation->DaylightDate.wDay>5)
+        {
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+
+         /* check for daylight saving */
+       ret = _DayLightCompareDate(lpSystemTime, &lpTimeZoneInformation->StandardDate);
+       if (ret == -2)
+          return -1;
+
+        beforedaylightsaving = ret < 0;
+
+       _DayLightCompareDate(lpSystemTime, &lpTimeZoneInformation->DaylightDate);
+       if (ret == -2)
+          return -1;
+
+       afterdaylightsaving = ret >= 0;
+
+        if (!beforedaylightsaving && !afterdaylightsaving)
+            daylightsaving = TRUE;
+    }
+
+   if (daylightsaving)
+        bias += lpTimeZoneInformation->DaylightBias;
+    else if (lpTimeZoneInformation->StandardDate.wMonth != 0)
+        bias += lpTimeZoneInformation->StandardBias;
+
+    *pBias = bias;
+
+    return TRUE;
+}
+
+
+
+BOOL WINAPI SystemTimeToTzSpecificLocalTime(   LPTIME_ZONE_INFORMATION lpTimeZoneInformation, LPSYSTEMTIME lpUniversalTime, LPSYSTEMTIME lpLocalTime)
+{
+    FILETIME ft;
+    LONG lBias;
+    __int64 t, bias;
+    TIME_ZONE_INFORMATION tzinfo;
+
+    if (lpTimeZoneInformation != NULL)
+    {
+        memcpy(&tzinfo, lpTimeZoneInformation, sizeof(TIME_ZONE_INFORMATION));
+    }
+    else
+    {
+        if (GetTimeZoneInformation(&tzinfo) == TIME_ZONE_ID_INVALID)
+            return FALSE;
+    }
+
+    if (!SystemTimeToFileTime(lpUniversalTime, &ft))
+        return FALSE;
+
+    t = ft.dwHighDateTime;
+    t <<= 32;
+    t += (UINT)ft.dwLowDateTime;
+
+    if (!_GetTimezoneBias(&tzinfo, lpUniversalTime, &lBias))
+        return FALSE;
+
+    bias = lBias * 600000000; /* 60 seconds per minute, 100000 [100-nanoseconds-ticks] per second */
+    t += bias;
+
+    ft.dwLowDateTime  = (UINT)t;
+    ft.dwHighDateTime = (UINT)(t >> 32);
+
+    return FileTimeToSystemTime(&ft, lpLocalTime);
+}
+#endif
+
 
 // return the last leaf from a fully qualified path (file or directory)
 const char *GDirectory::LastLeaf(const char *pzFullPath, char chSlash/*= 0*/)

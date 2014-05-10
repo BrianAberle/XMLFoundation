@@ -2,7 +2,7 @@
 
 
 /* File created by MIDL compiler version 5.01.0164 */
-/* at Tue Mar 18 12:28:15 2014
+/* at Fri May 09 20:31:13 2014
  */
 /* Compiler settings for C:\XMLFoundation\Examples\C++\ExATLCOM\ExATLCOM.idl:
     Oicf (OptLev=i2), W1, Zp8, env=Win32, ms_ext, c_ext

@@ -138,7 +138,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_server_app_Server_serverStart  (JNIEn
 		GString strCfgData;
 		strCfgData.Format(pzBoundStartupConfig,p1,p2,p3,p4,p5);
 
-		SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
+		SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length(), 0));
 
 		nRet = server_start("-- Android Server --");
 		env->ReleaseStringUTFChars(s, str);

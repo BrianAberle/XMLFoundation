@@ -7,10 +7,14 @@
 <base href=".">
 <link rel="stylesheet" type="text/css" href="Main.min.css">
 <!-- base href="http://www.codeproject.com/KB/XML/" -->
+<style>
+<!--
+.b_caption{padding-bottom:10px}-->
+</style>
 </head>
-
-
 <body>
+
+
 
 
 
@@ -30,72 +34,116 @@
 <a href="http://cid-d7ec275e76d295cf.skydrive.live.com/self.aspx/Software/XMLFoundation.zip">
 Download XMLFoundation - Most Recent Source</a> 7 MB - (<a href="https://skydrive.live.com/redir?resid=D7EC275E76D295CF!1032">View 
 Recent Changes</a>)</li>
-<li><a href="XMLFoundation.zip">Download XMLFoundation - March 2014 Release - </a> 
+<li><a href="XMLFoundation.zip">Download XMLFoundation - May 2014 Release - </a> 
 7 MB from codeproject.com   </li></ul>
 <p align="center"><img width="640" height="441" alt="XMLFoundation2012.jpg" src="XMLFoundation2012.jpg" border="0" hspace="0" /></p>
 
 <h2>Introduction  </h2>
-<p style="margin: 0in 0in 8pt;">Welcome to XMLFoundation 2014 Still Marching On 
-through March</p>
-<p style="margin: 0in 0in 8pt;">The XMLFoundation library contains many things. 
-From utilities to frameworks, (plural to plural) . Of recent, I have sought out 
-&#39;leaders&#39; in the domain of XML to present a proposal for a futuristic XML that 
-has 2 new small keywords that prefix an attribute list in a 100% syntactically 
-backwards approach as to not not disrupt any XML 1.0/1.1 software. To assemble 
-the chiefs for a pow wow on the subject requires the attendance from the leaders 
-of many technical worlds. IETF is a moderated forum (like codeproject.com is 
-moderated) and OASIS is unmoderated, once famous for hosting [xml-dev] where 
-interfaces like SAX and DOM were created by unmoderated open debate and 
-consensus.</p>
-<p style="margin: 0in 0in 8pt;">The XMLFoundation implements a use of XML that 
-it is about 3 times faster that the best that can be done with SAX, when parsing 
-XML for the purpose of an update to some dataset that you already have. It is a 
-very common task in the application layer or in a DBMS that uses XML as a native 
-input protocol. In that case, if a key word OID is present as the first 
-attribute we can be triple fast AND use 50% less memory.</p>
-<p style="margin: 0in 0in 8pt;">I have been building and perfecting the examples 
-in preparation for presenting this concept to the industry leaders. The concept 
-is a &#39;new&#39; idea - or as someone pointed out it&#39;s a variation of a perma-thread 
-from the old days. In this article I had mentioned something about &quot;Object 
-Databases&quot; almost changing the world once but there was a performance problem - 
-so the world is square.</p>
-<p align="left" style="margin: 0in 0in 8pt;">The discussion got hot at [xml-dev] 
-until OASIS experienced malfunctions that have had the list servers down for 
-over three days now. The discussion lasted for 2 days and brought out excellent 
-debate and advancement in the documentation of the concept. Since I am trying to 
-communicate this architectural design concept to all who can understand, I 
-believe it is best to read the questions asked by experts on the subject of XML 
-and read the 2 day discussion. When discussing &#39;new&#39; concepts like this various 
-views and terminology used by folks other than myself is helpful to read. I 
-think the discussion at [xml-dev] mostly accomplished documenting the outline 
-for an official &#39;Internet Draft&quot; based on a summary of this discussion that 
-fortunately was archived outside of OASIS servers. The servers that hosted this 
-hot topic suddenly went off line over 72 hours ago.</p><p align="center" style="margin: 0in 0in 8pt;"> <strong>
-T</strong><strong>he [xml-dev] discussion archive:</strong><br />
-<a style="color: rgb(0, 114, 198); text-decoration: none;" href="http://www.altova.com/list/xml-dev/201403/" target="_blank">
-http://www.altova.com/list/xml-dev/201403/</a> <br /> 
-see : &quot;RFC for XML Object Parsing&quot;  </p><p align="center" style="margin: 0in 0in 8pt;">
-</p><p align="center" style="margin: 0in 0in 8pt;"><strong>Please use the forum 
-following this article to document any additional point to cover in a <br />
-formal &quot;Internet Draft&quot; document for standards approval - In progress.</strong></p><p align="center">
- </p><p style="margin: 0in 0in 8pt;">Recently I added a &quot;major&quot; new example 
-program. It&#39;s mostly been there all the time but it never had a makefile - see 
-CustomHTTPService. It builds a static web server and implements a simple post 
-handler AND a multi-part-form handler. It&#39;s great server platform based on 
-ServerCore.cpp</p>
-<p style="margin: 0in 0in 8pt;">Recently I also added a new example program 
-called ContainOrInherit, explaining the difference between containment design 
-and inheritance design, and the GProfile now supports XML format since that 
-could be useful. </p><p style="margin: 0in 0in 8pt;">Earlier in March 2014, The 
-bulk of the work was in the files Console.cpp and 5LoavesSvc.cpp - both are 
-excellent frameworks for any service. Those files are not tied tightly to 
-ServerCore.cpp, they use ServerCore.cpp. Those files are a very useful starting 
-point &#39;design patterns&#39; for many applications. They are intended to be generic 
-for anyone needing to build a windows service. Those two files are not about 
-XML, they are about Foundation.</p>
+<p style="margin: 0in 0in 8pt;">Welcome to XMLFoundation - May 2014</p>
+<p style="margin: 0in 0in 8pt;">Software projects can fail for many reasons. In 
+mission critical software projects there is a common objective to avoid 
+design-resource dependencies. If one critical resource is run over by a bus, the 
+whole project can become &quot;bus terminated&quot;. In a lesser &quot;mission critical&quot; 
+context, when another company hires away your undervalued programmer - then 
+management finds out that the new guy can&#39;t just pick up where the undervalued 
+guy left off. Some smaller thinking programmers even convolute code, or leave 
+out a few necessary comments just for job security. I am normally here to 
+support anybody using XMLFoundation in some way that uncovers an error or 
+missing feature - however many external events could &quot;bus terminate&quot; this &quot;live&quot; 
+support. XMLFoundation is designed and organized to prevent failure and stand 
+the test of time. There are no outstanding bugs. There are no feature requests 
+awaiting implementation. There are no disputes to the claim that this is the 
+worlds fastest XML Parser. XMLFoundation is being used more than ever before and 
+at the same time the need for me to answer questions has decreased due to the 
+heavily commentated and exemplified code. At this point, termination of myself 
+will not be the termination of a project based on XMLFoundation. The next 
+economic gut bubble that vents it self wont blow XMLFoundation away.</p>
+<p style="margin: 0in 0in 8pt;">I remember when XML 1.0 was disruptive. The <strong>
+sudden</strong> appearance of a global standard <strong>immediately</strong> 
+forced projects worldwide to change course, not all could. Projects that could 
+not react to the disruptive technology (or the opportunity) are now built on 
+less standard protocols that now excludes them from some new use case scenarios 
+or forces them to add layers of inefficiency and failure points in retrospect 
+design. It&#39;s no wonder why software projects are so well known for failure. Many 
+things can go wrong, and times change fast. If you search the internet for the 
+term &quot;Disruptive Technology&quot; along with &quot;Capitol&quot; or &quot;Venture&quot;, you will see 
+that &quot;Disruptive Technology&quot; is sought after and valued even though it disrupts 
+culture and/or other businesses. XMLFoundation is Disruptive Technology. It&#39;s 
+like what vehicle radar detectors once were to police radar guns. Is that 
+Disruptive Technology or Defensive Driving? Technology defends us from 
+technology at every level. The performance numbers XMLFoundation produces does 
+disrupt some technology business plans. In most technology plans, XMLFoundation 
+merely adds new options.</p>
+<p style="margin: 0in 0in 8pt;">When referencing this &quot;Article&quot; at [xml-dev] I 
+called it bloggish. I remember reading Stroustrups First edition of &quot;The C++ 
+Programming Language&quot;, which had interesting quotes in it, here are a few 
+re-quotes from the Fourth edition:</p>
 <p style="margin: 0in 0in 8pt;"> </p>
+<p align="center" style="margin: 0in 0in 8pt;">Don&#39;t interrupt me while I&#39;m 
+interrupting.<br />
+-Winston S. Churchill<br />
+Premature optimization is the root of all evil.<br />
+-Donald Knuth<br />
+On the other hand, we cannot ignore efficiency.<br />
+-Jon Bentley<br />
+The purpose of computing is insight, not numbers.<br />
+-R. W. Hamming<br />
+... but for the student, numbers are often the best road to insight.<br />
+-A. Ralston<br />
+ </p>
+<p align="left" style="margin: 0in 0in 8pt;"><hr /></p><p align="left" style="margin: 0in 0in 8pt;">
+In his book, Stroustrup injects some &quot;bloggish&quot; quotes like this:</p>
+<p align="center" style="margin: 0in 0in 8pt;">&quot;<strong>... there is nothing 
+more difficult to carry out, nor more doubtful of success, nor more dangerous to 
+handle, than to initiate a new order of things. For the reformer makes enemies 
+of all those who profit by the old order, and only lukewarm defenders in all 
+those who would profit by the new order...&quot; </strong> </p>
+<p align="center" style="margin: 0in 0in 8pt;">-Niccol `o Machiavelli </p>
+<p align="center" style="margin: 0in 0in 8pt;">&nbsp;<a href="https://onedrive.live.com/redir?resid=D7EC275E76D295CF!1400">Other 
+Machiavelli Quotes</a> that didn&#39;t fit in &quot;The C++ Programming Language&quot;</p>
 <p style="margin: 0in 0in 8pt;">
-</p><hr /><p style="margin: 0in 0in 8pt;">
+<hr />So it is fitting and proper to add into the chronicles of technology 
+insight.....</p>
+<p align="center" style="margin: 0in 0in 8pt;">The more numerous the laws, the 
+more corrupt the state <br />
+-Tacitus</p><p align="center" style="margin: 0in 0in 8pt;">The corrupt state has 
+enough laws that anyone can be arrested and charged with an arbitrary violation, <br />
+ensuring that a State reformer will be a victim of the Court of Law, the Sword 
+of the State. <br />
+-Brian Aberle</p>
+<p align="center" style="margin: 0in 0in 8pt;">The court can take the reformers 
+children and give them to another man and your codefendant. <br />
+-Dorn Thorn in the Corn Justice Porn with a Cop in his Pocket</p>
+<p align="center" style="margin: 0in 0in 8pt;">If the reformer continues to 
+evade prison and death long enough that neither prison nor death can stop the 
+vision of reform, then there will be a new order of things. <br />
+-Brian Aberle  </p>
+<p align="center" style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;">
+Here in the chronicles of technology insight, you might read something rogue or 
+startling as you wander just a few links deep. There is an entire directory in 
+the source distribution called &quot;-Disturbing&quot; that disturbs me more than you. 
+Just imagine, a disturbed person creating disruptive technology. It&#39;s like 
+having PTSD and ADD. Meet the author of XMLFoundation. When I saw that 
+Addison-Wesley allowed Mr. Stroustrup to publish &quot;Programming is like sex...&quot; in 
+&quot;The C++ Programming Language&quot;, then I knew that it&#39;s OK to have a little bit of 
+fun with this stuff as we teach. So check out the new section in this 
+documentation - <a href="#The_Sexy_GString">The Sexy GString</a>.   </p>
+<p style="margin: 0in 0in 8pt;">
+There are some heavier areas of exemplification and documentation that still 
+need to be done, specifically in the areas of Distributed Object Designs, and 
+XML-DBMS integration and the Java integration, these areas and topics are as 
+foundational in XMLFoundation as the <a href="#GProfile_-_The_App_Registry">
+GProfile</a>, which just now got it&#39;s first real bit of documentation. If anyone 
+would like to rent my hourly help, we will help each other contact me: XMLBoss 
+at live dot com.</p>
+<p align="center" style="margin: 0in 0in 8pt;">
+<br />
+Programming is like sex: It may give some concrete results, but that is not why 
+we do it.<br />
+-Richard Feynman<br />
+ </p>
+<hr /><p style="margin: 0in 0in 8pt;">
 </p>
 <p style="margin: 0in 0in 8pt;">
 </p>
@@ -108,43 +156,7 @@ XML, they are about Foundation.</p>
 <p style="margin: 0in 0in 8pt;">
 </p><p style="margin: 0in 0in 8pt;">
 
-</p><p style="margin: 0in 0in 8pt;">XMLFoundation is a cross platform 
-application foundation. GString and xmlLex are 1 and yet they can be separated. 
-The G classes are &quot;designed&quot; for each other - not simply &quot;used&quot; together. The 
-GString now supports Compress and Cipher as member methods. Since both GZip and 
-TwoFish are very portable and since the GString is designed for binary data 
-equally as much as for character string data - the combination is a natural fit 
-that deserves to be in the base class of GString. This comes after synchronizing 
-GZip.cpp in the XMLFoundation with the latest source code from <a href="http://zlib.net/">
-http://zlib.net/</a>, an update that includes a fix for a rare compression bug. 
-Zlib implements compression for most applications built after 1996. The authors 
-recommend that all users of Zlib should upgrade and obtain the fix. </p>
-<p style="margin: 0in 0in 8pt;">The fact that the first 3 letters being ALL CAPS 
-of xmlFOUNDATION understates the C++ Foundational application development tools 
-( which contain an XML Parser (like the C++ framework QT) ). Building on GString 
-is like building on a &quot;better&quot; ostream. Opinion has no place amid &quot;better&quot; 
-performance data. Every application that was ever built on ostream could benefit 
-from the XMLFoundation. All the utilities are carefully designed to be a 
-portable platform everywhere that a C++ compiler exists (like the popular C++ 
-library Boost (which XMLFoundation compliments nicely) ). XMLFoundation&#39;s 
-GThread is still the only pthread port for Windows Phone that I know of. Windows 
-Phone is now the third-largest OS across Europe with 10 percent of the smart 
-phone market -- more than double its share compared with last year. I support 
-it. Behind the Capitol XML is a solid application Foundation.</p>
-<p style="margin: 0in 0in 8pt;">In the past 30 days, there have been several 
-minor &quot;fixes&quot; in the XMLFoundation as well - so all of this deserved being put 
-together into build 211 that is already serving several production applications. 
-Additionally, new documentation now includes example use of the virtual ToXML() 
-method of XMLObject in the new example program titled BigData. Since 
-XMLFoundation is <span style="background-color: rgb(255, 255, 0);">the fastest 
-XML Parser on earth</span>, it stands as the most viable solution for 
-integration of massive XML data sets - most will be to/from an SQL database - 
-but where BigData meets XML - the XMLFoundation is a solution present. Despite 
-the focus on XMLFoundation support for the equally important mobile platforms 
-(iOS/Android/Windows Phone), XMLFoundation originated from the high performance 
-needs of large data warehousing and is positioned to be the de facto standard 
-for BigData XML just as zlib became (according to wikipedia) the de facto 
-compression.</p>
+</p>
 <h2>
                 
 <strong>The Index</strong> </h2>
@@ -152,8 +164,7 @@ compression.</p>
     <tbody><tr>
         <td width="426">
         <p align="left">             
-        <a href="#About_the_author(s)_of_XMLFoundation_">About the author(s) of 
-		XMLFoundation</a></p></td>
+        <a href="#What_is_the_XMLFoundation">What is the XMLFoundation</a></p></td>
         <td>
         <p align="left"><a href="#New_World_Order">New World Order</a></p></td>
     </tr>
@@ -270,11 +281,144 @@ compression.</p>
         <p align="left"><a href="#XMLFoundation_for_Java_">XMLFoundation for 
 		Java</a></p></td>
     </tr>
+    <tr>
+        <td width="426">
+        <a href="#Calling_All_Chiefs">Calling All Chiefs for a Pow Wow</a></td>
+        <td>
+        <a href="#About_the_author(s)_of_XMLFoundation_">About the author(s) of 
+		XMLFoundation</a></td>
+    </tr>
+        <tr>
+        <td width="426">
+        <p align="left">            
+ <a href="#The_Sexy_GString">The Sexy GString</a></p></td>
+        <td>
+        <p align="left"><a href="#GProfile_-_The_App_Registry">GProfile - The 
+		App Registry</a></p></td>
+        </tr>
+    <tr>
+        <td width="426">
+         </td>
+        <td>
+          </td>
+    </tr>
 </tbody></table>
 <p style="margin: 0in 0in 8pt;"> </p>
 <p style="margin: 0in 0in 8pt;"> </p>
 <p style="margin: 0in 0in 8pt;"> </p><hr /><p style="margin: 0in 0in 8pt;"> </p>
+<h2><a name="What_is_the_XMLFoundation">What is the XMLFoundation</a></h2>
+<p style="margin: 0in 0in 8pt;">XMLFoundation is a cross platform application 
+foundation. GString and xmlLex are 1 and yet they can be separated. The G 
+classes are &quot;designed&quot; for each other - not simply &quot;used&quot; together. The GString 
+now supports Compress and Cipher as member methods. Since both GZip and TwoFish 
+are very portable and since the GString is designed for binary data equally as 
+much as for character string data - the combination is a natural fit that 
+deserves to be in the base class of GString. This comes after synchronizing 
+GZip.cpp in the XMLFoundation with the latest source code from <a href="http://zlib.net/">
+http://zlib.net/</a>, an update that includes a fix for a rare compression bug. 
+Zlib implements compression for most applications built after 1996. The authors 
+recommend that all users of Zlib should upgrade and obtain the fix. </p>
+<p style="margin: 0in 0in 8pt;">The XMLFoundation library contains many things. 
+From utilities to frameworks, (plural to plural). The XMLFoundation implements a 
+use of XML that it is about 3 times faster that the best that can be done with 
+SAX, when parsing XML for the purpose of an update to some dataset that you 
+already have. It is a very common task in the application layer or in a DBMS 
+that uses XML as a native input protocol. In that case, if a key word OID is 
+present as the first attribute we can be triple fast AND use 50% less memory. 
+This is accomplished by eliminating a temporary memory copy made by typical XML 
+parsers as well as eliminating many arguments being pushed and popped from the 
+stack by using xmlLex::getToken(*tok) explained in more detail where performance 
+is discussed.</p>
+<p style="margin: 0in 0in 8pt;">The fact that the first 3 letters are ALL CAPS 
+of in XMLFoundation understates the C++ FOUNDATIONAL application development 
+tools ( which contain an XML Parser (like the C++ framework QT) ). Building on 
+GString is like building on a &quot;better&quot; ostream. Opinion has no place amid 
+&quot;better&quot; performance data. Every application that was ever built on ostream 
+could benefit from the XMLFoundation. All the utilities are carefully designed 
+to be a portable platform everywhere that a C++ compiler exists (like the 
+popular C++ library Boost (which XMLFoundation compliments nicely) ). 
+XMLFoundation&#39;s GThread is still the only pthread port for Windows Phone that I 
+know of. Windows Phone is now the third-largest OS across Europe with 10 percent 
+of the smart phone market -- more than double its share compared with last year. 
+I support it. Behind the Capitol XML is a solid application Foundation.</p>
+<p style="margin: 0in 0in 8pt;">In the past 30 days, there have been several 
+minor &quot;fixes&quot; in the XMLFoundation as well - so all of this deserved being put 
+together into build 211 that is already serving several production applications. 
+Additionally, new documentation now includes example use of the virtual ToXML() 
+method of XMLObject in the new example program titled BigData. Since 
+XMLFoundation is <span style="background-color: rgb(255, 255, 0);">the fastest 
+XML Parser on earth</span>, it stands as the most viable solution for 
+integration of massive XML data sets - most will be to/from an SQL database - 
+but where BigData meets XML - the XMLFoundation is a solution present. Despite 
+the focus on XMLFoundation support for the equally important mobile platforms 
+(iOS/Android/Windows Phone), XMLFoundation originated from the high performance 
+needs of large data warehousing and is positioned to be the de facto standard 
+for BigData XML just as zlib became the de facto compression. Zlib is officially 
+de facto according to wikipedia - which is often known to be incorrect in 
+certain topics, but I believe it is correct in this case.</p>
 <p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;"> </p><p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;"> </p>
+<h2><a name="Calling_All_Chiefs">Calling All Chiefs for a Pow Wow</a></h2>
+<p style="margin: 0in 0in 8pt;">This is what was happening on March 31, 2014</p>
+<p style="margin: 0in 0in 8pt;">Of recent, I have sought out &#39;leaders&#39; in the 
+domain of XML to present a proposal for a futuristic XML that has 2 new small 
+keywords that prefix an attribute list in a 100% syntactically backwards 
+approach as to not not disrupt any XML 1.0/1.1 software. To assemble the chiefs 
+for a pow wow on the subject requires the attendance from the leaders of many 
+technical worlds. IETF is a moderated forum (like codeproject.com is moderated) 
+and OASIS is unmoderated, once famous for hosting [xml-dev] where interfaces 
+like SAX and DOM were created by unmoderated open debate and consensus.</p>
+<p style="margin: 0in 0in 8pt;">I have been building and perfecting the examples 
+in preparation for presenting this concept to the industry leaders. The concept 
+is a &#39;new&#39; idea - or as someone pointed out it&#39;s a variation of a perma-thread 
+from the old days. In this article I had mentioned something about &quot;Object 
+Databases&quot; almost changing the world once but there was a performance problem - 
+so the world is square.</p>
+<p align="left" style="margin: 0in 0in 8pt;">The discussion got hot at [xml-dev] 
+until OASIS experienced malfunctions that had the list servers down for a total 
+of 4 and a half days. OASIS Tech support had no response to some people and a 
+broken hyperlink for problem ticket 2546 for other people. The discussion lasted 
+for 2 days and brought out excellent debate and advancement in the documentation 
+of the concept. Many &quot;Authorities&quot; on XML commented prior to the server failure 
+that stopped the discussion for almost 5 days. I am trying to communicate this 
+architectural design concept to all who can understand. For those seeking to 
+understand the design concepts, I believe it is best to read the questions asked 
+by &quot;Experts&quot; on the subject of XML and read the 2 day discussion. While 
+discussing &#39;new&#39; concepts like this, various views and terminology used in other 
+people questions is helpful to read. The discussion at [xml-dev] mostly 
+accomplished documenting the outline for an official &#39;Internet Draft&quot; based on a 
+summary of this discussion that fortunately was archived outside of OASIS 
+servers. </p><p align="center" style="margin: 0in 0in 8pt;"> <strong>The 
+[xml-dev] discussion archive:</strong><br />
+<a style="color: rgb(0, 114, 198); text-decoration: none;" href="http://www.altova.com/list/xml-dev/201403/" target="_blank">
+http://www.altova.com/list/xml-dev/201403/</a> <br /> 
+see : &quot;RFC for XML Object Parsing&quot;  </p><p align="center" style="margin: 0in 0in 8pt;">
+</p><p align="center" style="margin: 0in 0in 8pt;"><strong>Please use the forum 
+following this article to document any additional point to cover in a <br />
+formal &quot;Internet Draft&quot; document for standards approval - In progress.</strong></p><p align="center">
+ </p><p style="margin: 0in 0in 8pt;">Recently I added a &quot;major&quot; new example 
+program. It&#39;s mostly been there all the time but it never had a makefile - see 
+CustomHTTPService. It builds a static web server and implements a simple post 
+handler AND a multi-part-form handler. It&#39;s great server platform based on 
+ServerCore.cpp</p>
+<p style="margin: 0in 0in 8pt;">Recently I also added a new example program 
+called ContainOrInherit, explaining the difference between containment design 
+and inheritance design, and the GProfile now supports XML format since that 
+could be useful. See the (large) comment explaining the reasoning for adding XML 
+support to GProfile 14 years after designing it amid all this XML support.</p><p style="margin: 0in 0in 8pt;">
+Earlier in March 2014, The bulk of the work was in the files Console.cpp and 
+5LoavesSvc.cpp - both are excellent frameworks for any service. Those files are 
+not tied tightly to ServerCore.cpp, they use ServerCore.cpp. Those files are a 
+very useful starting point &#39;design patterns&#39; for many applications. They are 
+intended to be generic for anyone needing to build a windows service. Those two 
+files are not about XML, they are about Foundation.</p>
+<p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;">
+</p>
+<h2> </h2>
 <h2><a name="Custom_Memory_Management">Custom Memory Management</a></h2>
 <p style="margin: 0in 0in 8pt;">This is what was new on Jan 11, 2014</p>
 <p style="margin: 0in 0in 8pt;">This is a point in the XMLFoundation project 
@@ -295,8 +439,8 @@ the bottom of this page, or share/discuss it with me directly ( Roaring
 Checkmate At Live dot com). I ask for this feedback despite the fact that 
 recently there has been more &quot;downvoting&quot; than ever before. The old &quot;5 Star&quot; 
 XMLFoundation has new &quot;1 Star&quot; haters. </p>
-<p style="margin: 0in 0in 8pt;">The very old section in this document titled “<a href="#Faster_than_Fast">Faster 
-than Fast</a>”, written in 2009, was put together to give some explanation and 
+<p style="margin: 0in 0in 8pt;">The very old section in this document titled â€œ<a href="#Faster_than_Fast">Faster 
+than Fast</a>â€, written in 2009, was put together to give some explanation and 
 emphasis to the fact that XMLFoundation is fast.<span>  </span>The XMLFoundation 
 is FASTER in 2014. (as much as <span style="background: yellow;">3 TIMES FASTER</span> 
 at some operations than any 2013 release).<span>  </span>Thank God for numbers, 
@@ -312,17 +456,18 @@ an experienced approach toward accomplishing this.<span>  </span>In this
 release, I abundantly commented the source code changes and additions to 
 document exactly how this custom memory management is accomplished. <span>  </span>
 The proof is in the numbers exactly how important of an issue memory management 
-is – regardless of your target being on an Android phone or a 64 bit Windows 
-server – the same concept applies to memory management. </p><p>
+is â€“ regardless of your target being on an Android phone or a 64 bit Windows 
+server â€“ the same concept applies to memory management. </p><p>
 
-Additionally – as we kick off 2014 with a massive reduction in the reliance of 
-the operating systems memory manager – we raised the roof for 32 bit processing 
-limits that are reached when new() returns NULL.<span>  </span>So, if faster is 
-not what you need – perhaps you will enjoy the higher processing limits that you 
-can now achieve in the same memory limitations that you have always had.<span> 
+Additionally â€“ as we kick off 2014 with a massive reduction in the reliance of 
+the operating systems memory manager â€“ we raised the roof for 32 bit 
+processing limits that are reached when new() returns NULL.<span>  </span>So, if 
+faster is not what you need â€“ perhaps you will enjoy the higher processing 
+limits that you can now achieve in the same memory limitations that you have 
+always had.<span> 
 </span>FASTER execution and HIGHER limits are both achieved by the same upgrade 
 in this release.<span>  </span>I expect that this raised the roof for 64 bit 
-limits as well – but I have never seen that roof.  </p><p>
+limits as well â€“ but I have never seen that roof.  </p><p>
 
 The bulk of the memory management documentation is in the code, I will conclude 
 the introduction to the 2014 version with the basic steps that make it all 
@@ -341,12 +486,11 @@ aplies the same concept a bit differently. <pre>void *pBlock = malloc(sizeof(GLi
 readability.... </p>
 <pre lang="cs">void *pVoid = ((char *)pBlock) + ( sizeof(GList::Node)*nBlockIndex);
 GList::Node *pNodeInBlock = (GList::Node *)pVoid; </pre><p> // this is the same 
-code as above with no temp variable. It is a type cast with pointer arithmetic </p><pre lang="cs">GList::Node *pNodeInBlock = 
-             (GList::Node *)((void *)(((char *)pBlock)+(sizeof(GList::Node)*nBlockIndex))); </pre><h2> </h2>
+code as above with no temp variable. It is a type cast with pointer arithmetic</p><pre lang="cs">pNodeInBlock = (GList::Node *)((void *)(((char *)pBlock)+(sizeof(GList::Node)*nBlockIndex))); </pre><h2> </h2>
 <h2><a name="Analysis_of_Algorithms">Analysis of Algorithms</a></h2>
 <p>This is what was new December 21st 2013  </p><p>
 MurmurHash was the latest big advancement in Hashing. It was published in Austin 
-Appleby’s personal blog. Google hired him and has taken over Murmurhash, and 
+Applebyâ€™s personal blog. Google hired him and has taken over Murmurhash, and 
 published a variant of it called CityHash. Strangely, many Google publications 
 failed to recognize SpookyHash - published October 31, Ground Hog Day, and other 
 celebrated days, citing only MurmurHash. 
@@ -362,8 +506,8 @@ The test counts CPU cycles and/or microseconds on both Windows and Linux while
 indexing large datasets for both 32 and 64 bit applications. The source code for 
 this test is included in the example program ExIndexObjects. </p>
 <p>The results are very interesting. GHash is so fast that CityHash slows it 
-down. The GHash is a unique algorithm designed to index XMLObjects – but it can 
-index anything. In summary, GHash is an Array of B-Trees. It handles hash 
+down. The GHash is a unique algorithm designed to index XMLObjects â€“ but it 
+can index anything. In summary, GHash is an Array of B-Trees. It handles hash 
 collisions so efficiently that it eliminates need for &quot;low collision&quot; hashing 
 algorithms such as CityHash which use far more CPU than a simple Rotating Hash, 
 and further research will determine just how low it can go in the simplification 
@@ -371,10 +515,10 @@ of that step. </p><p>
 CRC-<em>n</em>. is faster than CityHash. For Checksumming, or creating a hash 
 function with a perfect distribution (aka avalanche effect) CRC is a better 
 choice. CityHash and SpookyHash are curious works in math that have only 1 
-possible application – they can destroy data quickly(like the Google Code). If 
+possible application â€“ they can destroy data quickly(like the Google Code). If 
 you have a HUGE amount of sensitive data and want to delete it (which will mark 
-the disk sectors ‘free’ for the OS to use) and DESTROY it so that it could never 
-be recovered by any disk utility tools. There are many free utilities that 
+the disk sectors â€˜freeâ€™ for the OS to use) and DESTROY it so that it could 
+never be recovered by any disk utility tools. There are many free utilities that 
 accomplish this already, but with these new algorithms the software can 
 accomplish more block corruption in less time. Why does Google Inc invest in and 
 market algorithms with no purpose in any of their active projects? If I was a 
@@ -382,7 +526,7 @@ share-holder I would vote for new management. </p><p>
 
 <code>GHash</code> ought not be confused with a block cruncher. The name <code>
 GHashTableTreeStack</code>
-was too long so it’s called <code>GHash</code>. The long name would be more 
+was too long so itâ€™s called <code>GHash</code>. The long name would be more 
 proper, like Mr. Hash. GHash is one single &quot;Data Structure Algorithm&quot; that 
 combines multiple algorithms and data structures (see highlighted) as parts of 
 the whole. GHash uses a Rotating Hash to index a Static Array of Binary Trees. A 
@@ -395,10 +539,10 @@ writes) of individual updates that were applied while it was stored in RAM by
 GBTree. The GHash cannot do that, but it uses a
 <code>GBTree</code> that can. The XML data updates and application layer updates 
 primarily use only the primary index. Upon a special kind of commit the 
-fragmented memory structure can be flattened back to it’s initial state into the 
-same order that they came from the disk. Another important algorithmic component 
-of GHash is the unique (aka one of a kind) <code>GHashIterator</code> which 
-allows SIMPLE and non-blocking THREAD-SAFE iteration of this complex data 
+fragmented memory structure can be flattened back to itâ€™s initial state into 
+the same order that they came from the disk. Another important algorithmic 
+component of GHash is the unique (aka one of a kind) <code>GHashIterator</code> 
+which allows SIMPLE and non-blocking THREAD-SAFE iteration of this complex data 
 structure via an internal integer index into the Static Array used in 
 combination with a GBTreeIterator which is maintains two <code>GStack</code>s 
 that act as LIFO queues of state information used to quickly iterate the Tree 
@@ -407,11 +551,11 @@ method of the Tree structure. A mere typical approach will force a multithreaded
 application to block reads of the structure. GHash is non typical and <strong>
 very</strong> fast.</p>
 <p>Each algorithm has various properties. Building from a Window64 starting 
-point, I re-structured the “Google Sparse Hash” project source code. I made 
+point, I re-structured the â€œGoogle Sparse Hashâ€ project source code. I made 
 major structure changes to the code. This may be the answer to a commented 
 question in the source code about an empty bucket. I added struct support for 
 Windows, fully redesigned the build, and provide a 64 bit target for Windows 
-which the “Sparse Hash Project” does not. The work is in the file <em>
+which the â€œSparse Hash Projectâ€ does not. The work is in the file <em>
 GSparseHash.h</em>. It will be the file of interest in this release , and 
 admittedly it is still a work in progress. It is a starting point. That one file 
 stands as an exception in the XMLFoundation because it does not yet build under 
@@ -419,11 +563,11 @@ every compiler. It&#39;s MUCH simpler to incorporate into any build as the inlin
 implementation in GSparshHash.h (where the compiler supports) - and I expect 
 only minor changes for GCC to support GSparseHash.h</p><p>Although GHash is not 
 a Distributed Data Structure, it is a far more valuable algorithmic component 
-within a “Distributed Data Structure” than CityHash. Just as GHash is made of 
-many algorithmic components so must a structure like BigTable designed and used 
-by Google, which is likely where CityHash is used. BigTable is best defined as a 
-sparse, distributed multi-dimensional sorted map. It is accurately summarized 
-here: <a href="http://www.cs.rutgers.edu/~pxk/417/notes/content/bigtable.html">
+within a â€œDistributed Data Structureâ€ than CityHash. Just as GHash is made 
+of many algorithmic components so must a structure like BigTable designed and 
+used by Google, which is likely where CityHash is used. BigTable is best defined 
+as a sparse, distributed multi-dimensional sorted map. It is accurately 
+summarized here: <a href="http://www.cs.rutgers.edu/~pxk/417/notes/content/bigtable.html">
 http://www.cs.rutgers.edu/~pxk/417/notes/content/bigtable.html</a>.</p>
 <p>Boom. Bust. Readjust. Ashes to Ashes. Dust to Dust. In God we Trust. Watch 
 the Bubble sort Bust. </p>
@@ -536,6 +680,242 @@ implementation called CArray. While the implementation was the point of interest
 of one person, the comments added will be the point of interest to even more 
 people that need some other data type in some other kind of data structure.</p>
 
+<h2><a name="The_Sexy_GString">The Sexy GString</a></h2>
+<p>The GString is ancient. Before the GString, xmlLex used ostream. The ONLY 
+reason GString was initially created was to out-perform ostream. This is why 
+GString has two identical methods Write() and write(). ostream uses a lowercase 
+write(). In our application(s) that used ostream we simply commented out the 
+ostream instance and replace it with a GString of the same variable name. If 
+GString did not have a lowercase write(), you would have to hunt through your 
+code and replace all the places you called write() and change it to Write() 
+making it difficult to change something at such a low level, it is underneath 
+the XML Parser. If you understand what ostream is, then you understand what 
+GString is. If they were both clothing they would be found in the same 
+department next to MFC&#39;s CString. The GString is way sexier. It exposes parts 
+that ostream and CString keep private.</p>
+<p>The big &#39;hack&#39; in GString that makes it so fast, is that it makes no heap 
+allocation unless your data grows beyond 64 bytes. It may sound like a small 
+thing, but it&#39;s the hack that fills the crack. In this document I already wrote 
+about how important <a href="#Custom_Memory_Management">memory management</a> 
+is. GString applies the same concept of heap avoidance to use the faster stack 
+space if possible, or by including some &#39;data&#39; space in the &#39;object&#39; space. This 
+means when you instantiate a GString it eats up an &#39;extra&#39; 64 bytes just incase 
+you might use it. If you use more than the 64 bytes, you will be punished by 
+waiting for the slower heap allocation. If you put no data in the GString, then 
+you needlessly preallocated memory that you never used and your punishment was 
+that you are holding a lock on unused memory that perhaps is needed elsewhere. 
+It&#39;s all about memory vs. speed tradeoffs.</p>
+<p>Very recently XMLFoundation added GString0, and GString32. The number 
+represents the bytes of &#39;extra&#39; space used to avoid the heap allocation. If you 
+expect that a GString value will be empty 99% of the time and you expect many 
+instances of that normally empty GString will exist at the same time, you may 
+choose to use GString0, which makes no initial stack allocation, your 
+application will then use less memory and run a little slower only when the 1% 
+of the exceptions come around. The GString is a GString64, but we just call it 
+GString.</p>
+<p>Another major performance area of the GString is in the resize() method, the 
+reallocation algorithm is very simple. The size of the buffer is doubled 
+whenever it would otherwise grow beyond it&#39;s current allocation bounds. 
+Alternatively the allocation space can grow by a block size, that approach is 
+generally an order of magnitude slower in a preallocated GString. GString 
+supports both allocation styles, but it defaults to doubling the current buffer 
+size. The worst case scenario for the size doubling is: If you have 4 GB in a 
+GString and only need to fit one more byte you might have to allocate 8GB for a 
+GString that will never grow beyond 4GB + 1 byte. You can always preallocate 4GB 
++ 1 byte if you know that will be the final size, then you can avoid all this 
+performance oriented guesswork with the fastest implementation possible. Many 
+times the final size is unknown until it is final.</p>
+<p>If the GString was ALL about performance it would be of little interest 
+beyond an internal tool needed by a performance orientated XML Parser, however 
+the GString is plenty robust, filled with common needs in a wide array of 
+applications, the interfaces are fully document in GString.h, here is a summary: 
+I left out all the typical String methods like Mid() Left() Right(), Upper() 
+Compare*() and many others, see GString .h for complete documentation.</p><pre lang="cs">// write() appends to the GString to mimic ostream 
+//
+// s = &quot;Just when you think you&#39;ve seen it all&quot;; s.write(&quot;\0there is more.&quot;,15);
+// now the Length() is the length of the entire string contents, therefore
+// s.Length() &gt; strlen(s);
+void write(const char *pSource,__int64 nBytes); // lower case for ostream interoperability just replace &quot;ostream&quot; with GString types and recompile for 2X string manipulation speed.
+void Write(const char *pSource,__int64 nBytes){write(pSource,nBytes);}; // upper case for Development tools method sorting
+void write(unsigned char *pSource,__int64 nBytes){write((const char *)pSource,nBytes);}; 
+void Write(unsigned char *pSource,__int64 nBytes){write((const char *)pSource,nBytes);}; // upper case for Development tools method sorting
+
+
+// Load this GString from a file and replace any contents in this GString - returns 1 for success, 0 for fail
+bool FromFile(const char* pzFileName, bool bThrowOnFail = 1);
+// Append the contents of the specified file to the end of this GString - returns 1 for success, 0 for fail
+bool FromFileAppend(const char* pzFileName, bool bThrowOnFail = 1);
+// Save this GString to a file - overwrite if file exists
+bool ToFile(const char* pzFileName, bool bThrowOnFail = 1);
+// Append this GString to a file - create file if not existing returns 1 for success, 0 for failure
+bool ToFileAppend(const char* pzFileName, bool bThrowOnFail = 1);
+
+
+
+// The mask can contain any printable character and is terminated 
+// by a null.
+//
+// The character &#39;_&#39; in the mask will be replaced by a single character
+// in the source string. The character &#39;*&#39; will be replaced by the
+// remaining characters in the source string. Both &#39;_&#39; and &#39;*&#39; can be
+// escaped using the character &#39;\&#39;. You can escape the escape character
+// with an escape character, i.e. &quot;\\&quot;.
+//
+// Some example masks:
+//
+// Phone number mask: (___)___-____ [ext:*]
+// SSN mask: ___-__-____ (tip: don&#39;t use SSN as a key in your database!)
+//
+// If the source data is larger than the mask and the mask doesn&#39;t contain
+// the wild character &#39;*&#39; the source data will be truncated.
+void MergeMask(const char *szSrc, const char *szMask);
+    // Appends an ASCII/HEX dump to this string. Looks like this:
+// 2F 31 2E 30 0D 0A 41 63 63 65 70 74 3A 20 2A 2F 2A 0D 0A 41 63 63 65 70 74 /1.0..Accept: */*..Accept
+// 2D 4C 61 6E 67 75 61 67 65 3A 20 65 6E 2D 75 73 0D 0A 55 73 65 72 2D 41 67 -Language: en-us..User-Ag
+//
+// You may set bIncludeAscii=0, to remove the line breaks and readable column of text from the result.
+// note: this appends to the string so you may first prefix the dump with context information:
+// Common usage: s=&quot;recv&#39;d:&quot;; s.FormatBinary(buf,N); s.ToFileAppend(&quot;debug.txt&quot;)
+void FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAscii=1);
+void FormatBinary(const GString &amp;strBinary, int bIncludeAscii =1);
+
+// CommaNumeric() - 123456789 will become 123,456,789
+// CommaNumeric() - 1000 will become 1,000
+// returns pointer to buffer inside &#39;this&#39;
+const char *CommaNumeric();
+
+// convert &#39;this&#39; to a user friendly byte notation with 2 digit unrounded precision
+// returns pointer to buffer inside &#39;this&#39;
+//-----------------------------------------------------------------------------------
+// 999 = 999 1000000 = 1.0Mb 1000000000000 =1.0Tb
+// 1000 = 1.0Kb 10000000 = 10Mb 9500000000000 =9.5Tb
+// 10000 = 10Kb 999999999 = 999Mb 999999999999999 =999Tb
+// 999999 = 999Kb 1000000000 = 1.0Gb
+const char *AbbreviateNumeric();
+// removes leading and trailing quotation&#39;s from string
+void StripQuotes();
+// escapes &lt;&gt;&amp;&quot;\ in &#39;this&#39; with &amp;#ascii-number;
+void EscapeXMLReserved();
+// Removes the character ch from the left side of the string.
+void TrimLeft(char ch = &#39; &#39;, short nCnt = -1);
+// trim leading white space (tabs, CR, LF, spaces) from the left(beginning) of the string
+void TrimLeftWS(); 
+// removes nCnt bytes from the beginning of the string
+void TrimLeftBytes(__int64 nCnt);
+// Pads the string object on the right with ch to make the string
+// a minimum of n character&#39;s in length s=&quot;123&quot; s.PadRight(5) s = &quot;12300&quot;
+void PadRight(__int64 nCnt, char ch = &#39; &#39;);
+// Pads the string on the right with nCnt of ch
+void Append(__int64 nCnt, char ch = &#39; &#39;);
+// Removes the character ch from the right side of the string. (max nCnt)
+void TrimRight(char ch = &#39; &#39;, short nCnt = -1);
+// Shortens the sting by nCnt bytes
+void TrimRightBytes(__int64 nCnt);
+// trim White Space from the end of the string 
+// removes trailing tabs, spaces, carriage returns, new lines
+void TrimRightWS();  
+    // search the string starting at 0 based index nStart
+// return -1 if not found otherwise a 0 based index of the found data
+__int64 FindCaseInsensitive( const char *lpszSub, __int64 nStart = 0 ) const; 
+__int64 Find( const char *pstr, __int64 nStart = 0 ) const;
+__int64 Find( char ch, __int64 nStart = 0 ) const;
+
+// return -1 when Nth occurrence is not found, otherwise index to the Nth occurrence of pstr
+// Nth is a 1 based index, so Nth=1 is the first occurrence, Nth=2 is the second, and so on.
+// Note: if you needed to split folder paths from Folder/Paths/To/File.txt
+// Consider using a GStringList like this: GStringList l(&quot;/&quot;,&quot;Folder/Paths/To/File.txt&quot;)
+// FindNth() is better suited for something that is always (before/at/after) the Nth occurrence
+__int64 FindNth( const char *pstr, int Nth, __int64 nStart = 0 ) const;
+__int64 FindNth( char ch, int Nth, __int64 nStart = 0 ) const;
+
+// return -1 if none of the [pzCharsToSearchFor] were found in &#39;this&#39; 
+// otherwise returns the index of the first char in &#39;this&#39; that is in the [pzCharsToSearchFor]
+__int64 FindOneOf(const char *pzCharsToSearchFor) const;
+
+// return a pointer into &#39;this&#39; after the matched find
+// s=&quot;one=hello&quot; s2=FindStringAfter(&quot;one=&quot;) s2 == &quot;hello&quot;
+// same as Find() but returns data rather than an index, and advances it past the match token - a common task
+const char *FindStringAfter(const char *pSearchFor) const;
+
+// a dynamic SubStr()
+// s=&quot;aaaBBBccc&quot; s2 = s.FindStringBetween(&quot;aaa&quot;,&quot;ccc&quot;) s2 == &quot;bbb&quot;
+GString FindStringBetween(const char *pSearchForBegin, const char *pSearchForEnd) const;
+
+// All of the other Find* methods assume that this&#39;s string content is a null terminated string
+// This find searches this&#39;s contents for a binary match to the data in [strToFind] that may also be binary
+// nulls in either this or [strToFind] will not terminate the search. Like the other finds, this returns 
+// the index that [strToFind] begins in [this] or -1 if it was not found, like the other find*&#39;s [nStart]
+// is the 0 based index in [this] that the search begins at.
+__int64 FindBinary(GString &amp;strToFind, __int64 nStart = 0);
+
+
+// search starting from the end of the string, 
+// nStart is a 0 based index of the starting place to search, by default nStart is _len (the last byte of the string)
+// the search just works toward the front - index 0.
+// if bMatchCase = 1, the ONLY EXacT Case matches will be found
+// returns -1, if [ToFind] is not found otherwise a 0 based index where it was found
+// 
+// example to obtain the extension from a file name if it has one
+// int nDot = strFile.ReverseFind(&quot;.&quot;);
+// GString strExtension( (nDot == -1) ? &quot;&quot; : strFile.StartingAt( nDot + 1 ) );
+__int64 ReverseFind( char chToFind ) const;
+__int64 ReverseFind( char chToFind, __int64 nStart ) const;
+__int64 ReverseFind( const char *pzToFind, __int64 nStart = -1, int bMatchCase = 0 ) const;
+// s = &quot;c:\The\Path\Folder1\Folder2\File.exe&quot;
+// example: s.SetLength(s.ReverseFindNth(&quot;\\&quot;,2));
+// s = &quot;c:\The\Path\Folder1&quot;
+__int64 ReverseFindNth( const char *pzToFind, int Nth) const;
+
+// starting from the end of the string, return the index of the first char in this that matches any char in pzToFind
+// s = &quot;/usr/bin/file.ext&quot; || s = &quot;c:\the\path\file.ext&quot;
+// s.SetLength(s.ReverseFindOneOf(&quot;/\\&quot;)); // cut off the file name for either a windows or unix path
+__int64 ReverseFindOneOf( const char *pzToFind ) const;
+__int64 ReverseFindOneOf( const char *pzToFind, __int64 nStart ) const;
+
+    // insert the the given value into &#39;this&#39; at the given index.
+// s = &quot;Rold&quot; s.Insert(2,&quot;ck the Wor&quot;) s == &quot;Rock the World&quot;
+// if you know the length of [str] or if it contains nulls as data pass the length of it as [nStrLen] otherwise [str] will be inserted up to the first NULL
+void Insert( __int64 nIndex, char ch );
+void Insert( __int64 nIndex, const char *str, __int64 nStrLen = -1 );
+
+// search &#39;this&#39; string for [pzMatch], and insert [pzInsertThis] before [pzMatch] for InsertBefore() or after [pzMatch] for InsertAfter()
+// if bMatchCase is set to 1, then ONLY ExAcT case matches for [pzMatch] will be used.
+// returns the index that [pzInsertThis] was inserted or -1 if [pzMatch] was not found.
+__int64 InsertBefore( const char *pzMatch, const char *pzInsertThis, int bMatchCase = 0);
+__int64 InsertAfter( const char *pzMatch, const char *pzInsertThis, int bMatchCase = 0);
+
+// remove [nLen] bytes starting at index [nStart]
+void Remove ( __int64 nStart, __int64 nLen );
+// remove all occurrences of [ch], return count removed
+__int64 RemoveAll ( char ch );
+// remove all occurrences of [pStrToRemove], if [bMatchCase] is 1, then only EXaCT case matched are removed. returns count removed.
+__int64 RemoveAll ( const char *pStrToRemove, int bMatchCase = 0 );
+// remove first occurrence of [ch], return 1 if removed otherwise 0
+int RemoveFirst ( char ch );
+// remove first occurrence of [pStrToRemove], if [bMatchCase] is 1, then only EXaCT case matched are removed. return 1 if removed otherwise 0
+int RemoveFirst ( const char *pStrToRemove, int bMatchCase = 0 );
+// remove last occurrence of [pStrToRemove], if [bMatchCase] is 1, then only EXaCT case matched are removed, return 1 if removed otherwise 0
+int RemoveLast ( const char *pStrToRemove, int bMatchCase = 0 );
+// remove last occurrence of [ch], return 1 if removed otherwise 0
+int RemoveLast ( char ch );
+
+
+// Replace ALL occurrences of *What with *ReplaceWith, unless nFirstOccuranceOnly = 1, then only replace the first occurance
+void Replace( char chWhat, char chReplaceWith, int nFirstOccuranceOnly = 0 );
+void Replace( const char * szWhat, char chReplaceWith, int nFirstOccuranceOnly = 0 );
+void Replace( const char * szWhat, const char *szReplaceWith, int nFirstOccuranceOnly = 0 );
+void ReplaceCaseInsensitive( const char * szWhat, const char *szReplaceWith, __int64 nStart = 0, int nFirstOccuranceOnly = 0 );
+void Replace( char chWhat, const char *szReplaceWith, int nFirstOccuranceOnly = 0 );
+
+// replace all occurrences of each character in [pzCharSet] with [chReplaceWith]
+// s = &quot;717273&quot;
+// s.ReplaceChars(&quot;123&quot;,&#39;_&#39;)
+// s == &quot;7_7_7_&quot;
+void ReplaceChars(const char *pzCharSet, char chReplaceWith);
+</pre><h2> </h2>
+
+
+
 <h2><a name="Threading">Threading</a></h2>
 <p>The new GThread, first of all, is a Windows thing. Inspired by that &quot;designed 
 for each other&quot; concept. Windows Mobile, Windows 32, Windows 64, and Windows 
@@ -589,6 +969,116 @@ native threading optimization for Windows.</p>
 </pre>
 <p><em>PThread.cpp</em> is still included incase you need it, but it is now 
 unused by the XMLFoundation and several applications I have built upon it.</p>
+
+<h2><a name="GProfile_-_The_App_Registry">GProfile - The App Registry</a></h2>
+<p>If you have ever built an application that stores and retrieves &quot;Application 
+Settings&quot;, You had a situation where you could have used GProfile. On Windows, 
+it is popular to put your application configuration settings in the Windows 
+Registry. There are reasons not to do that, however it is a practice that dates 
+back to 16 bit Windows 3.1 development when Charles Petzold documented and 
+exemplified the Windows API. Even back then, it was popular to add your own 
+[Section] into the WIN.INI file. The WIN.INI file stored &quot;Application Settings&quot; 
+for Windows such as wallpaper settings and other user preferences. The Windows 
+API allowed you to write in WIN.INI - so did notepad.exe</p>
+<p>There are some advantages to writing your configuration settings in a file 
+that is not managed by the operating system. It becomes portable to Linux and 
+iOS as well as Windows. It becomes very simple to move configurations from 
+machine to machine when the &quot;Application Settings&quot; are in a file rather than all 
+over in the registry. It also becomes very easy to manage multiple 
+configurations, by maintaining multiple versions of the configuration file. It&#39;s 
+not so simple to copy a snapshot of the Windows registry and switch between 
+versions. You can easily do that with GProfile.</p>
+<p>GProfile also allows you to encrypt your application configuration settings. 
+You could encrypt individual keys in the registry, that would require a bit more 
+code and work than if you were to use GProfile. The Windows Registry has an API 
+called RegNotifyChangeKeyValue(), this will allow your application to be 
+notified when an external source has changed a value. GProfile has a method 
+called RegisterChangeNotification() that does the same thing. Additionally you 
+can easily switch between INI format or XML format to store your &quot;Application 
+Settings&quot;, settings stored in the registry are not so easily exported to a .REG 
+file - a far cry from simple INI or open XML like the GProfile supports.</p>
+<p>The GProfile is ancient, like the GString.&nbsp; In fact not until may of 
+2014 were the last of the C++ &quot;short&quot; datatypes converted to &quot;bool&quot;.&nbsp; When 
+GProfile was first written not all C++ compilers supported &#39;bool&#39;, or they just 
+defined it as a short, so now GProfile uses more modern and intuitive syntax.&nbsp;&nbsp; 
+The following are a few of the method interfaces to GProfile.</p>
+<pre lang="cs">
+// If you supply pzSection and pzEntry, your notification will be called only when
+// that value is changed, if you pass NULL for pzEntry, then you will get all changes to the pzSection.
+void RegisterChangeNotification(const char *pzSection, const char *pzEntry, fnChangeNotify fn);
+void UnRegisterChangeNotification(const char *pzSection, const char *pzEntry);
+// returns a list of &quot;Section\tName&quot; strings identifying all registered Change Notifications
+GStringList *ListChangeNotifications(){return &amp;lstChangeNotifications;}
+// return the file name used to load the content otherwise &quot;NONE&quot; if it was loaded from memory
+const char *LastLoadedConfigFile(){return m_strFile;}
+// The section/entry will be created when it does not already exist
+// The existing value will be repalced with the supplied value when it does exist
+void SetConfig(const char *szSection, const char *szEntry, const char *pzValue);
+void SetConfig(const char *szSection, const char *szEntry, int nValue);
+void SetConfig(const char *szSection, const char *szEntry, long lValue); 
+void SetConfig(const char *szSection, const char *szEntry, __int64 lValue);
+void SetConfigBinary(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength);
+void SetConfigCipher(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength);
+
+// Writes memory config to a given destination.
+// An existing file will be overwritten, GString will be appended to.
+// Returns the number of bytes written to the destination on success or 0 for failure.
+long WriteCurrentConfig(const char *pzPathAndFileName, bool bWriteXML = 0);
+long WriteCurrentConfig(GString *pzDestStr, bool bWriteXML = 0);
+// just like WriteCurrentConfig(), but only serialize a single [section]
+long WriteCurrentConfigSection(GString *pzDestStr, const char *pzSection, bool bWriteXML = 0);
+// function retrieves the names of all sections
+void GetSectionNames(GStringList *lpList);
+// function retrieves all the keys and values for the specified section 
+// returns NULL if specified section doesn&#39;t exist, use this code to iterate a section:
+///////////////////////////////////////////////////////////////////////////////////
+// GListIterator itNVP(GetProfile().GetSection(&quot;MySection&quot;));
+// while (itNVP())
+// {
+// GProfileEntry *pNVP = (GProfileEntry *)itNVP++;
+// // pNVP-&gt;m_strName
+// // pNVP-&gt;m_strValue
+// }
+const GList *GetSection(const char *szSectionName);
+
+// returns the number of entries for a given section
+__int64 GetSectionEntryCount(const char *szSectionName);
+
+// RemoveSection() and AddSection() do as their names suggest affecting an entire [Section] with all entries in it
+GProfileSection *RemoveSection(const char *szSection);
+void AddSection(GProfileSection *pS, int bIssueChangeNotification = 1);
+
+// deletes an entry under the specified [Section]
+// returns 1 if removed, 0 if it was not there to remove
+bool RemoveEntry(const char *szSection, const char *szEntry);
+// the string length of the value. 0 is empty or non existing
+__int64 ValueLength(const char *szSection, const char *szEntry);
+// returns 1 if the section (and entry) exists, otherwise 0
+bool DoesExist(const char *szSectionName, const char *pzEntry);
+bool DoesExist(const char *szSectionName);
+
+// retrieves a boolean from the specified section
+bool GetBoolean(const char *szSectionName, const char *szKey, bool bThrowNotFound = true );
+bool GetBool(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+// retrieves an int/int64 from the specified section
+__int64 GetInt64(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+int GetInt(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+// retrieves an charachter string value from the specified section
+const char *GetString(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+// same as GetString() but ensures a trailing \ in NT and a / in UNIX
+const char *GetPath(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+
+// load the profile configuration file yourself, 
+// and create this object &quot;with no disk config file&quot;
+GProfile(const char *szConfigData, __int64 dwSize, bool bIsXML);
+
+// load from file, no environment override allowed
+GProfile(const char *pzFilePathAndName, bool bIsXML);
+
+
+</pre>
+
+
 <h2><a name="Windows_Phone">Windows Phone</a></h2>
 <p>Building the Windows Phone Example is very simple once you have the 
 development environment setup. The WP8 Emulator is Hyper-V, so you need to have 
@@ -978,18 +1468,19 @@ the XMLFoundation to be a great source code to base a curriculum on. Independent
 authors who want to write about cutting edge technology will find XMLFoundation 
 a worthy subject. The future was written in the past.</p>
 <h2><a name="The_Need_for_Objects_from_XML_">The Need for Objects from XML</a></h2>
-<p>XML is data. “Objects from data” is not a new concept. Programmers have been 
-doing that for years, even before they were called objects. We still need to get 
-data into objects today. The data can be XML or a result set, and the object 
-might be a CDialog, a CORBA Object, a COM object, or your own invention. You 
-still need to get the same thing done. Programmers have been doing this as long 
-as there have been programmers.</p>
+<p>XML is data. â€œObjects from dataâ€ is not a new concept. Programmers have 
+been doing that for years, even before they were called objects. We still need 
+to get data into objects today. The data can be XML or a result set, and the 
+object might be a CDialog, a CORBA Object, a COM object, or your own invention. 
+You still need to get the same thing done. Programmers have been doing this as 
+long as there have been programmers.</p>
 <p>If you apply enough force you can make the cube fit into the round hole. If 
 you apply enough force you can do anything - even police California. The brute 
 force approach is to parse the XML into a DOM tree, and traverse the tree to 
 gather the data required by application/object variables. This approach causes 
-volumes of “simple” source code to move data from XML into Structured Objects, a 
-poor approach with respect to implementation time and long term maintenance.</p>
+volumes of â€œsimpleâ€ source code to move data from XML into Structured 
+Objects, a poor approach with respect to implementation time and long term 
+maintenance.</p>
 <p>Alternatively, the OO approach generalizes this process into reusable 
 functionality that enables objects to serialize to and from XML directly. OO is 
 pronounced ohhh-ohhh - and it is short for Object Oriented (incase you didn&#39;t 
@@ -2482,11 +2973,11 @@ possible.
 HTTP service via your own DLL(or COM object or Perl/Python script). This is how 
 to build a custom dynamic web page from an HTTP server plugin:
 <ol>
-<li>Compile the CStdCall Language Driver  
+<li>Compile the CStdCall Language Driver   
  
  
 
-</li><li>Compile the PluginExample  
+</li><li>Compile the PluginExample   
  
  
 </li><li> Setup the 5Loaves.txt Configuration File like this (but set the 
@@ -3565,18 +4056,5 @@ soon. It&#39;s a masterpiece conspiracy to end times of high crimes.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 </body>
-
 </html>

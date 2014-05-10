@@ -34,7 +34,9 @@ XMLObjectCache::XMLObjectCache()
 	m_cacheForeign = new GHash();
 	m_cacheForeignAlternate = new GHash();
 	m_cacheData = new GHash();
+#ifdef _WIN32
 	_gthread_processInitialize();
+#endif
 	XML_INIT_MUTEX(&m_cs);
 	gthread_mutex_init(&m_csState, NULL);
 	gthread_mutex_init(&m_csForeign, NULL);
@@ -73,7 +75,9 @@ XMLObjectCache::~XMLObjectCache()
 	gthread_mutex_destroy(&m_csForeign);
 	gthread_mutex_destroy(&m_csData);
 	
+#ifdef _WIN32
 	_gthread_processTerminate();
+#endif
 }
 
 // findObject() returns an object from the cache or null if the 
@@ -526,10 +530,10 @@ DynamicXMLObject *XMLObjectCache::DXOFromNative( __int64 ptr )
 {
 	DynamicXMLObject *pReturn;
 	GString strKey;
-	strKey << ptr;
+	strKey << ptr; 
 	
 	gthread_mutex_lock(&m_csForeign);
-	pReturn = (DynamicXMLObject *)m_cacheForeignAlternate->Lookup(strKey);
+	pReturn = (DynamicXMLObject *)m_cacheForeignAlternate->Lookup( (const char *)strKey._str );
 	gthread_mutex_unlock(&m_csForeign);
 
 	return pReturn;
@@ -543,7 +547,7 @@ DynamicXMLObject *XMLObjectCache::isForeign( DynamicXMLObject *pO )
 	strKey << (__int64)(void *)pO;
 
 	gthread_mutex_lock(&m_csForeign);
-	pReturn = (DynamicXMLObject *)m_cacheForeign->Lookup(strKey);
+	pReturn = (DynamicXMLObject *)m_cacheForeign->Lookup((const char *)strKey);
 	gthread_mutex_unlock(&m_csForeign);
 	return pReturn;
 }
@@ -559,7 +563,7 @@ bool XMLObjectCache::tempToAlternate( __int64 nKey )
 
 	gthread_mutex_lock(&m_csForeign);
 	
-	DynamicXMLObject *pDXO = (DynamicXMLObject *)m_cacheForeign->Lookup(strKey);
+	DynamicXMLObject *pDXO = (DynamicXMLObject *)m_cacheForeign->Lookup((const char *)strKey);
 	
 	if (pDXO->getUserLanguageObject())
 	{

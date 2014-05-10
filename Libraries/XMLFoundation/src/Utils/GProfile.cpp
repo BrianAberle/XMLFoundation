@@ -22,6 +22,7 @@ static char SOURCE_FILE[] = __FILE__;
 #include "Base64.h"
 #include <string.h> //for: memcpy()
 #include <stdio.h>  //for: fopen(),fclose();
+#include <stdlib.h>	//for: atol()
 #ifndef _WIN32
 	#include <errno.h>
 #endif
@@ -32,16 +33,8 @@ static char SOURCE_FILE[] = __FILE__;
 #include "AbstractionsGeneric.h" // for gGListHandler
 
 
-
-
 IMPLEMENT_FACTORY(GProfileSection, section);
 IMPLEMENT_FACTORY(GProfileEntry, setting);
-
-//IMPLEMENT_FACTORY(GProfile, configuration)
-//void GProfile::MapXMLTagsToMembers()
-//{
-//	MapMember(&m_lstSections, GProfileSection::GetStaticTag());
-//}
 
 
 void GProfileEntry::MapXMLTagsToMembers()
@@ -108,7 +101,6 @@ GProfile::GProfile(const char *pzFilePathAndName, bool bIsXML/* = 0 */)
 }
 
 
-//	MapMember(&m_lstSections, GProfileSection::GetStaticTag());
 //
 // load the profile configuration file yourself, 
 // and create this object "with no disk config file"
@@ -164,33 +156,33 @@ GProfile::~GProfile()
 }
 
 
-long GProfile::SetConfigDefault(const char *szSection, const char *szEntry, const char *pzValue)
+void GProfile::SetConfigDefault(const char *szSection, const char *szEntry, const char *pzValue)
 {
-	return SetConfig(szSection, szEntry, pzValue, 1);
+	SetConfig(szSection, szEntry, pzValue, 1);
 }
 
-long GProfile::SetConfigDefault(const char *szSection, const char *szEntry, int pzValue)
+void GProfile::SetConfigDefault(const char *szSection, const char *szEntry, int pzValue)
 {
 	GString strConvert;
 	strConvert << pzValue;
-	return SetConfig(szSection, szEntry, strConvert, 1 );
+	SetConfig(szSection, szEntry, strConvert, 1 );
 }
 
-long GProfile::SetConfigDefault(const char *szSection, const char *szEntry, long lValue)
+void GProfile::SetConfigDefault(const char *szSection, const char *szEntry, long lValue)
 {
 	GString strConvert;
 	strConvert << lValue;
-	return SetConfig(szSection, szEntry, strConvert, 1 );
+	SetConfig(szSection, szEntry, strConvert, 1 );
 }
 
-long GProfile::SetConfigDefault(const char *szSection, const char *szEntry, __int64 lValue)
+void GProfile::SetConfigDefault(const char *szSection, const char *szEntry, __int64 lValue)
 {
 	GString strConvert;
 	strConvert << lValue;
-	return SetConfig(szSection, szEntry, strConvert, 1 );
+	SetConfig(szSection, szEntry, strConvert, 1 );
 }
 
-long GProfile::SetConfigBinaryDefault(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength)
+void GProfile::SetConfigBinaryDefault(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength)
 {
 	// UUencode the binary
 	BUFFER b;
@@ -199,48 +191,48 @@ long GProfile::SetConfigBinaryDefault(const char *szSection, const char *szEntry
 	GString strEncoded((char *)b.pBuf, b.cLen);
 	BufferTerminate(&b);
 	
-	return SetConfig(szSection, szEntry, strEncoded, 1 );
+	SetConfig(szSection, szEntry, strEncoded, 1 );
 }
 
-long GProfile::SetConfigCipherDefault(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength)
+void GProfile::SetConfigCipherDefault(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength)
 {
 	GString strDest;
 	GString strErrorOut;
 	GString strPass(pzPassword);
 	EncryptMemoryToMemory(strPass, lValue,nValueLength,strDest, strErrorOut);
-	return SetConfigBinaryDefault(szSection, szEntry, (unsigned char *)strDest.Buf(), (int)strDest.Length());
+	SetConfigBinaryDefault(szSection, szEntry, (unsigned char *)strDest.Buf(), (int)strDest.Length());
 }
 
-long GProfile::SetConfig(const char *szSectionName, const char *szKey, __int64 lValue)
+void GProfile::SetConfig(const char *szSectionName, const char *szKey, __int64 lValue)
 {
 	GString strConvert;
 	strConvert << lValue;
-	return SetConfig(szSectionName, szKey, strConvert, 0 );
+	SetConfig(szSectionName, szKey, strConvert, 0 );
 }
 
-long GProfile::SetConfig(const char *szSectionName, const char *szKey, long lValue)
+void GProfile::SetConfig(const char *szSectionName, const char *szKey, long lValue)
 {
 	GString strConvert;
 	strConvert << lValue;
-	return SetConfig(szSectionName, szKey, strConvert, 0 );
+	SetConfig(szSectionName, szKey, strConvert, 0 );
 }
-long GProfile::SetConfig(const char *szSectionName, const char *szKey, int nValue)
+void GProfile::SetConfig(const char *szSectionName, const char *szKey, int nValue)
 {
 	GString strConvert;
 	strConvert << nValue;
-	return SetConfig(szSectionName, szKey, strConvert, 0 );
+	SetConfig(szSectionName, szKey, strConvert, 0 );
 }
 
-long GProfile::SetConfigCipher(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength)
+void GProfile::SetConfigCipher(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength)
 {
 	GString strDest;
 	GString strErrorOut;
 	GString strPass(pzPassword);
 	EncryptMemoryToMemory(strPass, lValue,nValueLength,strDest, strErrorOut);
-	return SetConfigBinary(szSection, szEntry, (unsigned char *)strDest.Buf(), (int)strDest.Length());
+	SetConfigBinary(szSection, szEntry, (unsigned char *)strDest.Buf(), (int)strDest.Length());
 }
 
-long GProfile::SetConfigBinary(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength)
+void GProfile::SetConfigBinary(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength)
 {
 	// UUencode the binary
 	BUFFER b;
@@ -249,15 +241,15 @@ long GProfile::SetConfigBinary(const char *szSection, const char *szEntry, unsig
 	GString strEncoded((char *)b.pBuf, b.cLen);
 	BufferTerminate(&b);
 	
-	return SetConfig(szSection, szEntry, strEncoded, 0 );
+	SetConfig(szSection, szEntry, strEncoded, 0 );
 }
 
-long GProfile::SetConfig(const char *szSectionName, const char *szKey, const char *pzValue)
+void GProfile::SetConfig(const char *szSectionName, const char *szKey, const char *pzValue)
 {
-	return SetConfig(szSectionName, szKey, pzValue, 0);
+	SetConfig(szSectionName, szKey, pzValue, 0);
 }
 
-long GProfile::SetConfig(const char *szSectionName, const char *szKey, const char *pzValue, short bSetDefault)
+void GProfile::SetConfig(const char *szSectionName, const char *szKey, const char *pzValue, bool bSetDefault)
 {
 	GProfileEntry *pNVP;
 	GProfileSection *pSection = FindSection(szSectionName);
@@ -293,7 +285,6 @@ long GProfile::SetConfig(const char *szSectionName, const char *szKey, const cha
 	}
 
 	ChangeNotify(szSectionName, szKey, pzValue);
-	return 1;
 }
 
 
@@ -633,7 +624,7 @@ void GProfile::GetSectionNames(GStringList *lpList)
 	}
 }
 
-int GProfile::RemoveEntry(const char *szSectionName, const char *szEntry)
+bool GProfile::RemoveEntry(const char *szSectionName, const char *szEntry)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -686,7 +677,7 @@ GProfileSection *GProfile::RemoveSection(const char *szSection)
 
 
 // returns the number of entries for a given section
-int GProfile::GetSectionEntryCount(const char *szSectionName)
+__int64 GProfile::GetSectionEntryCount(const char *szSectionName)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 
@@ -709,7 +700,7 @@ const GList *GProfile::GetSection(const char *szSectionName)
 
 
 // function retrieves a boolean from the specified section
-short GProfile::GetBool(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
+bool GProfile::GetBool(const char *szSectionName, const char *szKey, bool bThrowNotFound /* = true */)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -744,7 +735,7 @@ short GProfile::GetBool(const char *szSectionName, const char *szKey, short bThr
 }
 
 // function retrieves a boolean from the specified section
-short GProfile::GetBoolean(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
+bool GProfile::GetBoolean(const char *szSectionName, const char *szKey, bool bThrowNotFound /* = true */)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -782,7 +773,7 @@ short GProfile::GetBoolean(const char *szSectionName, const char *szKey, short b
 
 
 // function retrieves a long from the specified section
-__int64 GProfile::GetInt64(const char *szSectionName, const char *szKey, short bThrowNotFound)
+__int64 GProfile::GetInt64(const char *szSectionName, const char *szKey, bool bThrowNotFound)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -808,12 +799,7 @@ __int64 GProfile::GetInt64(const char *szSectionName, const char *szKey, short b
 	return 0;
 }
 
-int	 GProfile::GetInt(const char *szSectionName, const char *szKey, short bThrowNotFound/* = true*/)
-{
-	return (int)GetLong(szSectionName, szKey, bThrowNotFound);
-}
-
-long GProfile::GetLong(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
+int	 GProfile::GetInt(const char *szSectionName, const char *szKey, bool bThrowNotFound/* = true*/)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -822,7 +808,7 @@ long GProfile::GetLong(const char *szSectionName, const char *szKey, short bThro
 		if (pNVP)
 		{
 			if (!pNVP->m_strValue.IsEmpty())
-				return atol((const char *)pNVP->m_strValue);
+				return atoi((const char *)pNVP->m_strValue);
 		}
 		else if (bThrowNotFound)
 		{
@@ -839,7 +825,7 @@ long GProfile::GetLong(const char *szSectionName, const char *szKey, short bThro
 	return 0;
 }
 
-const char *GProfile::GetPath(const char *szSectionName, const char *szKey, short bThrowNotFound)
+const char *GProfile::GetPath(const char *szSectionName, const char *szKey, bool bThrowNotFound)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -873,7 +859,7 @@ const char *GProfile::GetPath(const char *szSectionName, const char *szKey, shor
 }
 
 
-int GProfile::DoesExist(const char *szSectionName)
+bool GProfile::DoesExist(const char *szSectionName)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -883,7 +869,7 @@ int GProfile::DoesExist(const char *szSectionName)
 	return 0;
 }
 
-int GProfile::DoesExist(const char *szSectionName, const char *szKey)
+bool GProfile::DoesExist(const char *szSectionName, const char *szKey)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -899,7 +885,7 @@ int GProfile::DoesExist(const char *szSectionName, const char *szKey)
 
 
 // function retrieves a string from the specified section
-const char *GProfile::GetString(const char *szSectionName, const char *szKey, short bThrowNotFound /* = true */)
+const char *GProfile::GetString(const char *szSectionName, const char *szKey, bool bThrowNotFound /* = true */)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -957,7 +943,7 @@ long GProfile::WriteCurrentConfig(GString *pzDestStr, bool bWriteXML/* = 0*/)
 {
 	return GProfile::WriteCurrentConfigHelper(0,pzDestStr,0,bWriteXML);
 }
-short GProfile::GetBoolOrDefault(const char *szSectionName, const char *szKey, short bDefault)
+bool GProfile::GetBoolOrDefault(const char *szSectionName, const char *szKey, bool bDefault)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)
@@ -978,16 +964,6 @@ short GProfile::GetBoolOrDefault(const char *szSectionName, const char *szKey, s
 		}
 	}
 	return bDefault;
-//	short ret;
-//	try
-//	{
-//		ret = GetBool(szSectionName, szKey);
-//	}
-//	catch(...)
-//	{
-//		ret = bDefault;
-//	}
-//	return ret;
 }
 
 
@@ -1005,19 +981,7 @@ __int64 GProfile::GetInt64OrDefault(const char *szSectionName, const char *szKey
 	return ret;
 }
 
-long GProfile::GetLongOrDefault(const char *szSectionName, const char *szKey, long lDefault)
-{
-	long ret;
-	try
-	{
-		ret = GetLong(szSectionName, szKey);
-	}
-	catch(...)
-	{
-		ret = lDefault;
-	}
-	return ret;
-}
+
 int	GProfile::GetIntOrDefault(const char *szSectionName, const char *szKey, int nDefault)
 {
 	int ret;
@@ -1128,7 +1092,7 @@ void GProfile::RegisterChangeNotification(const char *pzSection, const char *pzE
 	}
 }
 
-int GProfile::ValueLength(const char *szSectionName, const char *szKey)
+__int64 GProfile::ValueLength(const char *szSectionName, const char *szKey)
 {
 	GProfileSection *pSection = FindSection(szSectionName);
 	if (pSection)

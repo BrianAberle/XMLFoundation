@@ -90,19 +90,18 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\Core\ConsoleCommandsCustomHook.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\CustomHTTPServiceConsole.cpp
 
 !IF  "$(CFG)" == "CustomHTTPService - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "CustomHTTPService - Win32 Debug"
 
-# PROP Exclude_From_Build 1
-
 !ENDIF 
 
-# End Source File
-# Begin Source File
-
-SOURCE=.\CustomHTTPServiceConsole.cpp
 # End Source File
 # Begin Source File
 
@@ -112,15 +111,7 @@ SOURCE=..\Core\ServerCore.cpp
 # Begin Source File
 
 SOURCE=..\Core\ServerCoreCustomGlobalInternals.cpp
-
-!IF  "$(CFG)" == "CustomHTTPService - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "CustomHTTPService - Win32 Debug"
-
 # PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -140,15 +131,7 @@ SOURCE=..\Core\ServerCoreCustomProfileUpdate.cpp
 # Begin Source File
 
 SOURCE=..\Core\ServerCoreCustomProtocolInit.cpp
-
-!IF  "$(CFG)" == "CustomHTTPService - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "CustomHTTPService - Win32 Debug"
-
 # PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -158,15 +141,7 @@ SOURCE=..\Core\ServerCoreCustomServerStart.cpp
 # Begin Source File
 
 SOURCE=..\Core\ServerCoreCustomServerStarted.cpp
-
-!IF  "$(CFG)" == "CustomHTTPService - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "CustomHTTPService - Win32 Debug"
-
 # PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

@@ -105,7 +105,7 @@ protected:
 	GList m_lstOtherObjects; // contains instances of MyOtherCustomObject's
 
 public:
-	TheContainer(BOOL bBuildData);
+	TheContainer(bool bBuildData);
 	virtual ~TheContainer() {};
 	void MapXMLTagsToMembers()
 	{	
@@ -120,7 +120,7 @@ IMPLEMENT_FACTORY(TheContainer,	TheContainer);
 
 
 
-TheContainer::TheContainer(BOOL bBuildData)
+TheContainer::TheContainer(bool bBuildData)
 {
 	if (bBuildData)
 	{
@@ -140,11 +140,14 @@ int main(int argc, char* argv[])
 	/////////////////////////////////////////////////////////////
 	TheContainer xx(1);
 	
+
 	// pre-allocate the GString to be big enough already
 	GString strXML( MAKE_OTHER_OBJECTS * sizeof(MyOtherCustomObject) + 1024 );
 
+
 	GString strResults;
 	GPerformanceTimer PerfTimer("ToXML1");
+
 	strXML = xx.ToXML();
 	PerfTimer.PerformanceStop(&strResults);
 	strXML.Empty();

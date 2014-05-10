@@ -45,7 +45,7 @@ public:
 	}
 	void append(userString pString, const char *pzValue)
 	{
-		*((GString *)pString) += pzValue;
+		((GString *)pString)->Write(pzValue,strlen(pzValue));
 	}
 	const char *data(userString pString)
 	{
@@ -71,7 +71,7 @@ public:
 	}
 	void append(userString pString, const char *pzValue)
 	{
-		*((GString0 *)pString) += pzValue;
+		((GString0 *)pString)->Write(pzValue,strlen(pzValue));
 	}
 	const char *data(userString pString)
 	{
@@ -97,7 +97,7 @@ public:
 	}
 	void append(userString pString, const char *pzValue)
 	{
-		*((GString32 *)pString) += pzValue;
+		((GString32 *)pString)->Write(pzValue,strlen(pzValue));
 	}
 	const char *data(userString pString)
 	{

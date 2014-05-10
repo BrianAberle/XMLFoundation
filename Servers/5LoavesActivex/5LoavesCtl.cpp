@@ -305,6 +305,6 @@ long C5LoavesCtrl::SetConfigEntry(LPCTSTR Section, LPCTSTR Entry, LPCTSTR Value)
 
 BSTR C5LoavesCtrl::GetLast5LoavesError() 
 {
-	CString str(g_strLastError);
+	CString str((const char *)g_strLastError);
 	return str.AllocSysString();
 }

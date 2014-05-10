@@ -21,6 +21,8 @@ LOCAL_SRC_FILES :=	 ../../../Examples/Android/Server/jni/Server.cpp\
 					 Utils/GProfile.cpp\
 					 Utils/GStack.cpp\
 					 Utils/GString.cpp\
+					 Utils/GString0.cpp\
+					 Utils/GString32.cpp\
 					 Utils/GStringList.cpp\
 					 Utils/GDirectory.cpp\
 					 Utils/GPerformanceTimer.cpp\

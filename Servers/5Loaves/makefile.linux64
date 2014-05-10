@@ -1,5 +1,5 @@
 CC = g++
-CPPFLAGS = -maccumulate-outgoing-args -w -c -D_INTEL -D_LINUX -D_LINUX64 -D_NO_EXCEPT -I../../Libraries/XMLFoundation/inc
+CPPFLAGS = -maccumulate-outgoing-args -w -O3 -c -D_INTEL -D_LINUX -D_LINUX64 -D_NO_EXCEPT -I../../Libraries/XMLFoundation/inc -I../../Libraries/Xfer/inc
 COPY = cp
 
 TransactXML: \

@@ -6,6 +6,23 @@
 --------------------Configuration: ContainOrInherit - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5566.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\XMLFoundation\Examples\C++\ContainOrInherit\ContainOrInherit.cpp"
+]
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP5566.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5567.tmp" with contents
+[
+..\..\..\Libraries\Debug\XmlFoundation.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/ContainOrInherit.pdb" /debug /machine:I386 /out:"Debug/ContainOrInherit.exe" /pdbtype:sept 
+".\Debug\ContainOrInherit.obj"
+"\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
+]
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP5567.tmp"
+<h3>Output Window</h3>
+Compiling...
+ContainOrInherit.cpp
+Linking...
 
 
 

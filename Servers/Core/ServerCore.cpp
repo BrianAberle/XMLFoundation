@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2013  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -19,10 +19,13 @@
 //#define _XMLF_JIT_
 
 
-#ifdef _WIN32 // Windows 32 bit, 64 bit, Windows Mobile, and Windows Phone all define _WIN32
+#ifdef _WIN32 // Windows 32 bit, 64 bit, Windows Mobile, WinCE, and Windows Phone all define _WIN32
 	#ifdef WINCE
 		#include "WinCERuntimeC.h" // Adds common C Runtime functions to Windows CE.
-		#include <sys/types.h>
+		#include <types.h>
+		typedef int socklen_t;
+		#define EBUSY  16
+		#define ETIMEDOUT WSAETIMEDOUT
 	#elif __WINPHONE
 		#include <time.h>			// for tm struct and time()	
 		#include <Ws2tcpip.h>		
@@ -62,10 +65,13 @@
 #include <ctype.h>		// for isprint()
 #include <stdlib.h>		// for atol(), strtol(), srand(), rand(), atoi()
 #include <string.h>		// for strcmp(), memcpy(), memset(), strlen(), strpbrk()
-#include <sys/stat.h>	// for stat struct, stat(), and file stats flags
+
+#ifndef WINCE
+	#include <sys/stat.h>	// for stat struct, stat(), and file stats flags
+#endif
  
 #ifdef _AIX
-#include <sys/select.h>		// for nonblocked IO event select()
+	#include <sys/select.h>		// for nonblocked IO event select()
 #endif
 
 #include "IntegrationLanguages.h" // integration to Perl, Python, Java, C++, VB, COM, CORBA, and TransactXML extensions
@@ -139,6 +145,9 @@ GList g_lstActivePlugins;
 #define ATTRIB_UNUSED_BIT15				0x4000
 #define ATTRIB_UNUSED_BIT16				0x8000
 #endif
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Turn off Nagle Algorithm.  This is a major item to note with respect to performance within Internet protocols.  
@@ -2582,7 +2591,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 	if(g_TraceHTTPFiles)
 	{
 		GString strLog;
-		strLog << "[" << strFileNoPath << "] to [" << pzRequestingIP << "]  ref [" << strReferer << "]";
+		strLog << "[" << strFileNoPath << "] to [" << pzRequestingIP << "]  HTTP referrer [" << strReferer << "]";
 		InfoLog(111,strLog);
 	}
 
@@ -5707,11 +5716,14 @@ int startListeners(int nAction, int nPort = -1)
 	return nRet;
 }
 
+
+
 void showActiveThreads(GString *pG = 0);
 
 #ifdef ___XFER
 	#include "../../Libraries/Xfer/Core/XferLocalCommands.cpp"
 #endif
+
 #ifdef __CUSTOM_CORE__
 	#include "ServerCoreCustomGlobalInternals.cpp" 
 #endif
@@ -9286,7 +9298,7 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 		}
 		else if (strEntry.CompareNoCase("KeepAliveTimeOut") == 0)
 		{
-			g_nKeepAliveTimeout = GetProfile().GetInt("HTTP","KeepAliveTimeOut",300); 
+			g_nKeepAliveTimeout = GetProfile().GetIntOrDefault("HTTP","KeepAliveTimeOut",300); 
 		}
 
 

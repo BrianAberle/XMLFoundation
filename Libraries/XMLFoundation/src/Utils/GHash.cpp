@@ -17,13 +17,6 @@ static char SOURCE_FILE[] = __FILE__;
 #include "GException.h"
 #include <string.h> // for strlen
 
-// CityHash and Spooky are so close to the same that I decided to use SpookyHash
-// Since they both slow down GHash indexing and are NOT enabled by default or in 
-// any production code, therefore it does not matter which one I choose.
-// I have never found any case where changing from that default.speeds up GHash.  Maybe you will.
-#include "SpookyV2.cpp"  
-// #include "../src/Utils/SpookyV2.cpp" 
-
 
 
 // Here is an excellent Hash index algorithm comparison online:    

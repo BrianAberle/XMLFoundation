@@ -1268,12 +1268,14 @@ ptw32_terminate ()
 
 #endif
 
+
+
 #if ! defined (__MINGW32__) || (defined (__MSVCRT__) && ! defined (__DMC__))
-unsigned
-  __stdcall
+	unsigned  __stdcall
 #else
-void
+	void
 #endif
+
 ptw32_threadStart (void *vthreadParms)
 {
   ThreadParms * threadParms = (ThreadParms *) vthreadParms;
@@ -2030,8 +2032,7 @@ ptw32_filetime_to_timespec (const FILETIME * ft, struct timespec *ts)
 #endif
 
 
-INLINE DWORD
-ptw32_relmillisecs (const struct timespec * abstime)
+INLINE DWORD ptw32_relmillisecs (const struct timespec * abstime)
 {
   const int64_t NANOSEC_PER_MILLISEC = 1000000;
   const int64_t MILLISEC_PER_SEC = 1000;
@@ -2075,8 +2076,7 @@ ptw32_relmillisecs (const struct timespec * abstime)
   ptw32_filetime_to_timespec(&ft, &currSysTime);
 
   tmpCurrMilliseconds = (int64_t)currSysTime.tv_sec * MILLISEC_PER_SEC;
-  tmpCurrMilliseconds += ((int64_t)currSysTime.tv_nsec + (NANOSEC_PER_MILLISEC/2))
-			   / NANOSEC_PER_MILLISEC;
+  tmpCurrMilliseconds += ((int64_t)currSysTime.tv_nsec + (NANOSEC_PER_MILLISEC/2)) / NANOSEC_PER_MILLISEC;
 
 #else /* ! NEED_FTIME */
 

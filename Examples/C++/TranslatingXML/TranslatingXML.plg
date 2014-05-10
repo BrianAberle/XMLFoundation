@@ -6,6 +6,23 @@
 --------------------Configuration: TranslatingXML - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP609.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\XMLFoundation\Examples\C++\TranslatingXML\TranslatingXML.cpp"
+]
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP609.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP60A.tmp" with contents
+[
+..\..\..\Libraries\Debug\XmlFoundation.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/TranslatingXML.pdb" /debug /machine:I386 /out:"Debug/TranslatingXML.exe" /pdbtype:sept 
+".\Debug\TranslatingXML.obj"
+"\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
+]
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP60A.tmp"
+<h3>Output Window</h3>
+Compiling...
+TranslatingXML.cpp
+Linking...
 
 
 

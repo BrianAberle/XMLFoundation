@@ -118,7 +118,7 @@ class GProfile
 	typedef int(*fnChangeNotify)(const char *,const char *,const char *);
 	GBTree	*m_pTreeNotify;
 	int ChangeNotify(const char *pzSection, const char *pzEntry, const char *pzValue);
-	long SetConfig(const char *szSection, const char *szEntry, const char *nValue, short bSetDefault);
+	void SetConfig(const char *szSection, const char *szEntry, const char *nValue, bool bSetDefault);
 	GStringList lstChangeNotifications;
 	bool m_bIsXML; // the storage format is either INI or XML
 	XMLRelationshipWrapper m_objectContainer;
@@ -127,11 +127,11 @@ public:
 	// RegisterChangeNotification usage:
 	// add this global function in your code:
 	// --------------------------------------
-	//int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNewValue)
-	//{
+	// int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNewValue)
+	// {
 	//	 if (strcmp(pzEntry,"SysValue") == 0) // should be case insensitive
 	//		 g_nSysValue = atoi(pzNewValue);
-	//}
+	// }
 	// --------------------------------------
 	// and register the callback like this:
 	// myProfile.RegisterChangeNotification("MySection","SysValue",GProfileMonitor);
@@ -139,8 +139,7 @@ public:
 	// WARNING:Never assign a monitored value from this callback or you will recurse infinitely.
 	//
 	// If you supply pzSection and pzEntry, your notification will be called only when
-	// that value is changed, if you pass NULL for pzEntry, then you will get all changes
-	// to the pzSection.
+	// that value is changed, if you pass NULL for pzEntry, then you will get all changes to the pzSection.
 	void RegisterChangeNotification(const char *pzSection, const char *pzEntry, fnChangeNotify fn);
 	void UnRegisterChangeNotification(const char *pzSection, const char *pzEntry);
 	
@@ -154,7 +153,7 @@ public:
 	//	GString strINIFile;
 	// 	GetProfile().WriteCurrentConfig(&strINIFile);
 	//  EditInWordPad(strINIFile);
-	//	GProfile *pNew = new GProfile((const char *)strINIFile, strINIFile.Length());
+	//	GProfile *pNew = new GProfile((const char *)strINIFile, strINIFile.Length(), 0);
 	//  pNew->AttachNotifications(GetProfile().DetatchNotifications());
 	//	delete SetProfile(pNew);
 	//  pNew->ExecuteAllNotifications();
@@ -167,9 +166,8 @@ protected:
 
 	GProfileSection *FindSection(const char *szSection);
 	GProfileEntry *FindKey(const char *szKey, GProfileSection *pSection);
-
 	GString m_strFile;
-	short m_bCached;
+	bool m_bCached;
 
 	void Destroy();
 	void GetLine(GString &strLine, const char *szBuffer, __int64 *nIdx, __int64 dwSize);
@@ -182,28 +180,26 @@ protected:
 	long WriteCurrentConfigHelper(const char *pzPathAndFileName, GString *pDest, const char *pzSection = 0, bool bWriteXML = 0);
 
 public:
+	// return the file name used to load the content otherwise "NONE" if it was loaded from memory
 	const char *LastLoadedConfigFile(){return m_strFile;}
 
 	// The section/entry will be created when it does not already exist
 	// The existing value will be repalced with the supplied value when it does exist
-	long SetConfig(const char *szSection, const char *szEntry, const char *pzValue);
-	long SetConfig(const char *szSection, const char *szEntry, int nValue);
-	long SetConfig(const char *szSection, const char *szEntry, long lValue);		
-	long SetConfig(const char *szSection, const char *szEntry, __int64 lValue);
-	long SetConfigBinary(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength);
-	long SetConfigCipher(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength);
+	void SetConfig(const char *szSection, const char *szEntry, const char *pzValue);
+	void SetConfig(const char *szSection, const char *szEntry, int nValue);
+	void SetConfig(const char *szSection, const char *szEntry, long lValue);		
+	void SetConfig(const char *szSection, const char *szEntry, __int64 lValue);
+	void SetConfigBinary(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength);
+	void SetConfigCipher(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength);
 
 	// if the section and entry exist, the value will remain unchanged.
 	// otherwise it will be created and given the default value specified
-	long SetConfigDefault(const char *szSection, const char *szEntry, const char *pzValue);
-	long SetConfigDefault(const char *szSection, const char *szEntry, int nValue);
-	long SetConfigDefault(const char *szSection, const char *szEntry, long lValue);
-	long SetConfigDefault(const char *szSection, const char *szEntry, __int64 lValue);
-	long SetConfigBinaryDefault(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength);
-	long SetConfigCipherDefault(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength);
-
-	// SetString() has been depreciated - use SetConfig()
-
+	void SetConfigDefault(const char *szSection, const char *szEntry, const char *pzValue);
+	void SetConfigDefault(const char *szSection, const char *szEntry, int nValue);
+	void SetConfigDefault(const char *szSection, const char *szEntry, long lValue);
+	void SetConfigDefault(const char *szSection, const char *szEntry, __int64 lValue);
+	void SetConfigBinaryDefault(const char *szSection, const char *szEntry, unsigned char *lValue, int nValueLength);
+	void SetConfigCipherDefault(const char *szSection, const char *szEntry, const char *pzPassword, const char *lValue, int nValueLength);
 
 
 	// Writes memory config to a given destination.
@@ -213,8 +209,6 @@ public:
 	long WriteCurrentConfig(GString *pzDestStr, bool bWriteXML = 0);
 	// just like WriteCurrentConfig(), but only serialize a single [section]
 	long WriteCurrentConfigSection(GString *pzDestStr, const char *pzSection, bool bWriteXML = 0);
-
-
 	// function retrieves the names of all sections
 	void  GetSectionNames(GStringList *lpList);
 
@@ -231,41 +225,39 @@ public:
 	const GList *GetSection(const char *szSectionName);
 
 	// returns the number of entries for a given section
-	int GetSectionEntryCount(const char *szSectionName);
+	__int64 GetSectionEntryCount(const char *szSectionName);
 
 	// RemoveSection() and AddSection() do as their names suggest affecting an entire [Section] with all entries in it
 	GProfileSection *RemoveSection(const char *szSection);
 	void AddSection(GProfileSection *pS, int bIssueChangeNotification = 1);
 
 	// deletes an entry under the specified [Section]
-	int RemoveEntry(const char *szSection, const char *szEntry);
-
+	// returns 1 if removed, 0 if it was not there to remove
+	bool RemoveEntry(const char *szSection, const char *szEntry);
 	// the string length of the value. 0 is empty or non existing
-	int ValueLength(const char *szSection, const char *szEntry);
-
+	__int64 ValueLength(const char *szSection, const char *szEntry);
 	// returns 1 if the section (and entry) exists, otherwise 0
-	int DoesExist(const char *szSectionName, const char *pzEntry);
-	int DoesExist(const char *szSectionName);
+	bool DoesExist(const char *szSectionName, const char *pzEntry);
+	bool DoesExist(const char *szSectionName);
 	
 
 	////////////////////////////////////////////////////////////////
 	// same as the Get*'s (below) but no exception will be thrown since 
 	// a default value is returned when queried value does not exist
 	////////////////////////////////////////////////////////////////
-	short GetBoolOrDefault(const char *szSectionName, const char *szKey, short bDefault);
+	bool GetBoolOrDefault(const char *szSectionName, const char *szKey, bool bDefault);
 	__int64 GetInt64OrDefault(const char *szSectionName, const char *szKey, __int64 nDefault);
-	long  GetLongOrDefault(const char *szSectionName, const char *szKey, long lDefault);
 	int	  GetIntOrDefault(const char *szSectionName, const char *szKey, int nDefault);
 	const char *GetStringOrDefault(const char *szSectionName, const char *szKey, const char *pzDefault);
 	// same as GetStringOrDefault but result will always end with a slash
 	const char *GetPathOrDefault(const char *szSectionName, const char *szKey, const char *pzDefault);
-	
-
 	// GetBinary() will only properly convert to binary if the value was created with SetConfigBinary()
 	unsigned char *GetBinary(const char *szSectionName, const char *szKey, GString &strDest);
 	// GetCiphered() will only properly decipher if the value was created with SetConfigCipher()
 	const char *GetCiphered(const char *szSectionName, const char *szKey, const char *pzPassword, GString &strDest);
 
+	// depreciated in 2014 - this is so old it was from the days when "long" was 4 byte and int was only 2, the days before the C++ "bool" type.
+	// long  GetLongOrDefault(const char *szSectionName, const char *szKey, long lDefault);
 
 
 	////////////////////////////////////////////////////////////////
@@ -276,17 +268,19 @@ public:
 	// Unlike the Windows GetProfileInt(), this allows you to know if the setting was available.
 	// This allows you to determine the difference between "0" and "Does not exist"
 	////////////////////////////////////////////////////////////////
-	// function retrieves a boolean from the specified section
-	short GetBoolean(const char *szSectionName, const char *szKey, short bThrowNotFound = true );
-	short GetBool(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
-	__int64 GetInt64(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
-	long  GetLong(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
-	int	  GetInt(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
-	const char *GetString(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
+	// retrieves a boolean from the specified section
+	bool GetBoolean(const char *szSectionName, const char *szKey, bool bThrowNotFound = true );
+	bool GetBool(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+	// retrieves an int/int64 from the specified section
+	__int64 GetInt64(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+	int	  GetInt(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
+	// retrieves an charachter string value from the specified section
+	const char *GetString(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
 	// same as GetString() but ensures a trailing \ in NT and a / in UNIX
-	const char *GetPath(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
+	const char *GetPath(const char *szSectionName, const char *szKey, bool bThrowNotFound = true);
 
-	
+//  depreciated in 2014 - this is so old it was from the days when "long" was 4 byte and int was only 2, the days before the C++ "bool" type.
+//	long  GetLong(const char *szSectionName, const char *szKey, short bThrowNotFound = true);
 
 	// load the profile configuration file yourself, 
 	// and create this object "with no disk config file"
@@ -300,9 +294,15 @@ public:
 	GProfile();
 	~GProfile();
 
-//	virtual void MapXMLTagsToMembers();
-//	DECLARE_FACTORY(GProfile, configuration)
 };
+
+// The GProfile instance is normally 1 global instance - but not always.
+GProfile &GetProfile();
+GProfile *SetProfile(GProfile *pApplicationProfile);
+
+
+
+
 /*
 class GProfileEntryIterator
 {
@@ -318,8 +318,6 @@ public:
 };
 */
 
-GProfile &GetProfile();
-GProfile *SetProfile(GProfile *pApplicationProfile);
 
 
 #endif // __PROFILE_H__

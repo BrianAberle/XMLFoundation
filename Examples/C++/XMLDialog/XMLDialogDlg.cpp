@@ -330,8 +330,8 @@ void CXMLDialogDlg::OnItemchangedListLi(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		MyOrderLineItem *pLI = (MyOrderLineItem *)m_ListLineItems.GetItemData(itm.iItem);
 		m_nProductID = pLI->m_nProductID;
-		m_strPrice = pLI->m_strUnitPrice;
-		m_strDesc = pLI->m_strDescription;
+		m_strPrice = (const char *)pLI->m_strUnitPrice;
+		m_strDesc = (const char *)pLI->m_strDescription;
 		UpdateData(FALSE);
 	}
 	

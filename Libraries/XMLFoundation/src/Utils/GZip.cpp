@@ -589,7 +589,9 @@ typedef uLong FAR uLongf;
 
 #ifdef STDC
 #  ifndef Z_SOLO
+#ifndef WINCE
 #    include <sys/types.h>      /* for off_t */
+#endif
 #  endif
 #endif
 
@@ -10538,14 +10540,18 @@ int ZEXPORT uncompress (Bytef *dest,uLongf * destLen,const Bytef * source,uLong 
 #  include <stdlib.h>
 #  include <limits.h>
 #endif
-#include <fcntl.h>
+#ifndef WINCE
+	#include <fcntl.h>
+#endif
 
 #ifdef _WIN32
 #  include <stddef.h>
 #endif
 
 #if defined(__TURBOC__) || defined(_MSC_VER) || defined(_WIN32)
-#  include <io.h>
+	#ifndef WINCE
+		#  include <io.h>
+	#endif
 #endif
 
 #ifdef WINAPI_FAMILY
@@ -10857,7 +10863,7 @@ const char * ZEXPORT zError(int err)
      * errno.  We define it as a global variable to simplify porting.
      * Its value is always 0 and should not be used.
      */
-    int errno = 0;
+//    int errno = 0;  removed - this is defined in WinCERuntimeC.cpp
 #endif
 
 #ifndef HAVE_MEMCPY

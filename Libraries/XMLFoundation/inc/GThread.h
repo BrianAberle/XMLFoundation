@@ -11,8 +11,9 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 
-#ifndef _WIN32		// This is how XMLFoundation handles all threading on all non windows platforms
-					// On Linux/AIX/Solaris/Android GThread is a direct map to this subset of POSIX thread calls.
+// This is how XMLFoundation handles all threading on all non windows platforms
+// On Linux/AIX/Solaris/Android/iOS/WinCE GThread == PThread, it is a direct map to this subset of POSIX thread calls.
+#if !defined(_WIN32) || defined(WINCE)
 	#define gthread_mutex_t			pthread_mutex_t
 	#define gthread_mutex_init		pthread_mutex_init
 	#define gthread_mutex_destroy	pthread_mutex_destroy
@@ -31,6 +32,8 @@
 	#define gthread_t				pthread_t
 	#define gsched_yield			sched_yield
 	#define gtimespec				timespec
+	int _gthread_processInitialize (void);
+	void _gthread_processTerminate (void);
 
 	#include <pthread.h>		// POSIX Threads Library
 	#include <sched.h>			// POSIX Threads Library

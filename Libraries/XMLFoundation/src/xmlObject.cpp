@@ -1146,7 +1146,7 @@ int XMLObject::SetMappedAttribute(const char *pTag,const char *pzValue, __int64 
 	{
 		GString strUpper(pTag);
 		strUpper.MakeUpper();
-		MemberDescriptor *pMD = (MemberDescriptor *)m_pMappedAttributeHash->Lookup(strUpper);
+		MemberDescriptor *pMD = (MemberDescriptor *)m_pMappedAttributeHash->Lookup((const char *)strUpper);
 		if (pMD)
 		{
 			pMD->Set(pzValue, nValueLen, 1, 1);
@@ -1206,7 +1206,7 @@ void XMLObject::MapAttribute(void *pValue,const char *pTag,StringAbstraction *pH
 
 		GString strUpper(pTag);
 		strUpper.MakeUpper();
-		m_pMappedAttributeHash->Insert(strUpper, pNewMD);
+		m_pMappedAttributeHash->Insert((const char *)strUpper, pNewMD);
 	}
 	else
 	{
@@ -1237,7 +1237,7 @@ void XMLObject::MapAttribute(int *pValue,const char *pTag, const char *pzTransla
 
 		GString strUpper(pTag);
 		strUpper.MakeUpper();
-		m_pMappedAttributeHash->Insert(strUpper, pNewMD);
+		m_pMappedAttributeHash->Insert((const char *)strUpper, pNewMD);
 	}
 	else
 	{
@@ -1349,7 +1349,7 @@ int XMLObject::FindAttribute( const char *pzAttName, GString &strDest )
 	{
 		GString strUpper(pzAttName);
 		strUpper.MakeUpper();
-		MemberDescriptor *pMD = (MemberDescriptor *)m_pMappedAttributeHash->Lookup(strUpper);
+		MemberDescriptor *pMD = (MemberDescriptor *)m_pMappedAttributeHash->Lookup((const char *)strUpper);
 		if (pMD)
 		{
 			pMD->GetMemberValue( strDest );
@@ -2165,8 +2165,7 @@ MemberDescriptor* XMLObject::GetEntry( void* pAddrOfMemberToFind  )
 };
 
 
-void XMLObject::SetMember( void *pMemberToSet, int pzNewValue, 
-										   MemberDescriptor* btRoot )
+void XMLObject::SetMember( void *pMemberToSet, int pzNewValue,  MemberDescriptor* btRoot )
 {
 	char charValue[20];
 	sprintf(charValue,"%d",(int)pzNewValue);
@@ -2208,8 +2207,7 @@ const char *XMLObject::GetMemberByTag( const char *pzTagName, GString &strDest )
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "GetMemberByTag() failed. The tag <%s> "
-			"has not been mapped to object <%s>", pzTagName, GetObjectType());
+		sprintf(szTemp, "GetMemberByTag() failed. The tag <%s> has not been mapped to object <%s>", pzTagName, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return strDest;
@@ -2227,8 +2225,7 @@ int XMLObject::GetMemberByTagInt( const char *pzTagName )
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "GetMemberByTagInt() failed. The tag <%s> "
-			"has not been mapped to object <%s>", pzTagName, GetObjectType());
+		sprintf(szTemp, "GetMemberByTagInt() failed. The tag <%s> has not been mapped to object <%s>", pzTagName, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return nRetValue;
@@ -2244,8 +2241,7 @@ void XMLObject::SetMemberByTag( const char *pzTagName, GString &strNewValue, boo
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "SetMemberByTag() failed. The tag <%s> "
-			"has not been mapped to object <%s>", pzTagName, GetObjectType());
+		sprintf(szTemp, "SetMemberByTag() failed. The tag <%s> has not been mapped to object <%s>", pzTagName, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 }
@@ -2260,8 +2256,7 @@ void XMLObject::SetMemberByTag( const char *pzTagName,	const char *pzNewValue, b
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "SetMemberByTag() failed. The tag <%s> "
-			"has not been mapped to object <%s>", pzTagName, GetObjectType());
+		sprintf(szTemp, "SetMemberByTag() failed. The tag <%s> has not been mapped to object <%s>", pzTagName, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 }
@@ -2309,8 +2304,7 @@ bool XMLObject::setMemberDirty(void *pAddressOfMemberToCheck, int bDirty/*=1*/)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Dirty state lookup failed. "
-			"The member has not been mapped to object <%s> ", GetObjectType());
+		sprintf(szTemp, "Dirty state lookup failed. The member has not been mapped to object <%s> ", GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2327,9 +2321,7 @@ bool XMLObject::setMemberDirty(char *pzTagNameOfMemberToCheck, int bDirty/*=1*/)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Dirty state lookup failed. The tag <%s> "
-			"has not been mapped to object <%s> ", 
-			pzTagNameOfMemberToCheck, GetObjectType());
+		sprintf(szTemp, "Dirty state lookup failed. The tag <%s> has not been mapped to object <%s> ", 	pzTagNameOfMemberToCheck, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2346,8 +2338,7 @@ bool XMLObject::isMemberDirty(void *pAddressOfMemberToCheck)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Dirty state lookup failed. The member "
-			"has not been mapped to object <%s> ", GetObjectType());
+		sprintf(szTemp, "Dirty state lookup failed. The member has not been mapped to object <%s> ", GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2364,9 +2355,7 @@ bool XMLObject::isMemberDirty(char *pzTagNameOfMemberToCheck)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Dirty state lookup failed. The tag <%s> "
-			"has not been mapped to object <%s> ", 
-			pzTagNameOfMemberToCheck, GetObjectType());
+		sprintf(szTemp, "Dirty state lookup failed. The tag <%s> has not been mapped to object <%s> ",	pzTagNameOfMemberToCheck, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2385,8 +2374,7 @@ bool XMLObject::isMemberNull(void *pAddressOfMemberToCheck)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Null state lookup failed. The member "
-			"has not been mapped to object <%s> ", GetObjectType());
+		sprintf(szTemp, "Null state lookup failed. The member has not been mapped to object <%s> ", GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2403,9 +2391,7 @@ bool XMLObject::isMemberNull(char *pzTagNameOfMemberToCheck)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Null state lookup failed. The tag <%s> "
-			"has not been mapped to object <%s> ", 
-			pzTagNameOfMemberToCheck, GetObjectType());
+		sprintf(szTemp, "Null state lookup failed. The tag <%s> has not been mapped to object <%s> ", pzTagNameOfMemberToCheck, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2422,8 +2408,7 @@ bool XMLObject::isMemberCached(void *pAddressOfMemberToCheck)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Cached state lookup failed. The member "
-			"has not been mapped to object <%s> ", GetObjectType());
+		sprintf(szTemp, "Cached state lookup failed. The member has not been mapped to object <%s> ", GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -2440,9 +2425,7 @@ bool XMLObject::isMemberCached(char *pzTagNameOfMemberToCheck)
 	else
 	{
 		char szTemp[128];
-		sprintf(szTemp, "Cached state lookup failed. The tag <%s> "
-			"has not been mapped to object <%s> ", 
-			pzTagNameOfMemberToCheck, GetObjectType());
+		sprintf(szTemp, "Cached state lookup failed. The tag <%s> has not been mapped to object <%s> ",  pzTagNameOfMemberToCheck, GetObjectType());
 		TRACE_ERROR(szTemp);
 	}
 	return 0;
@@ -3057,7 +3040,7 @@ int XMLObject::CopyState(XMLObject *pCopyFrom)
 			else 
 			{
 				// Get the destination member descriptor for this list, hash, array or whatever data structure it is
-				MemberDescriptor *pMoveToMap = GetEntry( pMemberMap->strTagName );
+				MemberDescriptor *pMoveToMap = GetEntry( (const char *)pMemberMap->strTagName );
 
 				// pMoveToMap is the "RelationshipWrapper" in the destination object
 				// pMemberMap is the "RelationshipWrapper" in the source object - (this is what we are looping through)
@@ -3169,8 +3152,8 @@ void MapOfActiveObjects::AddActiveObjectMap(MemberDescriptor *pNew)
 #else
 	strKey << (unsigned int)(void *)pNew; // The memory address is a 32 bit integer - convert to string
 #endif
-	if (!m_hshActiveMaps.Lookup(strKey))
-		m_hshActiveMaps.Insert(strKey,pNew);
+	if (!m_hshActiveMaps.Lookup((const char *)strKey))
+		m_hshActiveMaps.Insert((const char *)strKey,pNew);
 }
 int MapOfActiveObjects::IsActiveObjectMap(MemberDescriptor *pMap)
 {
@@ -3181,7 +3164,7 @@ int MapOfActiveObjects::IsActiveObjectMap(MemberDescriptor *pMap)
 	strKey << (unsigned int)(void *)pMap; // The memory address is a 32 bit integer - convert to string
 #endif
 
-	if (m_hshActiveMaps.Lookup(strKey))
+	if (m_hshActiveMaps.Lookup((const char *)strKey))
 		return 1;
 	return 0;
 }
@@ -3193,7 +3176,7 @@ void MapOfActiveObjects::RemoveActiveObjectMap(MemberDescriptor *pOld)
 #else
 	strKey << (unsigned int)(void *)pOld; // The memory address is a 32 bit integer - convert to string
 #endif
-	m_hshActiveMaps.RemoveKey(strKey);
+	m_hshActiveMaps.RemoveKey((const char *)strKey);
 }
 
 

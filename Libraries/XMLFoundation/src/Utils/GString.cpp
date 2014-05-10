@@ -523,6 +523,15 @@ GString::GString(const GString &src )
 	memcpy(_str, src._str, _len);
 	_str[_len] = 0;
 }
+GString::GString(const GString0 &src )
+{
+	__int64 l = (src._len > GSTRING_INITIAL_SIZE) ? src._len + GSTRING_INITIAL_SIZE : GSTRING_INITIAL_SIZE;
+	CommonConstruct( l );
+
+	_len = ___min(_max, src._len);
+	memcpy(_str, src._str, _len);
+	_str[_len] = 0;
+}
 // constructs a copy of the source string 
 GString::GString(const GString32 &src )
 {
@@ -4356,6 +4365,58 @@ bool GString::Compress( )
 
 
 
+unsigned short *GString::Unicode()
+{
+
+    if (_pWideStr)
+	{
+	    free(_pWideStr);
+		_pWideStr = 0;
+	}
+    
+#ifdef _WIN32
+	// Covert _str to Unicode
+    int len = MultiByteToWideChar(CP_ACP, 0, _str, _len+1, NULL, 0) ;
+    (unsigned short *)_pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * len);
+    MultiByteToWideChar(CP_ACP, 0, _str, -1, (LPWSTR)_pWideStr, len); // note: len = _len + 1;
+#else
+    _pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * _len + 1);
+	for( __int64 i=0; i < _len+1; i++ )
+		_pWideStr[i] = _str[i];
+#endif
+	
+    // it gets cleaned up either on object destruction or the next time this method is called
+    return _pWideStr;
+}
+
+/*
+GString::operator unsigned short * ()
+{
+    if (_pWideStr)
+	{
+	    free(_pWideStr);
+		_pWideStr = 0;
+	}
+    
+#ifdef _WIN32
+    // Covert _str to Unicode
+    int len = MultiByteToWideChar(CP_ACP, 0, _str, _len, NULL, 0) ;
+    int nAllocLen = (sizeof(unsigned short) * len);
+	(unsigned short *)_pWideStr = (unsigned short *)malloc(nAllocLen+2);
+	memset(_pWideStr,0,nAllocLen+2);
+	MultiByteToWideChar(CP_ACP, 0, _str, _len, (LPWSTR)_pWideStr, nAllocLen);
+#else
+   	_pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * _len + 1);
+	for( __int64 i=0; i<_len+1;i++ )
+		_pWideStr[i] = _str[i];
+#endif
+
+
+    // it gets cleaned up either on object destruction or the next time this method is called
+    return _pWideStr;
+}
+*/
+
 
 
 
@@ -4437,46 +4498,6 @@ wchar_t *DLAsciiToUnicode(const char *a, char *b)
 
 #include <windows.h>
 
-wchar_t *GString::Unicode()
-{
-
-    if (_pWideStr)
-	{
-	    free(_pWideStr);
-		_pWideStr = 0;
-	}
-    
-    // Covert _str to Unicode
-    int len = MultiByteToWideChar(CP_ACP, 0, _str, _len+1, NULL, 0) ;
-    (wchar_t *)_pWideStr = (wchar_t*)malloc(sizeof(wchar_t) * len);
-	
-    MultiByteToWideChar(CP_ACP, 0, _str, -1, _pWideStr, _len);
-	
-    // it gets cleaned up either on object destruction or the next time this method is called
-    return _pWideStr;
-}
-
-GString::operator wchar_t * () const
-{
-
-    if (_pWideStr)
-	{
-	    free(_pWideStr);
-		(wchar_t *)_pWideStr = 0;
-	}
-    
-    // Covert _str to Unicode
-    int len = MultiByteToWideChar(CP_ACP, 0, _str, _len, NULL, 0) ;
-
-    int nAllocLen = (sizeof(wchar_t) * len);
-	(wchar_t *)_pWideStr = (wchar_t*)malloc(nAllocLen+2);
-	memset(_pWideStr,0,nAllocLen+2);
-	
-	MultiByteToWideChar(CP_ACP, 0, _str, _len, _pWideStr, nAllocLen);
-	
-    // it gets cleaned up either on object destruction or the next time this method is called
-    return _pWideStr;
-}
 
 unsigned int Gstrlen( const wchar_t *str )
 {

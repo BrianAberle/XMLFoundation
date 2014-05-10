@@ -601,12 +601,16 @@ extern "C"
 
   void ptw32_rwlock_cancelwrwait (void *arg);
 
+
+/*
 #if ! defined (__MINGW32__) || defined (__MSVCRT__)
   unsigned __stdcall
 #else
   void
 #endif
     ptw32_threadStart (void *vthreadParms);
+*/
+
 
   void ptw32_callUserDestroyRoutines (pthread_t thread);
 

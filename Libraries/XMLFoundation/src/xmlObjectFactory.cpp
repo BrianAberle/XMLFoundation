@@ -329,6 +329,8 @@ void XMLObjectFactory::receiveIntoObject( XMLObject *pObjCurrent/* = 0*/,
 		{
 			// Recurse into and get the value for the element or entire sub-object
 			MemberDescriptor *pMap = (pObjCurrent) ? pObjCurrent->GetEntry( tok->get() ) : 0;
+			// Note: this [pMap] is scoped to this _startTag, [::pMap] is unchanged.
+
 			if ( !pMap )
 			{
 				if (m_pProtocolObject)

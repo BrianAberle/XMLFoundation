@@ -99,15 +99,7 @@ SOURCE=..\Core\ServerCore.cpp
 # Begin Source File
 
 SOURCE=..\Core\ServerCoreCustomGlobalInternals.cpp
-
-!IF  "$(CFG)" == "5Loaves - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "5Loaves - Win32 Debug"
-
 # PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

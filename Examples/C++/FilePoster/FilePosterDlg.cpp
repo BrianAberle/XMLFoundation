@@ -183,7 +183,7 @@ void CFilePosterDlg::OnTimer(UINT_PTR nIDEvent)
 		if (pArg->nResult > 2)
 		{
 			MessageBeep(MB_ICONEXCLAMATION);
-			m_strResults = pArg->strErrorDescription;
+			m_strResults = (const char *)pArg->strErrorDescription;
 			nConnectWait = 0;
 			KillTimer(777);
 			delete pArg;
@@ -193,7 +193,7 @@ void CFilePosterDlg::OnTimer(UINT_PTR nIDEvent)
 		{
 			// do your completion event
 			MessageBeep(0);
-			m_strResults = pArg->strResponse;
+			m_strResults = (const char *)pArg->strResponse;
 			nConnectWait = 0;
 			KillTimer(777);
 			delete pArg;

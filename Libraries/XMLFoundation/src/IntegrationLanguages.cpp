@@ -155,7 +155,9 @@ public:
 	}
 	CLanguageDriverInterfaceCache()
 	{
+	#ifdef _WIN32
 		_gthread_processInitialize();
+	#endif
 		gthread_mutex_init(&m_lock,0);
 	}
 	void ReturnInterfaceInstance(InterfaceInstance *pII)

@@ -177,7 +177,7 @@ Platform::String^ SelfManaged::StartServerCore(Platform::String^ strStartupArgs)
 		GString strCfgData;
 		strCfgData.Format(pzBoundStartupConfig,p1,p2,p3,p4,p5);
 
-		SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length()));
+		SetProfile(new GProfile((const char *)strCfgData, (int)strCfgData.Length(), 0));
 		int nRet = server_start("-- Windows Phone Server --");
 		return MakeCppCXString(g_WindowsPhoneInfoLog);
 	}

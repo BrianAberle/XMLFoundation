@@ -64,7 +64,7 @@ STDMETHODIMP CMyATLObj::SetValues(long lValue, BSTR strValue)
 }
 STDMETHODIMP CMyATLObj::get_TheString(BSTR *pVal)
 {
-	CComBSTR temp( m_strString );
+	CComBSTR temp( (const char *)m_strString );
 	*pVal = temp.Copy();
 	return S_OK;
 }

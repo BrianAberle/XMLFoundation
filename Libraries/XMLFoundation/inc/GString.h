@@ -136,6 +136,7 @@ public:
 	GString(__int64 nInitialSize = GSTRING_INITIAL_SIZE, int nGrowByAllocationSize = -1);
 
 	// constructs a copy of the source string 
+	GString(const GString0 &src);
 	GString(const GString32 &src);
 	GString(const GString &src);
 	GString(const GString &src, __int64 nSourceCount);
@@ -833,11 +834,13 @@ public:
 	int operator <= (const char *) const;
 	int operator != (const char *) const;
 
+	// these two methods converrt from [char *] to [wchar_t *]
+//	operator unsigned short * ();  // wchar_t is sometimes defined as unsigned short *, which adds ambiguity and forces us to add type casts.
+	unsigned short *Unicode();
+
 #ifdef _UNICODE
 	GString & operator<<(const wchar_t *);
 	GString & operator+=(const wchar_t *);
-	operator wchar_t * () const;
-	wchar_t *Unicode();
 #endif
 };
 

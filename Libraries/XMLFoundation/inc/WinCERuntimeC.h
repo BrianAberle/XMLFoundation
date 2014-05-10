@@ -11,8 +11,13 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 // WinCERuntimeC.h
+//
 #ifndef _CE_C_RUNTIME_
 #define _CE_C_RUNTIME_
+
+// In x86 WinCE every call in every system library is __cdecl NOT __stdcall, in the ARMv4 build it will build without the following line
+#define __stdcall  __cdecl
+
 
 void * _beginthreadex(void* security, unsigned stack_size, unsigned (__stdcall* start_address)(void*),  void* arglist, unsigned initflag, unsigned* thrdaddr);
 
@@ -25,6 +30,9 @@ int access( const char *path, int mode );
 char* getenv(const char* varname);
 int rename(const char *oldfile, const char *newfile);
 long getTimeMS();
+wchar_t* wce_mbtowc(const char* a);
+int _mkdir(const char * dir);
+
 
 #include <time.h> // for struct tm definition and time_t definition
 

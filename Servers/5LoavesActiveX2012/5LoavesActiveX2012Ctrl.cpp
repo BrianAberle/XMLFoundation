@@ -225,7 +225,7 @@ long CMy5LoavesActiveX2012Ctrl::SetConfigFile(LPCTSTR StartConfigFile)
 		char *lpsz = new char[nLen+1];
 	    AfxW2AHelper(lpsz, StartConfigFile, nLen);
 
-		SetProfile(new GProfile(lpsz,""));
+		SetProfile(new GProfile(lpsz,0));
 
 		delete lpsz;
 	}

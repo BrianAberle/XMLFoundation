@@ -179,7 +179,7 @@ RETRY:
 			while(1)
 			{
 				// Look for the boundary
-				if ( memcmp(&pStart[nOffset],m_strEndBoundary, (unsigned int)nLen) == 0)
+				if ( memcmp(&pStart[nOffset],m_strEndBoundary._str, (unsigned int)nLen) == 0)
 				{
 					// finished reading the data for this formpart[strName]
 					m_pzContentIndex += ( nOffset );

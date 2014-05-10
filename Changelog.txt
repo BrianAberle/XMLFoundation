@@ -207,4 +207,16 @@ Apr5-6 - Ran the Microsoft Code Analysis in MSDev2012, reviewed all output silen
 Apr5-6 - Added two new utility classes GString0, and GString32, modified XMLObject and GString for them
 Apr5-6 - see note under [m_pzkTheWord] in [IndexObjects.cpp] about why the new GStrings were created.
 Apr5-6 - fixed the MSVC2012 project for CustomHTTPService to properly exclude the files from the build.
-
+Apr 17 - Completed port to x86 WinCE  (it was ported to ARMv4 WinCE in 2007)
+Apr 17 - Added GString0 and GString32 into the Linux makefile and fixed up the UNICODE support in those files
+Apr 18 - Set all examples to use GProfile format of INI not XML
+Apr 25 - added GString::Unicode() regardless of the _UNICODE preprocessor - and fixed it to copy the terminating null
+Apr 29 - Ported the recent library changes to Linux64 - source sync to most recent Xfer build
+Apr 29 - Fixed makefile errors - added -O3 to the linux GCC build, properly excluded certain files in all windows builds of CustomHTTPService example
+Apr 30 - removed SpookeyHash.h/.cpp files from the distribution - they serve no purpose.
+May 9  - Updated the root article, and the disturbing folder
+May 9  - Added GString32 and GString0 into the Windows Phone build
+May 9  - Fixed the linux makefile for the BigData example program (removed windows line feeds /r/n)
+May 9  - Added GString32 and GString0 into the Android build
+May 9  - return void inplace of an unused return value constant 1 in GProfile - the return was 'reserved' for support that was never needed.
+May 9  - Updated the datatypes in the GProfile - it was built before the 'bool' datatype was supported in all C++ compilers

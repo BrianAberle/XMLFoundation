@@ -7,7 +7,8 @@
 
 int errno = 0;
 
-
+int _gthread_processInitialize (void) {return 0;}
+void _gthread_processTerminate (void) {}
 
 /*
 WCELIBCEX - Windows CE C Library Extensions
@@ -73,6 +74,34 @@ THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * http://www.taxussi.com.pl
  *
  */
+
+wchar_t* wce_mbtowc(const char* a)
+{
+	int length;
+	wchar_t *wbuf;
+
+	length = MultiByteToWideChar(CP_ACP, 0, 
+		a, -1, NULL, 0);
+	wbuf = (wchar_t*)malloc( (length+1)*sizeof(wchar_t) );
+	MultiByteToWideChar(CP_ACP, 0,
+		a, -1, wbuf, length);
+
+	return wbuf;
+}
+
+
+int _mkdir(const char * dir)
+{
+	wchar_t* wdir;
+	BOOL rc;
+
+	/* replace with CreateDirectory. */
+	wdir = wce_mbtowc(dir);
+	rc = CreateDirectoryW(wdir, NULL);
+	free(wdir);
+
+	return rc==TRUE ? 0 : -1;
+}
 
 
 //#include <time.h>
@@ -399,7 +428,8 @@ char* getenv(const char* varname)
 
 
 // Windows CE doesn't define _beginthreadex 
- 
+
+
  struct ThreadProxyData 
  { 
 	typedef unsigned (__stdcall* func)(void*); 

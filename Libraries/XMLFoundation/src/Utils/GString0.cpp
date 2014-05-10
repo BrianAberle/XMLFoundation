@@ -42,6 +42,10 @@ unsigned long Gntohl(unsigned long x);
 bool IsNaN(const char *szN,  char decimal_separator, char grouping_separator,  char minus_sign);
 int CountOf(const char *szN, char zero_digit);
 long round(const char *value);
+#ifdef _UNICODE
+	wchar_t *DLAsciiToUnicode(const char *a, char *b); 
+	unsigned int Gstrlen( const wchar_t *str );
+#endif
 
 
 
@@ -3996,23 +4000,7 @@ bool GString0::Compress( )
 // =============================================== END
 
 
-
 #ifdef _UNICODE
-wchar_t *DLAsciiToUnicode(const char *a, char *b)
-{
-	int i = 0;
-	int ii = 0;
-	while(a[i])
-	{
-		b[ii] = a[i];
-		ii+=2;
-		i++;
-	}
-	b[ii] = 0;
-	b[ii+1] = 0;
-	
-	return(wchar_t *)b;
-}
 
 #include <windows.h>
 
@@ -4055,13 +4043,6 @@ GString0::operator wchar_t * () const
 	
     // it gets cleaned up either on object destruction or the next time this method is called
     return _pWideStr;
-}
-
-unsigned int Gstrlen( const wchar_t *str )
-{
-	const WCHAR *s = str;
-	while (*s) s++;
-	return s - str;
 }
 
 

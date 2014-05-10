@@ -28,15 +28,40 @@
 
 #include "GlobalInclude.h"
 #include "GThread.h"
-#include "errno.h"
+#ifndef WINCE
+	#include "errno.h"
+	#include <sys/timeb.h> // for _ftime
+	#include <process.h> // for _endthreadex
+#else
+	#define NEED_FTIME
+	#include <winbase.h> 
+	#define EAGAIN	11
+	#define EINVAL	22
+	#define ENOSYS	38
+	#define ENOMEM	12
+	#define EBUSY	16
+	#define EPERM	1
+	#define ENOSPC	28
+	#define ESRCH	3
+#endif
 #include <malloc.h>
-#include <sys/timeb.h> // for _ftime
-#include <process.h> // for _endthreadex
  
 // global variables
 int g_nextGThreadID = 1;
 static HINSTANCE _h_kernel32;
 static HINSTANCE _gthread_h_kernel32;
+
+
+#ifdef WINCE
+	DWORD WaitForMultipleObjectsEx(DWORD count,	const HANDLE *handles, BOOL wait_all,	DWORD timeout, BOOL alertable)
+	{
+		return WaitForMultipleObjects(	count, handles, wait_all,timeout );
+	}
+	DWORD WaitForSingleObjectEx( HANDLE hHandle,  DWORD dwMilliseconds, bool bUnused)
+	{
+		return WaitForSingleObject( hHandle,  dwMilliseconds);
+	}
+#endif
 
 
 // Configure GThread to use the depreciated interface (the only interface in XP and older) when building for 32 bit Windows
@@ -800,8 +825,9 @@ gthreadCancelableTimedWait (HANDLE waitHandle, DWORD timeout)
 
 
 
-int
-_gthread_sem_timedwait (sem_t * sem, const struct gtimespec * abstime)
+
+
+int _gthread_sem_timedwait (sem_t * sem, const struct gtimespec * abstime)
      /*
       * ------------------------------------------------------
       * DOCPUBLIC
@@ -843,14 +869,11 @@ _gthread_sem_timedwait (sem_t * sem, const struct gtimespec * abstime)
   int result = 0;
 
 #if defined(__MINGW32__)
-
   struct timeb currSysTime;
-
 #else
-
   struct _timeb currSysTime;
-
 #endif
+
 
   const DWORD NANOSEC_PER_MILLISEC = 1000000;
   const DWORD MILLISEC_PER_SEC = 1000;
