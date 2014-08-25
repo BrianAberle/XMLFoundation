@@ -7,26 +7,26 @@
 </h3>
 <h3>Command Lines</h3>
 Creating command line "rc.exe /l 0x409 /fo"Debug/XMLDialog.res" /d "_DEBUG" /d "_AFXDLL" "C:\XMLFoundation\Examples\C++\XMLDialog\XMLDialog.rc"" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFFBC.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP518C.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /I "../ExObjsFromXML" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Examples\C++\ExObjsFromXML\ObjectModel.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPFFBC.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFFCD.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP518C.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP519C.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /I "../ExObjsFromXML" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/XMLDialog.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Examples\C++\XMLDialog\XMLDialog.cpp"
 "C:\XMLFoundation\Examples\C++\XMLDialog\XMLDialogDlg.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPFFCD.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFFCE.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP519C.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP519D.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /I "../ExObjsFromXML" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/XMLDialog.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Examples\C++\XMLDialog\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPFFCE.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFFCF.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP519D.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP519E.tmp" with contents
 [
 ..\..\..\Libraries\Debug\XmlFoundation.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/XMLDialog.pdb" /debug /machine:I386 /out:"Debug/XMLDialog.exe" /pdbtype:sept 
 ".\Debug\ObjectModel.obj"
@@ -36,7 +36,7 @@ Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFFCF.tmp" with c
 ".\Debug\XMLDialog.res"
 "\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
 ]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSPFFCF.tmp"
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP519E.tmp"
 <h3>Output Window</h3>
 Compiling resources...
 Compiling...

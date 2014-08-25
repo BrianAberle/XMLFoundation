@@ -34,12 +34,361 @@
 <a href="http://cid-d7ec275e76d295cf.skydrive.live.com/self.aspx/Software/XMLFoundation.zip">
 Download XMLFoundation - Most Recent Source</a> 7 MB - (<a href="https://skydrive.live.com/redir?resid=D7EC275E76D295CF!1032">View 
 Recent Changes</a>)</li>
-<li><a href="XMLFoundation.zip">Download XMLFoundation - May 2014 Release - </a> 
+<li><a href="XMLFoundation.zip">Download XMLFoundation - August 2014 Release - </a> 
 7 MB from codeproject.com   </li></ul>
+<p align="center">&nbsp;</p>
 <p align="center"><img width="640" height="441" alt="XMLFoundation2012.jpg" src="XMLFoundation2012.jpg" border="0" hspace="0" /></p>
+<p align="center">Welcome to XMLFoundation August 2014.
+<span style="background-color: rgb(255, 255, 0);">(the fastest 
+XML Parser on earth)</span> - This release includes 
+new support for <a href="#Exceptional_Exception_Handling">Exceptions</a> and
+<a href="#Unicode">Unicode</a> and VS2013 project 
+files. </p>
 
-<h2>Introduction  </h2>
-<p style="margin: 0in 0in 8pt;">Welcome to XMLFoundation - May 2014</p>
+<h2><a name="Exceptional_Exception_Handling">Exceptional Exception Handling</a></h2>
+<p style="margin: 0in 0in 8pt;">Documentation, Exemplification, and Feature 
+Advancements are continuing despite the police, courts and judges who hate the 
+truth that exposes them. </p>
+<p style="margin: 0in 0in 8pt;" align="left">Exceptions must be handled.&nbsp; 
+An unhandled exception will bring the whole system down.&nbsp; The GException 
+recently enabled the Win32 and Win64 Call Stack capturing code that allows you 
+to access information about the origin of the exception.&nbsp; Supported Windows 
+builds includes VC6 and VS2013.&nbsp; The XMLDialog example allows you to 
+freehand enter the XML that will be parsed be the example - so by simply 
+entering some invalid XML we can raise an exception intentionally just to see 
+the error and callstack information that is now included with ALL GExceptions 
+system wide.&nbsp; The following screenshot is from the XMLDialog example with 
+callstack details down into the XML Parser.</p>
+<p style="margin: 0in 0in 8pt;" align="center">&nbsp;<img border="0" src="Exceptions.jpg" width="640" height="603"></p>
+<p style="margin: 0in 0in 8pt;" align="center">The new callstack information 
+that is now included with GException includes the Class::Method[SourceFile.cpp] 
+@ Line Number in Source file</p>
+<p style="margin: 0in 0in 8pt;" align="left">&nbsp;</p>
+<p style="margin: 0in 0in 8pt;">This new functionality is deep in the roots of 
+XMLFoundation.&nbsp; xmlLex throws GExceptions.&nbsp; I have multiple products 
+that throw GExceptions, and the implementation was written with a &quot;Mission 
+Critical&quot; mindset that includes thread locking because the Windows API in 
+DbgHelp is singlethreaded and a 32/64 bit implementation and compiler support 
+for VC6 and VS2013 including support for _UNICODE builds.&nbsp; This is &quot;new&quot; 
+because the code was disabled sometime PRIOR to 2002.&nbsp; The XMLFoundation 
+was first made public here on codeproject in July 2002, 
+GenericCallStack::GenericCallStack was mostly developed at that time, however it 
+was not threadsafe or failsafe so it was disabled by commenting out the 
+intentional divide by 0 in GException::GException() that sets the whole thing 
+off.&nbsp; The old source code and article from the first 2002 XMLFoundation 
+publication is here:
+<a href="http://www.codeproject.com/Articles/2534/XMLFoundation">
+http://www.codeproject.com/Articles/2534/XMLFoundation</a> with only 61,753 
+views as of today.&nbsp; CodeProject hosts other articles about how to obtain 
+the callstack, here is one from 2005,
+<a href="http://www.codeproject.com/Articles/11132/Walking-the-callstack">
+http://www.codeproject.com/Articles/11132/Walking-the-callstack</a> .&nbsp; I 
+used the approach posted in<a href="http://jpassing.com/2008/03/12/walking-the-stack-of-the-current-thread/"> 
+Johannes Passing blog</a>, which closes the endless loop possibility with a 
+constant stack size limit AND works 
+in a multi-threaded application with a simple CRITICAL_SECTION.&nbsp; Now the 
+implementation in XMLFoundation provides the callstack with every GException (in 
+a DEBUG build).&nbsp; Yes I have used debug binaries in production environments 
+so the debug implementation must be &quot;Mission Critical&quot; too.&nbsp; The GCallStack class is a textbook correct 
+implementation for obtaining the callstack for native windows applications using 
+the Windows API&#39;s enumAndLoadModuleSymbols, StackWalk64, SymGetSymFromAddr64, 
+UnDecorateSymbolName, and SymGetLineFromAddr64.&nbsp;&nbsp;&nbsp; </p>
+<p style="margin: 0in 0in 8pt;">The GException can be foundational in your own 
+applications.&nbsp; It was designed to be used at all levels in the application.&nbsp; The robust functionality of GException includes 
+XML serialization.&nbsp; On The NCIS project we would catch a GException on the server 
+side of a failed CORBA or RPC call, then serialize the GException to XML and &quot;throw&quot; the XML over IIOP to 
+the Client by returning a String return value with EITHER the results OR the 
+exception.&nbsp; The Client will &quot;re-throw&quot; exceptions from the parser level and the error goes 
+straight to the GUI without coding any special logic to handle it.&nbsp; That is some ancient 
+design history behind this previously 
+undocumented logic in XMLObjectFactory.cpp as it relates to GException.&nbsp; You 
+can see from the following code that during the process of serializing ANY custom 
+objects, you can also serialize in an exception in raw XML - and it will be re-thrown.&nbsp; </p>
+<pre lang="cs">void XMLObjectFactory::extractObjects( XMLObject *pRootObject,   XMLObject *pSecondaryMapHandler /* = 0*/)
+{
+	// position token stream at the first &#39;ElementStartTag&#39; and get it&#39;s value
+	m_pProtocolObject = pSecondaryMapHandler;
+	GetFirstTokenPastDTD();
+	receiveIntoObject( pRootObject, 0, 0, 0);
+
+	// If we factory created an exception object, throw it.
+	if (m_pException)
+	{
+		if(m_pzExceptionThrower)
+		{
+			// This distinguishes Client errors from Server errors
+			throw GException(&quot;XML Object Factory&quot;, 1, m_pzExceptionThrower)
+		}
+		else
+			throw GException(*m_pException);
+	}
+}
+ </pre>
+<p>You can see from the callstack supplied with the GException in the previous 
+screenshot that <b><font face="Courier New">XMLObject::FromXml()</font></b> 
+calls <b><font face="Courier New">XMLObjectFactory::extractObjects()</font></b> 
+and you can see in the code snippet above that&nbsp; <b>
+<font face="Courier New">XMLObjectFactory::extractObjects()</font></b>will 
+rethrow an exception if one was serialized in.&nbsp; This is true of every call 
+to <font face="Courier New"> <b>XMLObejct::FromXML()</b></font>system-wide, which can handle 
+not only the XML that was mapped to the user defined Objects but it also maps to 
+XML Exceptions without writing any additional code.&nbsp; In the XMlDialog 
+example program included with the source it is easy to paste in an XML-Exception 
+as the source XML to see how the software behaves.&nbsp; Note that the outermost 
+XML Element name, in this case &lt;TransactResultSet&gt; can be set to any value.</p>
+<pre>
+&lt;TransactResultSet&gt;
+	&lt;Exception&gt;
+		&lt;Description&gt;Throw this Unexpected CUSTOM XML Exception!&lt;/Description&gt;
+		&lt;ErrorNumber&gt;777&lt;/ErrorNumber&gt;
+		&lt;SubSystem&gt;7&lt;/SubSystem&gt;
+		&lt;UserContext&gt;
+			&lt;Detail&gt;Ancient functionality with recent documentation&lt;/Detail&gt;
+		&lt;/UserContext&gt;
+	&lt;/Exception&gt;
+&lt;/TransactResultSet&gt;
+
+</pre>
+<p align="center">
+<img border="0" src="XMLExceptions.jpg" width="640" height="400"></p>
+<p>The internals of GException include context details that make exceptions more 
+functional since they may represent various layers and sub-systems in a large 
+project.&nbsp; For example,</p><pre>		try
+		{
+			// General error such as &quot;Could not open file MyFile.txt&quot
+			str.ToFile(pzDestFile);   
+		}
+		catch(GException &e)
+		{
+			// Specific error defining task that failed
+			e.AddErrorDetail( 777, &quot;Failed to uphold justice in the court&quot;); 
+			throw e;  // Crash the system if not handled
+		}
+</pre>
+
+<p>This release was developed in Colorado, California, and Oregon despite the bond 
+stipulations ordered by the court that forbid me to leave the State of Georgia 
+where I am hunted illegally by State and Federal authorities.&nbsp; After a 
+string of failed attempts to capture me, I was finally arrested and charged 
+with &quot;Obstructing Justice&quot; for evading arrest on two known prior occasions, 
+then I was released on bond.&nbsp; 
+I am NOT GUILTY of obstructing any lawful arrest.&nbsp; As of current, the 
+courts in Cobb County Georgia refuse to drop the charges against me.&nbsp;
+<a href="http://1drv.ms/1sBJ8x7">http://1drv.ms/1sBJ8x7 </a>Does someone know a lawyer that will take this case to trial pro bono?&nbsp; It will be a contribution 
+to Open Source, Justice, and Truth.&nbsp; In my experiences with California, Nebraska, and Georgia 
+courts I found that judges and prosecutors team up with police to form a gang 
+that serves other members in the gang.&nbsp; We need a gang to oppose them.&nbsp; We 
+must handle all exceptions.</p>
+<h2><a name="Unicode">Unicode</a></h2>
+<p>In August 2014, for the first time in the history of the XMLFoundation, the 
+entire library can be compiled in Windows with _UNICODE defined.&nbsp; This 
+switches many underlying Windows API calls for example from MessageBoxA( ) to 
+MessageBoxW( ) requiring &quot;const char *&quot; vs &quot;const wchar_t *&quot; respectively.&nbsp; 
+For this reason, GString has several new methods added for native wchar_t 
+support.&nbsp; GString now supports a default conversion to the ANSI codepage 
+1252 which defines the Latin character set used for English and some other 
+European languages.&nbsp; The Windows builds use <font FACE="Consolas" SIZE="2">
+MultiByteToWideChar() and WideCharToMultiByte().&nbsp; </font>The Unicode 
+support currently uses default conversions in the non-Windows builds too. UTF-8 
+and ISO-8859-1.&nbsp; This new functionality is based on IBM&#39;s open source ICU 
+library ( International Components for Unicode ) and the standard iconv() 
+interface.&nbsp; Unicode is the newest area of development in the XMLFoundation 
+and it will likely continue to grow in functionality.</p>
+<p>The new code now allows GString to be directly assigned by CStrings in MFC 
+that are _UNICODE.&nbsp; This is some of the recent enhancements in support of Unicode:</p><pre>XMLObject.h
+	int FromXML(const GString &XML, ...);
+	int FromXML(const char *pzXML, ...);
+	int FromXML(const wchar_t *pzXML, ...);
+
+	const char * ToXML(...);
+	const wchar_t *ToXMLUnicode(...);
+
+GString.h
+	// This will create a GString from a double byte BSTR, or Platform::String^ in .NET managed code:
+	// Platform::String^ MyString = "MyData";
+	// new GString(MyString->Data());
+	GString(const wchar_t *strWide);
+
+	GString & operator=(const wchar_t *);
+	operator const wchar_t * () const;</pre>
+<hr />
+<h2>
+                
+<strong>The Index</strong> </h2>
+<table width="99%" border="0" cellspacing="0" cellpadding="0">
+    <tbody><tr>
+        <td width="454">
+        <p align="left">            
+ <a href="#Registered_to_Quote">You Can Quote Me On That</a></td>
+        <td>
+        <p align="left"><a href="#Unicode">Unicode</a></td>
+    </tr>
+    	<tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#What_is_the_XMLFoundation">What is the XMLFoundation</a></p></td>
+        <td>
+        <p align="left"><a href="#New_World_Order">New World Order</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Analysis_of_Algorithms">Analysis of Algorithms</a></p></td>
+        <td>
+        <p align="left"><a href="#Faster_than_Fast">Faster than Fast</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">              
+        <a href="#Documentation">Documentation</a></p></td>
+        <td>
+        <p align="left"><a href="#Custom_Memory_Management">Memory Management</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Threading">Threading</a></p></td>
+        <td>
+        <p align="left"><a href="#Object_Factorization">Object Factorization</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Windows_Phone">Windows Phone</a></p></td>
+        <td>
+        <p align="left"><a href="#Member_Mapping">Member Mapping</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#iPhone_/_iOS">iPhone / iOS</a></p></td>
+        <td>
+        <p align="left"><a href="#Inheritance_of_Mapping_">Inheritance of 
+		Mapping</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Android">Android</a></p></td>
+        <td>
+        <p align="left"><a href="#Object_Model_Navigation_">Object Model 
+		Navigation</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#64_Bit_Design_32_Bit_Support">64 Bit Design 32 Bit Support</a></p></td>
+        <td>
+        <p align="left"><a href="#GUI_Objects">GUI Objects</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#XML_in_the_Foundation">XML in the Foundation</a></p></td>
+        <td>
+        <p align="left"><a href="#CORBA_Objects">CORBA Objects</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#The_Solid_Foundation">The Solid Foundation</a></p></td>
+        <td>
+        <p align="left"><a href="#COM_Objects">COM Objects</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#History_and_Future">History and Future</a></p></td>
+        <td>
+        <p align="left"><a href="#Object_Caching_and_Instance_Management_">
+        Instance Management</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">            
+ <a href="#The_Need_for_Objects_from_XML_">The Need for Objects from XML
+        </a></p></td>
+        <td>
+        <p align="left"><a href="#Parsed_and_Unparsed_Object_Data">Parsed and 
+		Unparsed Data</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Best_of_Breed">Best of Breed</a></p></td>
+        <td>
+        <p align="left"><a href="#FiveLoaves_(a.k.a._ServerCore)">FiveLoaves 
+		(a.k.a. ServerCore)</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Dont_Be_Square_">Dont Be Square </a></p></td>
+        <td>
+        <p align="left"><a href="#Messaging">Messaging</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">             
+        <a href="#Learn_to_Think_Outside_the_Box">Learn to Think Outside the Box</a></p></td>
+        <td>
+        <p align="left"><a href="#Mapping_XML_to_Bits_of_a_Byte">Mapping XML to 
+		Bits of a Byte</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">            
+ <a href="#Translating_XML">Translating XML</a></p></td>
+        <td>
+        <p align="left"><a href="#XMLFoundation_for_Java_">XMLFoundation for 
+		Java</a></p></td>
+    </tr>
+    <tr>
+        <td width="454">
+        <p align="left">
+        <a href="#Calling_All_Chiefs">Calling All Chiefs for a Pow Wow</a></td>
+        <td>
+        <p align="left">
+        <a href="#About_the_author(s)_of_XMLFoundation_">About the author(s) of 
+		XMLFoundation</a></td>
+    </tr>
+        <tr>
+        <td width="454">
+ <p align="left">
+ <a href="#The_Sexy_GString">The Sexy GString</a></td>
+        <td>
+        <p align="left">
+        <a href="#GProfile_-_The_App_Registry">GProfile - The App Registry</a></td>
+        </tr>
+        <tr>
+        <td width="454">
+        <p align="left"><a href="#Exceptional_Exception_Handling">Exceptional 
+		Exception Handling</a></td>
+        <td>
+        <p align="left">&nbsp;</td>
+        </tr>
+        <tr>
+        <td width="454">
+        <p align="left">            
+ &nbsp;</p></td>
+        <td>
+        <p align="left">&nbsp;</p></td>
+        </tr>
+    <tr>
+        <td width="454">
+         <p align="left">
+         </td>
+        <td>
+          <p align="left">
+          </td>
+    </tr>
+</tbody></table>
+<p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;"> </p>
+<p style="margin: 0in 0in 8pt;"> </p><hr /><p style="margin: 0in 0in 8pt;"> </p>
+<h2 style="margin: 0in 0in 8pt;"><a name="Registered_to_Quote">You Can Quote Me 
+On That</a></h2>
+<p style="margin: 0in 0in 8pt;">This was the May 2014 Update</p>
 <p style="margin: 0in 0in 8pt;">Software projects can fail for many reasons. In 
 mission critical software projects there is a common objective to avoid 
 design-resource dependencies. If one critical resource is run over by a bus, the 
@@ -113,7 +462,7 @@ of the State. <br />
 -Brian Aberle</p>
 <p align="center" style="margin: 0in 0in 8pt;">The court can take the reformers 
 children and give them to another man and your codefendant. <br />
--Dorn Thorn in the Corn Justice Porn with a Cop in his Pocket</p>
+-Dan Dorn with a Cop in his Pocket waiting for a fire to extinguish</p>
 <p align="center" style="margin: 0in 0in 8pt;">If the reformer continues to 
 evade prison and death long enough that neither prison nor death can stop the 
 vision of reform, then there will be a new order of things. <br />
@@ -141,171 +490,8 @@ at live dot com.</p>
 <br />
 Programming is like sex: It may give some concrete results, but that is not why 
 we do it.<br />
--Richard Feynman<br />
- </p>
-<hr /><p style="margin: 0in 0in 8pt;">
-</p>
-<p style="margin: 0in 0in 8pt;">
-</p>
-<p style="margin: 0in 0in 8pt;">
-</p>
-<p style="margin: 0in 0in 8pt;">
-</p>
-<p style="margin: 0in 0in 8pt;">
-</p>
-<p style="margin: 0in 0in 8pt;">
-</p><p style="margin: 0in 0in 8pt;">
-
-</p>
-<h2>
-                
-<strong>The Index</strong> </h2>
-<table width="94%" border="0" cellspacing="0" cellpadding="0">
-    <tbody><tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#What_is_the_XMLFoundation">What is the XMLFoundation</a></p></td>
-        <td>
-        <p align="left"><a href="#New_World_Order">New World Order</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Analysis_of_Algorithms">Analysis of Algorithms</a></p></td>
-        <td>
-        <p align="left"><a href="#Faster_than_Fast">Faster than Fast</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">              
-        <a href="#Documentation">Documentation</a></p></td>
-        <td>
-        <p align="left"><a href="#Custom_Memory_Management">Memory Management</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Threading">Threading</a></p></td>
-        <td>
-        <p align="left"><a href="#Object_Factorization">Object Factorization</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Windows_Phone">Windows Phone</a></p></td>
-        <td>
-        <p align="left"><a href="#Member_Mapping">Member Mapping</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#iPhone_/_iOS">iPhone / iOS</a></p></td>
-        <td>
-        <p align="left"><a href="#Inheritance_of_Mapping_">Inheritance of 
-		Mapping</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Android">Android</a></p></td>
-        <td>
-        <p align="left"><a href="#Object_Model_Navigation_">Object Model 
-		Navigation</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#64_Bit_Design_32_Bit_Support">64 Bit Design 32 Bit Support</a></p></td>
-        <td>
-        <p align="left"><a href="#GUI_Objects">GUI Objects</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#XML_in_the_Foundation">XML in the Foundation</a></p></td>
-        <td>
-        <p align="left"><a href="#CORBA_Objects">CORBA Objects</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#The_Solid_Foundation">The Solid Foundation</a></p></td>
-        <td>
-        <p align="left"><a href="#COM_Objects">COM Objects</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#History_and_Future">History and Future</a></p></td>
-        <td>
-        <p align="left"><a href="#Object_Caching_and_Instance_Management_">
-        Instance Management</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">            
- <a href="#The_Need_for_Objects_from_XML_">The Need for Objects from XML
-        </a></p></td>
-        <td>
-        <p align="left"><a href="#Parsed_and_Unparsed_Object_Data">Parsed and 
-		Unparsed Data</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Best_of_Breed">Best of Breed</a></p></td>
-        <td>
-        <p align="left"><a href="#FiveLoaves_(a.k.a._ServerCore)">FiveLoaves 
-		(a.k.a. ServerCore)</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Dont_Be_Square_">Dont Be Square </a></p></td>
-        <td>
-        <p align="left"><a href="#Messaging">Messaging</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">             
-        <a href="#Learn_to_Think_Outside_the_Box">Learn to Think Outside the Box</a></p></td>
-        <td>
-        <p align="left"><a href="#Mapping_XML_to_Bits_of_a_Byte">Mapping XML to 
-		Bits of a Byte</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <p align="left">            
- <a href="#Translating_XML">Translating XML</a></p></td>
-        <td>
-        <p align="left"><a href="#XMLFoundation_for_Java_">XMLFoundation for 
-		Java</a></p></td>
-    </tr>
-    <tr>
-        <td width="426">
-        <a href="#Calling_All_Chiefs">Calling All Chiefs for a Pow Wow</a></td>
-        <td>
-        <a href="#About_the_author(s)_of_XMLFoundation_">About the author(s) of 
-		XMLFoundation</a></td>
-    </tr>
-        <tr>
-        <td width="426">
-        <p align="left">            
- <a href="#The_Sexy_GString">The Sexy GString</a></p></td>
-        <td>
-        <p align="left"><a href="#GProfile_-_The_App_Registry">GProfile - The 
-		App Registry</a></p></td>
-        </tr>
-    <tr>
-        <td width="426">
-         </td>
-        <td>
-          </td>
-    </tr>
-</tbody></table>
-<p style="margin: 0in 0in 8pt;"> </p>
-<p style="margin: 0in 0in 8pt;"> </p>
-<p style="margin: 0in 0in 8pt;"> </p><hr /><p style="margin: 0in 0in 8pt;"> </p>
+-Richard Feynman</p>
+<h2>&nbsp;</h2>
 <h2><a name="What_is_the_XMLFoundation">What is the XMLFoundation</a></h2>
 <p style="margin: 0in 0in 8pt;">XMLFoundation is a cross platform application 
 foundation. GString and xmlLex are 1 and yet they can be separated. The G 
@@ -350,12 +536,12 @@ XMLFoundation is <span style="background-color: rgb(255, 255, 0);">the fastest
 XML Parser on earth</span>, it stands as the most viable solution for 
 integration of massive XML data sets - most will be to/from an SQL database - 
 but where BigData meets XML - the XMLFoundation is a solution present. Despite 
-the focus on XMLFoundation support for the equally important mobile platforms 
-(iOS/Android/Windows Phone), XMLFoundation originated from the high performance 
-needs of large data warehousing and is positioned to be the de facto standard 
-for BigData XML just as zlib became the de facto compression. Zlib is officially 
-de facto according to wikipedia - which is often known to be incorrect in 
-certain topics, but I believe it is correct in this case.</p>
+the focus on XMLFoundation support for the equally important mobile platforms (iOS/Android/Windows 
+Phone), XMLFoundation originated from the high performance needs of large data 
+warehousing and is positioned to be the de facto standard for BigData XML just 
+as zlib became the de facto compression. Zlib is officially de facto according 
+to wikipedia - which is often known to be incorrect in certain topics, but I 
+believe it is correct in this case.</p>
 <p style="margin: 0in 0in 8pt;"> </p>
 <p style="margin: 0in 0in 8pt;"> </p><p style="margin: 0in 0in 8pt;"> </p>
 <p style="margin: 0in 0in 8pt;"> </p>
@@ -439,10 +625,11 @@ the bottom of this page, or share/discuss it with me directly ( Roaring
 Checkmate At Live dot com). I ask for this feedback despite the fact that 
 recently there has been more &quot;downvoting&quot; than ever before. The old &quot;5 Star&quot; 
 XMLFoundation has new &quot;1 Star&quot; haters. </p>
-<p style="margin: 0in 0in 8pt;">The very old section in this document titled â€œ<a href="#Faster_than_Fast">Faster 
-than Fast</a>â€, written in 2009, was put together to give some explanation and 
-emphasis to the fact that XMLFoundation is fast.<span>  </span>The XMLFoundation 
-is FASTER in 2014. (as much as <span style="background: yellow;">3 TIMES FASTER</span> 
+<p style="margin: 0in 0in 8pt;">The very old section in this document titled 
+Ã¢â‚¬Å“<a href="#Faster_than_Fast">Faster than Fast</a>Ã¢â‚¬Â, written in 2009, 
+was put together to give some explanation and emphasis to the fact that 
+XMLFoundation is fast.<span>  </span>The XMLFoundation is FASTER in 2014. (as 
+much as <span style="background: yellow;">3 TIMES FASTER</span> 
 at some operations than any 2013 release).<span>  </span>Thank God for numbers, 
 because words can say anything, but numbers divides fact from words. This 2014 
 speed-leap comes from customized memory management.<span>   </span>This is as 
@@ -456,18 +643,18 @@ an experienced approach toward accomplishing this.<span>  </span>In this
 release, I abundantly commented the source code changes and additions to 
 document exactly how this custom memory management is accomplished. <span>  </span>
 The proof is in the numbers exactly how important of an issue memory management 
-is â€“ regardless of your target being on an Android phone or a 64 bit Windows 
-server â€“ the same concept applies to memory management. </p><p>
+is Ã¢â‚¬â€œ regardless of your target being on an Android phone or a 64 bit 
+Windows server Ã¢â‚¬â€œ the same concept applies to memory management. </p><p>
 
-Additionally â€“ as we kick off 2014 with a massive reduction in the reliance of 
-the operating systems memory manager â€“ we raised the roof for 32 bit 
-processing limits that are reached when new() returns NULL.<span>  </span>So, if 
-faster is not what you need â€“ perhaps you will enjoy the higher processing 
-limits that you can now achieve in the same memory limitations that you have 
-always had.<span> 
+Additionally Ã¢â‚¬â€œ as we kick off 2014 with a massive reduction in the 
+reliance of the operating systems memory manager Ã¢â‚¬â€œ we raised the roof for 
+32 bit processing limits that are reached when new() returns NULL.<span>  </span>
+So, if faster is not what you need Ã¢â‚¬â€œ perhaps you will enjoy the higher 
+processing limits that you can now achieve in the same memory limitations that 
+you have always had.<span> 
 </span>FASTER execution and HIGHER limits are both achieved by the same upgrade 
 in this release.<span>  </span>I expect that this raised the roof for 64 bit 
-limits as well â€“ but I have never seen that roof.  </p><p>
+limits as well Ã¢â‚¬â€œ but I have never seen that roof.  </p><p>
 
 The bulk of the memory management documentation is in the code, I will conclude 
 the introduction to the 2014 version with the basic steps that make it all 
@@ -490,10 +677,10 @@ code as above with no temp variable. It is a type cast with pointer arithmetic</
 <h2><a name="Analysis_of_Algorithms">Analysis of Algorithms</a></h2>
 <p>This is what was new December 21st 2013  </p><p>
 MurmurHash was the latest big advancement in Hashing. It was published in Austin 
-Applebyâ€™s personal blog. Google hired him and has taken over Murmurhash, and 
-published a variant of it called CityHash. Strangely, many Google publications 
-failed to recognize SpookyHash - published October 31, Ground Hog Day, and other 
-celebrated days, citing only MurmurHash. 
+ApplebyÃ¢â‚¬â„¢s personal blog. Google hired him and has taken over Murmurhash, 
+and published a variant of it called CityHash. Strangely, many Google 
+publications failed to recognize SpookyHash - published October 31, Ground Hog 
+Day, and other celebrated days, citing only MurmurHash. 
 </p><p>Here are two links to help you quickly catch up on hashing algorithms to 
 get your prerequisites up to date. To cut through all the trending Hash Hype, I 
 recommend this brief overview of hashing.:</p><p>
@@ -506,8 +693,8 @@ The test counts CPU cycles and/or microseconds on both Windows and Linux while
 indexing large datasets for both 32 and 64 bit applications. The source code for 
 this test is included in the example program ExIndexObjects. </p>
 <p>The results are very interesting. GHash is so fast that CityHash slows it 
-down. The GHash is a unique algorithm designed to index XMLObjects â€“ but it 
-can index anything. In summary, GHash is an Array of B-Trees. It handles hash 
+down. The GHash is a unique algorithm designed to index XMLObjects Ã¢â‚¬â€œ but 
+it can index anything. In summary, GHash is an Array of B-Trees. It handles hash 
 collisions so efficiently that it eliminates need for &quot;low collision&quot; hashing 
 algorithms such as CityHash which use far more CPU than a simple Rotating Hash, 
 and further research will determine just how low it can go in the simplification 
@@ -515,19 +702,19 @@ of that step. </p><p>
 CRC-<em>n</em>. is faster than CityHash. For Checksumming, or creating a hash 
 function with a perfect distribution (aka avalanche effect) CRC is a better 
 choice. CityHash and SpookyHash are curious works in math that have only 1 
-possible application â€“ they can destroy data quickly(like the Google Code). If 
-you have a HUGE amount of sensitive data and want to delete it (which will mark 
-the disk sectors â€˜freeâ€™ for the OS to use) and DESTROY it so that it could 
-never be recovered by any disk utility tools. There are many free utilities that 
-accomplish this already, but with these new algorithms the software can 
-accomplish more block corruption in less time. Why does Google Inc invest in and 
-market algorithms with no purpose in any of their active projects? If I was a 
-share-holder I would vote for new management. </p><p>
+possible application Ã¢â‚¬â€œ they can destroy data quickly(like the Google 
+Code). If you have a HUGE amount of sensitive data and want to delete it (which 
+will mark the disk sectors Ã¢â‚¬ËœfreeÃ¢â‚¬â„¢ for the OS to use) and DESTROY it 
+so that it could never be recovered by any disk utility tools. There are many 
+free utilities that accomplish this already, but with these new algorithms the 
+software can accomplish more block corruption in less time. Why does Google Inc 
+invest in and market algorithms with no purpose in any of their active projects? 
+If I was a share-holder I would vote for new management. </p><p>
 
 <code>GHash</code> ought not be confused with a block cruncher. The name <code>
 GHashTableTreeStack</code>
-was too long so itâ€™s called <code>GHash</code>. The long name would be more 
-proper, like Mr. Hash. GHash is one single &quot;Data Structure Algorithm&quot; that 
+was too long so itÃ¢â‚¬â„¢s called <code>GHash</code>. The long name would be 
+more proper, like Mr. Hash. GHash is one single &quot;Data Structure Algorithm&quot; that 
 combines multiple algorithms and data structures (see highlighted) as parts of 
 the whole. GHash uses a Rotating Hash to index a Static Array of Binary Trees. A 
 GBTree is a variant of an automatically balancing AVL Tree that contains an 
@@ -539,8 +726,8 @@ writes) of individual updates that were applied while it was stored in RAM by
 GBTree. The GHash cannot do that, but it uses a
 <code>GBTree</code> that can. The XML data updates and application layer updates 
 primarily use only the primary index. Upon a special kind of commit the 
-fragmented memory structure can be flattened back to itâ€™s initial state into 
-the same order that they came from the disk. Another important algorithmic 
+fragmented memory structure can be flattened back to itÃ¢â‚¬â„¢s initial state 
+into the same order that they came from the disk. Another important algorithmic 
 component of GHash is the unique (aka one of a kind) <code>GHashIterator</code> 
 which allows SIMPLE and non-blocking THREAD-SAFE iteration of this complex data 
 structure via an internal integer index into the Static Array used in 
@@ -551,11 +738,12 @@ method of the Tree structure. A mere typical approach will force a multithreaded
 application to block reads of the structure. GHash is non typical and <strong>
 very</strong> fast.</p>
 <p>Each algorithm has various properties. Building from a Window64 starting 
-point, I re-structured the â€œGoogle Sparse Hashâ€ project source code. I made 
-major structure changes to the code. This may be the answer to a commented 
-question in the source code about an empty bucket. I added struct support for 
-Windows, fully redesigned the build, and provide a 64 bit target for Windows 
-which the â€œSparse Hash Projectâ€ does not. The work is in the file <em>
+point, I re-structured the Ã¢â‚¬Å“Google Sparse HashÃ¢â‚¬Â project source code. 
+I made major structure changes to the code. This may be the answer to a 
+commented question in the source code about an empty bucket. I added struct 
+support for Windows, fully redesigned the build, and provide a 64 bit target for 
+Windows which the Ã¢â‚¬Å“Sparse Hash ProjectÃ¢â‚¬Â does not. The work is in the 
+file <em>
 GSparseHash.h</em>. It will be the file of interest in this release , and 
 admittedly it is still a work in progress. It is a starting point. That one file 
 stands as an exception in the XMLFoundation because it does not yet build under 
@@ -563,11 +751,11 @@ every compiler. It&#39;s MUCH simpler to incorporate into any build as the inlin
 implementation in GSparshHash.h (where the compiler supports) - and I expect 
 only minor changes for GCC to support GSparseHash.h</p><p>Although GHash is not 
 a Distributed Data Structure, it is a far more valuable algorithmic component 
-within a â€œDistributed Data Structureâ€ than CityHash. Just as GHash is made 
-of many algorithmic components so must a structure like BigTable designed and 
-used by Google, which is likely where CityHash is used. BigTable is best defined 
-as a sparse, distributed multi-dimensional sorted map. It is accurately 
-summarized here: <a href="http://www.cs.rutgers.edu/~pxk/417/notes/content/bigtable.html">
+within a Ã¢â‚¬Å“Distributed Data StructureÃ¢â‚¬Â than CityHash. Just as GHash 
+is made of many algorithmic components so must a structure like BigTable 
+designed and used by Google, which is likely where CityHash is used. BigTable is 
+best defined as a sparse, distributed multi-dimensional sorted map. It is 
+accurately summarized here: <a href="http://www.cs.rutgers.edu/~pxk/417/notes/content/bigtable.html">
 http://www.cs.rutgers.edu/~pxk/417/notes/content/bigtable.html</a>.</p>
 <p>Boom. Bust. Readjust. Ashes to Ashes. Dust to Dust. In God we Trust. Watch 
 the Bubble sort Bust. </p>
@@ -1468,19 +1656,19 @@ the XMLFoundation to be a great source code to base a curriculum on. Independent
 authors who want to write about cutting edge technology will find XMLFoundation 
 a worthy subject. The future was written in the past.</p>
 <h2><a name="The_Need_for_Objects_from_XML_">The Need for Objects from XML</a></h2>
-<p>XML is data. â€œObjects from dataâ€ is not a new concept. Programmers have 
-been doing that for years, even before they were called objects. We still need 
-to get data into objects today. The data can be XML or a result set, and the 
-object might be a CDialog, a CORBA Object, a COM object, or your own invention. 
-You still need to get the same thing done. Programmers have been doing this as 
-long as there have been programmers.</p>
+<p>XML is data. Ã¢â‚¬Å“Objects from dataÃ¢â‚¬Â is not a new concept. 
+Programmers have been doing that for years, even before they were called 
+objects. We still need to get data into objects today. The data can be XML or a 
+result set, and the object might be a CDialog, a CORBA Object, a COM object, or 
+your own invention. You still need to get the same thing done. Programmers have 
+been doing this as long as there have been programmers.</p>
 <p>If you apply enough force you can make the cube fit into the round hole. If 
 you apply enough force you can do anything - even police California. The brute 
 force approach is to parse the XML into a DOM tree, and traverse the tree to 
 gather the data required by application/object variables. This approach causes 
-volumes of â€œsimpleâ€ source code to move data from XML into Structured 
-Objects, a poor approach with respect to implementation time and long term 
-maintenance.</p>
+volumes of Ã¢â‚¬Å“simpleÃ¢â‚¬Â source code to move data from XML into 
+Structured Objects, a poor approach with respect to implementation time and long 
+term maintenance.</p>
 <p>Alternatively, the OO approach generalizes this process into reusable 
 functionality that enables objects to serialize to and from XML directly. OO is 
 pronounced ohhh-ohhh - and it is short for Object Oriented (incase you didn&#39;t 
@@ -2973,11 +3161,11 @@ possible.
 HTTP service via your own DLL(or COM object or Perl/Python script). This is how 
 to build a custom dynamic web page from an HTTP server plugin:
 <ol>
-<li>Compile the CStdCall Language Driver   
+<li>Compile the CStdCall Language Driver    
  
  
 
-</li><li>Compile the PluginExample   
+</li><li>Compile the PluginExample    
  
  
 </li><li> Setup the 5Loaves.txt Configuration File like this (but set the 

@@ -4023,20 +4023,20 @@ wchar_t *GString0::Unicode()
     return _pWideStr;
 }
 
-GString0::operator wchar_t * () const
+GString0::operator wchar_t * () 
 {
 
     if (_pWideStr)
 	{
 	    free(_pWideStr);
-		(wchar_t *)_pWideStr = 0;
+		_pWideStr = 0;
 	}
     
     // Covert _str to Unicode
     int len = MultiByteToWideChar(CP_ACP, 0, _str, _len, NULL, 0) ;
 
     int nAllocLen = (sizeof(wchar_t) * len);
-	(wchar_t *)_pWideStr = (wchar_t*)malloc(nAllocLen+2);
+	_pWideStr = (wchar_t*)malloc(nAllocLen+2);
 	memset(_pWideStr,0,nAllocLen+2);
 	
 	MultiByteToWideChar(CP_ACP, 0, _str, _len, _pWideStr, nAllocLen);

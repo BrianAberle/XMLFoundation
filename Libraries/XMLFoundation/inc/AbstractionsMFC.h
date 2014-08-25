@@ -38,9 +38,89 @@
 class CStringAbstraction;
 extern CStringAbstraction gC;
 
+// Older versions of MFC do not implement AtlConvAllocMemory(), ATLPREFAST_SUPPRESS, or ATLPREFAST_UNSUPPRESS
+#if defined(_MSC_VER) && _MSC_VER <= 1200
 
-class CStringAbstraction : public StringAbstraction
+	inline void AtlConvAllocMemory(char ** ppBuff, int nLength,	char * pszFixedBuffer, int nFixedBufferLength)
+	{
+		//if buffer malloced, try to realloc.
+		if (*ppBuff != pszFixedBuffer)
+		{
+			if( nLength > nFixedBufferLength )
+			{
+				delete *ppBuff;
+				*ppBuff = new char[nLength];
+			} 
+			else
+			{
+				delete *ppBuff;
+				*ppBuff=pszFixedBuffer;
+			}
+
+		} else //Buffer is not currently malloced.
+		{
+			if( nLength > nFixedBufferLength )
+			{
+				*ppBuff = new char[nLength];
+			} 
+			else
+			{			
+				*ppBuff=pszFixedBuffer;
+			}
+		}
+	}
+	#define ATLPREFAST_SUPPRESS(x) 0;
+	#define ATLPREFAST_UNSUPPRESS() 0;
+	#define AtlThrowLastWin32() 0;
+
+#endif
+
+class CUnicodeBase
 {
+public:
+	LPSTR m_psz;
+	char m_szBuffer[128];
+
+	// note: this code was largely based on source code from class ATL::CW2AEX
+	const char *UnicodeToAscii(LPCWSTR psz, UINT nConvertCodePage)
+	{
+
+		if (psz == NULL)
+		{
+			m_psz = NULL;
+			return m_psz;
+		}
+		int nLengthW = static_cast<int>(wcslen(psz)) + 1;
+		int nLengthA = nLengthW * 4;
+
+		AtlConvAllocMemory(&m_psz, nLengthA, m_szBuffer, 128);
+
+		BOOL bFailed = (0 == ::WideCharToMultiByte(nConvertCodePage, 0, psz, nLengthW, m_psz, nLengthA, NULL, NULL));
+		if (bFailed)
+		{
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				nLengthA = ::WideCharToMultiByte(nConvertCodePage, 0, psz, nLengthW, NULL, 0, NULL, NULL);
+				ATLPREFAST_SUPPRESS(6102)
+					AtlConvAllocMemory(&m_psz, nLengthA, m_szBuffer, 128);
+				ATLPREFAST_UNSUPPRESS()
+					bFailed = (0 == ::WideCharToMultiByte(nConvertCodePage, 0, psz, nLengthW, m_psz, nLengthA, NULL, NULL));
+			}
+		}
+		if (bFailed)
+		{
+			AtlThrowLastWin32();
+		}
+		return m_psz;
+	}
+
+};
+
+
+
+class CStringAbstraction : public StringAbstraction, private CUnicodeBase
+{
+public:
 	int isEmpty(userString pString)
 	{
 		return ((CString *)pString)->IsEmpty();
@@ -61,7 +141,11 @@ class CStringAbstraction : public StringAbstraction
 	}
 	const char *data(userString pString)
 	{
+#if defined(_UNICODE)
+		return UnicodeToAscii(*((CString *)pString),1252);
+#else
 		return  *((CString *)pString);
+#endif
 	}
 };
 
@@ -187,7 +271,7 @@ public:
 #include <afxcoll.h> // necessary for CStringList definition
 
 
-class CStringListAbstraction : public StringCollectionAbstraction
+class CStringListAbstraction : public StringCollectionAbstraction, private CUnicodeBase
 {
 public:
 	void append(userStringList pList, const char *pString)
@@ -204,7 +288,12 @@ public:
 		{
 			POSITION *pos = new POSITION;
 			*pos = pTypedList->GetHeadPosition();
+
+#if defined(_UNICODE)
+			return UnicodeToAscii(pTypedList->GetNext(*pos), 1252);
+#else
 			pzRetVal = pTypedList->GetNext( *pos );
+#endif
 			*pIterator = pos;
 		}
 		return pzRetVal;
@@ -217,10 +306,15 @@ public:
 		if(pos && *pos == 0)
 		{
 			delete pos;
-			pos = 0;
+			*pos = 0;
 			return 0;
 		}
-		return pTypedList->GetNext( *pos );
+#if defined(_UNICODE)
+		return UnicodeToAscii(pTypedList->GetNext(*pos), 1252);
+#else
+		return pTypedList->GetNext(*pos);
+#endif
+		
 	}
 	__int64 itemCount(userStringList pList)
 	{
@@ -532,7 +626,7 @@ public:
 
 
 
-class CStringArrayAbstraction : public StringCollectionAbstraction
+class CStringArrayAbstraction : public StringCollectionAbstraction, private CUnicodeBase
 {
 public:
 	void append(userStringList pList, const char *pString)
@@ -561,7 +655,12 @@ public:
 
 		if ( pTypedArray->GetSize() > 0)
 		{
+#if defined(_UNICODE)
+			pObject = UnicodeToAscii(pTypedArray->ElementAt(0), 1252);
+#else
 			pObject = (const char *)(pTypedArray->ElementAt(0));
+#endif
+
 			if(pObject)
 			{
 				int *pIter = new int;
@@ -582,7 +681,14 @@ public:
 
 		if (*pIter < pTypedArray->GetSize())
 		{
+			
+#if defined(_UNICODE)
+			pObject = UnicodeToAscii(pTypedArray->ElementAt(*pIter), 1252);
+#else
 			pObject = (const char *)pTypedArray->ElementAt(*pIter);
+#endif
+
+
 			*pIter = *pIter + 1;
 		}
 		else
@@ -611,7 +717,14 @@ public:
 	{
 		CMapStringToPtr *pTyped = (CMapStringToPtr *)kds;
 		void *pRet;
-		pTyped->Lookup(pzKey,pRet);
+
+#if defined(_UNICODE)
+		GString g(pzKey);
+		pTyped->Lookup(g.Unicode(), pRet);
+#else
+		pTyped->Lookup(pzKey,pRet);	
+#endif
+
 		return (XMLObject *)pRet;
 	}
 	void destroy(KeyedDataStructure kds)
@@ -627,7 +740,13 @@ public:
 	void insert(KeyedDataStructure kds, XMLObject *pObj, const char *pzKey)
 	{
 		CMapStringToPtr *pTyped = (CMapStringToPtr *)kds;
+#if defined(_UNICODE)
+		GString g(pzKey);
+		pTyped->SetAt(g, pObj);
+#else
 		pTyped->SetAt(pzKey, pObj);
+#endif
+		
 
 	}
 	XMLObject *getFirst(KeyedDataStructure kds, userHashIterator *pIterator)

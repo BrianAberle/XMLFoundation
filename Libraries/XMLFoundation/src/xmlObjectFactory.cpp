@@ -921,8 +921,7 @@ void XMLObjectFactory::SetObjectOrElementAttributeValue(xml::token **attNameTok,
 	}
 }
 
-void XMLObjectFactory::extractObjects( XMLObject *pRootObject, 
-									   XMLObject *pSecondaryMapHandler /* = 0*/)
+void XMLObjectFactory::extractObjects( XMLObject *pRootObject,  XMLObject *pSecondaryMapHandler /* = 0*/)
 {
 	// position token stream at the first 'ElementStartTag' and get it's value
 	m_pProtocolObject = pSecondaryMapHandler;

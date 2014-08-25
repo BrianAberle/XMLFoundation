@@ -1,10 +1,9 @@
 This file contains recent news and development in XMLFoundation
 
-
-May 9  - Updated the root article, and the disturbing folder
-May 9  - Added GString32 and GString0 into the Windows Phone build
+Aug 25 - Major update for GException, GCallStack and Unicode support also added VS2013 project files
 May 9  - Fixed the linux makefile for the BigData example program (removed windows line feeds /r/n)
 May 9  - Added GString32 and GString0 into the Android build
+May 9  - Updated the root article, and the disturbing folder
 May 9  - return void inplace of an unused return value constant 1 in GProfile - the return was 'reserved' for support that was never needed.
 May 9  - Updated the datatypes in the GProfile - it was built before the 'bool' datatype was supported in all C++ compilers
 Apr 30 - removed SpookeyHash.h/.cpp files from the distribution - they serve no purpose.

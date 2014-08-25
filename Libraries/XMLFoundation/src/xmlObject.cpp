@@ -1439,14 +1439,52 @@ void XMLObject::FromXMLFile(const char *pzFileName, XMLObject *pSecondaryHandler
 	FromXML((const char *)strXMLInput, pSecondaryHandler, pzErrorSubSystem);
 }
 
-void XMLObject::FromXML(const char *pzXML, 
-						XMLObject *pSecondaryHandler /*= 0*/,
-						const char *pzErrorSubSystem /*= 0*/)
+void XMLObject::FromXML(const GString &XML, 	XMLObject *pSecondaryHandler /*= 0*/,	const char *pzErrorSubSystem /*= 0*/)
 {
-	XMLObjectFactory factory ( (const char *)pzXML , pzErrorSubSystem);
+	XMLObjectFactory factory ( (const char *)XML._str , pzErrorSubSystem);
 	factory.extractObjects(this,pSecondaryHandler);
 }
+void XMLObject::FromXML(const char *pzXML, XMLObject *pSecondaryHandler /*= 0*/, const char *pzErrorSubSystem /*= 0*/)
+{
+	XMLObjectFactory factory((const char *)pzXML, pzErrorSubSystem);
+	factory.extractObjects(this, pSecondaryHandler);
+}
+void XMLObject::FromXML(const wchar_t*pzXML, XMLObject *pSecondaryHandler /*= 0*/, const char *pzErrorSubSystem /*= 0*/)
+{
+	GString g;
+	g.FromUnicode(pzXML);
+	XMLObjectFactory factory(g._str, pzErrorSubSystem);
+	factory.extractObjects(this, pSecondaryHandler);
+}
+int XMLObject::FromXMLX(const GString &XML, GString *pErrorDescriptionDestination, XMLObject *pSecondaryHandler)
+{
+	try
+	{
+		XMLObjectFactory factory((const char *)XML._str, 0);
+		factory.extractObjects(this, pSecondaryHandler);
+		return 1;
+	}
+	catch (GException &e)
+	{
+		if (pErrorDescriptionDestination)
+			*pErrorDescriptionDestination << e.GetDescription();
+	}
+	catch (...)
+	{
+		ASSERT(FALSE);
+	}
 
+	// if we got here, it failed and we caught an exception
+	return 0;
+
+}
+
+int XMLObject::FromXMLX(const wchar_t *pzXML, GString *pErrorDescriptionDestination/*=0*/, XMLObject *pSecondaryHandler /*= 0*/)
+{
+	GString g;
+	g.FromUnicode(pzXML);
+	return FromXMLX(g._str, pErrorDescriptionDestination, pSecondaryHandler);
+}
 
 int XMLObject::FromXMLX(const char *pzXML, GString *pErrorDescriptionDestination/*=0*/, XMLObject *pSecondaryHandler /*= 0*/)
 {
@@ -1526,6 +1564,11 @@ bool XMLObject::ToXMLFile(const char *pzPathAndFileName, int nTabs, const char *
 	return (nRet) ? true : false;
 }
 
+const wchar_t *XMLObject::ToXMLUnicode(__int64 nPreAllocSize /*=4096*/, unsigned int nSerializeFlags /*= FULL_SERIALIZE*/)
+{
+	ToXML(nPreAllocSize, nSerializeFlags);
+	return m_pToXMLStorage->Unicode();
+}
 
 const char *XMLObject::ToXML(__int64 nPreAllocSize /*=4096*/, unsigned int nSerializeFlags /*= FULL_SERIALIZE*/)
 {

@@ -532,7 +532,7 @@ int main(int argc, char* argv[])
 	}
 	catch( GException &rErr)
 	{
-		printf(rErr._str);
+		printf(rErr.GetDescription());
 	}
 	
 	if (g_xml)	
@@ -646,8 +646,7 @@ int CreateInputFile(GString &strMiddleWord)
 	}
 	catch(GException &rErr)
 	{
-		printf(rErr._str);
-
+		printf(rErr.GetDescription());
 		rErr.AddErrorDetail("Creating Sample program Input files");
 //		throw rErr;	// This is how Exceptions get thrown all the way from the xmlLex to as far as you want to go.
 	}

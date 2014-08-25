@@ -228,30 +228,59 @@ HCURSOR CXMLDialogDlg::OnQueryDragIcon()
 	return (HCURSOR) m_hIcon;
 }
 
-void CXMLDialogDlg::OnBtnLoadgui() 
+
+void CXMLDialogDlg::ParseRawXML()
 {
-	m_List.DeleteAllItems();
-	UpdateData(TRUE);
 	try
 	{
 		FromXML(m_strRichEditXML);
+	}
+	catch (GException &ex)
+	{
+		// the exception only contains a general parsing error, we can optionally add specific info about the tast that failed
+		ex.AddErrorDetail("Failed to parse raw XML in CXMLDialogDlg");
+		throw ex;
+	}
+}
 
-	// note:UpdateData() does not push the list of 'Orders'[m_lstOrders] into the ListCtrl.  The simplest 
-	// way is to iterate [m_lstOrders] that contains the 'Orders' after the call to FromXML() is complete.
-	// 
-	// This shows you the (more complex?), SAXish like, way that will add 'Order' objects to the GUI as they are 
-	// added to [m_lstOrders] by the Object Factory during the call to FromXML().  This requires adding 
-	// this code to this's constructor:    ModifyObjectBehavior(SUBOBJECT_UPDATE_NOTIFY);
-	// This causes the XMLFoundation to call ObjectMessage(), as each "Order" gets it's data from the XML
-	// This Actually adds data to the GUI DURING THE PARSING PROCESS, as opposed to the 'simplest' way that
-	// will add the data into the CListCtrl AFTER the parsing process.
+void CXMLDialogDlg::OnBtnLoadgui() 
+{
+	m_List.DeleteAllItems();
+
+	// this gets the freehand XML into m_strRichEditXML
+	UpdateData(TRUE); 
+
+	try
+	{
+		ParseRawXML();
+
+		// note:UpdateData() does not push the list of 'Orders'[m_lstOrders] into the ListCtrl.  The simplest 
+		// way is to iterate [m_lstOrders] that contains the 'Orders' after the call to FromXML() is complete.
+		// 
+		// This shows you the (more complex?), SAXish like, way that will add 'Order' objects to the GUI as they are 
+		// added to [m_lstOrders] by the Object Factory during the call to FromXML().  This requires adding 
+		// this code to this's constructor:    ModifyObjectBehavior(SUBOBJECT_UPDATE_NOTIFY);
+		// This causes the XMLFoundation to call ObjectMessage(), as each "Order" gets it's data from the XML
+		// This Actually adds data to the GUI DURING THE PARSING PROCESS, as opposed to the 'simplest' way that
+		// will add the data into the CListCtrl AFTER the parsing process.
 
 	}
 	catch(GException &ex)
 	{
+#ifdef _UNICODE
+		AfxMessageBox(ex.GetDescriptionUnicode());
+		AfxMessageBox(ex.GetStackAsStringUnicode());
+		AfxMessageBox(ex.ToXMLUnicode());
+//		GString g(ex.ToXMLUnicode());
+//		g.ToFile("c:\\XMLFoundation\\XXX64.txt");
+#else
 		AfxMessageBox(ex.GetDescription());
+		AfxMessageBox(ex.GetStackAsString());
+		AfxMessageBox(ex.ToXML());
+//		GString g(ex.ToXML());
+//		g.ToFile("c:\\XMLFoundation\\ XXX.txt");
+#endif
 	}
-
 	UpdateData(FALSE);
 }
 
@@ -299,9 +328,15 @@ void CXMLDialogDlg::LoadLineItems()
 		{
 			MyOrderLineItem *pLI = (MyOrderLineItem *)it++;
 
-			char buf[10];
-			int nItemIndex = m_ListLineItems.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM,
-						  0, itoa(pLI->m_nProductID,buf,10), LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pLI);
+
+// Note: the "g" code, replaced the "buf" code because it also compiles in a Unicode build			
+//			char buf[10];
+			GString g;
+			g << pLI->m_nProductID;
+			int nItemIndex = m_ListLineItems.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM, 0, 
+				// itoa(pLI->m_nProductID,buf,10), 
+				g,
+				LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pLI);
 
 			m_ListLineItems.SetItemText(nItemIndex, 1, pLI->m_strUnitPrice);
 			m_ListLineItems.SetItemText(nItemIndex, 2, pLI->m_strDescription);
@@ -349,8 +384,10 @@ void CXMLDialogDlg::OnChangeLI()
 	{
 		MyOrderLineItem *pLI = (MyOrderLineItem *)m_ListLineItems.GetItemData(itm.iItem);
 		pLI->m_nProductID = m_nProductID;
-		pLI->m_strUnitPrice = m_strPrice;
-		pLI->m_strDescription = m_strDesc;
+		pLI->m_strUnitPrice.Empty();
+		pLI->m_strDescription.Empty();
+		pLI->m_strUnitPrice << m_strPrice;
+		pLI->m_strDescription << m_strDesc;
 		LoadLineItems();
 	}
 
@@ -392,9 +429,13 @@ void CXMLDialogDlg::OnBtnAdd()
 		pSelectedOrder->m_lstLineItems.AddLast(pLI);
 
 		// add it to the GUI
-		char buf[10];
-		int nItemIndex = m_ListLineItems.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM,
-		  0, itoa(pLI->m_nProductID,buf,10), LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pLI);
+//		char buf[10];
+		GString g;
+		g << pLI->m_nProductID;
+
+		int nItemIndex = m_ListLineItems.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM, 0, 
+		//itoa(pLI->m_nProductID,buf,10), 
+		g,LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pLI);
 		m_ListLineItems.SetItemText(nItemIndex, 1, pLI->m_strUnitPrice);
 		m_ListLineItems.SetItemText(nItemIndex, 2, pLI->m_strDescription);
 

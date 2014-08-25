@@ -272,7 +272,8 @@ void ConsoleCommand(char *pzCommand)
 		strServiceCommand.write(&chNull,1); // double null terminate the end
 		strServiceCommand.write(&chNull,1); // double null terminate the end
 
-		HANDLE hFileMapping = OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,"Console_Command");
+		GString g("Console_Command");
+		HANDLE hFileMapping = OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,g);
 		if (hFileMapping == 0)
 		{
 			

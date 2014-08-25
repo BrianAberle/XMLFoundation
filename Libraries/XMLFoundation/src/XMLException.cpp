@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -20,9 +20,11 @@ IMPLEMENT_FACTORY(xmlException, Exception)
 
 void xmlException::MapXMLTagsToMembers()
 {
-	MapMember((XMLObject *)this, "Description");
+	MapMember(&_strExceptionReason, "Description");
 	MapMember((int *)&_error, "ErrorNumber");
 	MapMember((int *)&_subSystem, "SubSystem");
+	MapMember(&_stk, "Frame", "CallStack");
+	MapMember(&_ErrorDetail, "Detail","UserContext");
 }
 
 const char *xmlException::GetDescription()

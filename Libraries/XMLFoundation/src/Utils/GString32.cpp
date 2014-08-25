@@ -3980,7 +3980,7 @@ wchar_t *GString32::Unicode()
     
     // Covert _str to Unicode
     int len = MultiByteToWideChar(CP_ACP, 0, _str, _len+1, NULL, 0) ;
-    (wchar_t *)_pWideStr = (wchar_t*)malloc(sizeof(wchar_t) * len);
+    _pWideStr = (wchar_t*)malloc(sizeof(wchar_t) * len);
 	
     MultiByteToWideChar(CP_ACP, 0, _str, -1, _pWideStr, _len);
 	
@@ -3994,7 +3994,7 @@ GString32::operator wchar_t * () const
     if (_pWideStr)
 	{
 	    free(_pWideStr);
-		(wchar_t *)_pWideStr = 0;
+		(wchar_t *)_pWideStr = 0; // the typecast is necessary to cast off the constness of _pWideStr and violate the const of this method but maintain "const" as far as data is concerned
 	}
     
     // Covert _str to Unicode

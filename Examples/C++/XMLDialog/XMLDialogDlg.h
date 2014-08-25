@@ -17,6 +17,7 @@
 class CXMLDialogDlg : public CDialog, public XMLObject
 {
 	void LoadLineItems() ;
+	void ParseRawXML();
 // Construction
 public:
 	CXMLDialogDlg(CWnd* pParent = NULL);	// standard constructor

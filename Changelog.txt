@@ -220,3 +220,4 @@ May 9  - Fixed the linux makefile for the BigData example program (removed windo
 May 9  - Added GString32 and GString0 into the Android build
 May 9  - return void inplace of an unused return value constant 1 in GProfile - the return was 'reserved' for support that was never needed.
 May 9  - Updated the datatypes in the GProfile - it was built before the 'bool' datatype was supported in all C++ compilers
+Aug 25 - Major update for GException, GCallStack and Unicode support also added VS2013 project files

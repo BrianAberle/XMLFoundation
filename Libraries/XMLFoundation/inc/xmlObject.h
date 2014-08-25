@@ -22,6 +22,8 @@
 
 #include <stdio.h> // for IMPLEMENT_FACTORY macro: sprintf() / atoi()
 
+#pragma warning (disable:4100)	// Unreferenced formal parameter
+
 class StackFrameCheck;
 class XMLRelationshipWrapper;
 class XMLObject;
@@ -480,7 +482,9 @@ public:
 	// If a pSecondaryHandler is supplied it will be queried for storage handlers for any items that are not mapped to this object or one of it's child objects.  XMLProcedureCall is an example pSecondaryHandler.
 	// The optional pzErrorSubSystem will prefix the Exception text if an XMLException is serialized in as XML and re-thrown, as XMLProcedureCall does, and uses this to determine where in a distributed system it was thrown from.
 	// NOTE: Throws GException
-	void FromXML(	 const char *pzXML,			XMLObject *pSecondaryHandler=0,const char *pzErrorSubSystem=0);
+	void FromXML(const GString &XML,XMLObject *pSecondaryHandler=0,const char *pzErrorSubSystem=0);
+	void FromXML(const char *pzXML, XMLObject *pSecondaryHandler = 0, const char *pzErrorSubSystem = 0);
+	void FromXML(const wchar_t *pzXML, XMLObject *pSecondaryHandler = 0, const char *pzErrorSubSystem = 0);
 	// (if you get a MSFT compile error here(2059 and 2238) move the #include <XMLFoundation.h> to your stdafx.h)
 	void FromXMLFile(const char *pzFileName,	XMLObject *pSecondaryHandler=0,const char *pzErrorSubSystem=0);
 	
@@ -489,7 +493,9 @@ public:
 	// returns 1 on success, 0 for failure
 	// if you don't want error details, leave [pErrorDescriptionDestination] NULL
 	// if [pErrorDescriptionDestination] points to a GString, that string will contain the error string
+	int FromXMLX(const GString &XML, GString *pErrorDescriptionDestination = 0, XMLObject *pSecondaryHandler = 0);
 	int FromXMLX(const char *pzXML, GString *pErrorDescriptionDestination = 0, XMLObject *pSecondaryHandler = 0);
+	int FromXMLX(const wchar_t *pzXML, GString *pErrorDescriptionDestination = 0, XMLObject *pSecondaryHandler = 0);
 	int FromXMLFileX(const char *pzFileName, GString *pErrorDescriptionDestination = 0, XMLObject *pSecondaryHandler = 0);
 	// if FromXMLFile() returns 1 on success and 0 for failure
 	// load [pzFileName] into [xmlData], populates 'this' from the source XML that will be in [xmlData].
@@ -509,6 +515,7 @@ public:
 	// [nPreAllocSize] = Pre-estimated result size for [MUCH] better performance on large result sets.
 	void ToXML(GString& xml, int nSerializeFlags = FULL_SERIALIZE);
 	const char * ToXML(__int64 nPreAllocSize = 4096, unsigned int nSerializeFlags = FULL_SERIALIZE);
+	const wchar_t *ToXMLUnicode(__int64 nPreAllocSize = 4096, unsigned int nSerializeFlags = FULL_SERIALIZE);
 	virtual bool ToXML(GString* xml, int nTabs = 0, const char *TagOverride = 0, unsigned int nSerializeFlags = FULL_SERIALIZE, StackFrameCheck *pStack = 0, const char *pzSubsetOfObjectByTagName = 0);
 
 	//             The VIRTUAL ToXML()  ==  Custom Object Serialization

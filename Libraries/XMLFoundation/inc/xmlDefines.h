@@ -11,7 +11,7 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 
-#ifndef __APP_DEFS_H__
+#ifndef __APP_DEFS_H__MA
 #define __APP_DEFS_H__
 
 #define  MAXPATHNAME		256

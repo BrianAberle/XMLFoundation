@@ -31,10 +31,10 @@ public:
 	// see comment in GString.h	
 	char *_str;	   // pointer to string data
 	__int64  _len; // length of string data not counting terminating null
+    wchar_t* _pWideStr; // Unicode working storage, type is (wchar_t *)
 
 protected:
 	__int64  _max; // current memory allocation size of _str
-    unsigned short* _pWideStr; // Unicode working storage, type is (wchar_t *)
 	int _growby;	// size of memory growth chunks.
 	void resize(); // grows _max and moves data from old memory to new larger contiguous memory
 

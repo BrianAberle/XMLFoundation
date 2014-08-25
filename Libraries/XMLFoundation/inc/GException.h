@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -18,10 +18,11 @@
 #include "GStringList.h"
 //#include "GProfile.h"
 
-class GException : public GString
+class GException // : public GString
 {
-
 protected:
+	// note: In August 2014 GException added this member and removed the GString base class that previously held the description
+	GString _strExceptionReason; 
 
 	// 4-byte sub-system, 4-byte error code
 	long		_cause;
@@ -53,13 +54,16 @@ public:
 
 	virtual ~GException();
 	virtual const char *GetDescription();
+	virtual const wchar_t *GetDescriptionUnicode();
 	virtual const GStringList *GetStack();
 	virtual const char *GetStackAsString();
+	const wchar_t *GetStackAsStringUnicode();
 	long  GetCause();
 	long  GetError()  { return _error; }
 	void  SetError(long error) { _error = error; }
 	short GetSystem() { return _subSystem; }
 	const char *ToXML(const char *pzExceptionParent = "TransactResultSet");
+	const wchar_t *ToXMLUnicode(const char *pzExceptionParent = "TransactResultSet");
 };
 
 void SetErrorDescriptions(const char *pzErrData);
@@ -74,7 +78,7 @@ public:
 // Not available on Windows CE or Windows Phone
 #ifndef WINCE
  #ifndef __WINPHONE
-  #if  defined(_DEBUG)&&  defined(_WIN32) // This is only for Windows desktop
+  #if  defined(_DEBUG) && defined(_WIN32) // This is only for Windows desktop 32 and 64 bit
 
     #include <windows.h>
     
@@ -85,13 +89,15 @@ public:
 
 	class GCallStack
 	{
+		static CRITICAL_SECTION _DbgHelpLock;
+		static bool _bLockInit;
 	protected:
 		GString _strStk;
 		GStringList _stk;
 	public:
 		GCallStack(const GCallStack &);
 		GCallStack(HANDLE hThread, CONTEXT& c);
-		~GCallStack();
+		virtual ~GCallStack();
 
 		const char *GetStackAsString();
 		const GStringList *GetStack();

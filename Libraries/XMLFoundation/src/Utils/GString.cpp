@@ -203,7 +203,7 @@ unsigned short Ghtons(unsigned short x)
 	_growby = -1;									\
 	_strIsOnHeap = 0;								\
 	_max = nInitialSize;							\
-	if (nInitialSize == GSTRING_INITIAL_SIZE)						\
+	if (nInitialSize == GSTRING_INITIAL_SIZE)		\
 		_str = _initialbuf;							\
 	else											\
 	{												\
@@ -740,6 +740,25 @@ GString & GString::operator=(__int64 _p)
 		if (_len >= _max)
 			resize();
 		_str[_len] = szBuffer[_len];
+	}
+
+	if (_len >= _max)
+		resize();
+	_str[_len] = 0;
+
+	return *this;
+}
+
+GString & GString::operator=(const wchar_t * _p)
+{
+	_len = 0;
+	while (_p && *_p)
+	{
+		if (_len >= _max)
+			resize();
+		_str[_len] = *_p;
+		_p++;
+		_len++;
 	}
 
 	if (_len >= _max)
@@ -4360,63 +4379,174 @@ bool GString::Compress( )
 }
 
 
-// =============================================== END
 
 
+// note: iconv() is not just for Linux.  The code will likely serve all non-Windows platforms such as IOS, Unix and others that use this interface 
+// over ICU (International Components for Unicode) - opensourced by IBM
 
+#ifdef _LINUX
 
-unsigned short *GString::Unicode()
+// basic iconv() usage example (missing the save/restore of *dst)
+// http ://stackoverflow.com/questions/9608395/how-to-use-iconv-for-utf8-conversion?rq=1
+
+#include <iconv.h>
+#include <errno.h>
+char *convert(const char *from_charset, const char *to_charset, const char *input)
 {
+	size_t inleft, outleft, converted = 0;
+	char *output, *outbuf, *tmp;
+	const char *inbuf;
+	size_t outlen;
+	iconv_t cd;
 
-    if (_pWideStr)
+	if ((cd = iconv_open(to_charset, from_charset)) == (iconv_t)-1)
+		return NULL;
+
+	inleft = strlen(input);
+	inbuf = input;
+
+	// we'll start off allocating an output buffer which is the same size as our input buffer. 
+	outlen = inleft;
+
+	// we allocate 4 bytes more than what we need for nul-termination... 
+	if (!(output = (char *)malloc(outlen + 4))) 
 	{
-	    free(_pWideStr);
-		_pWideStr = 0;
+		iconv_close(cd);
+		return NULL;
 	}
-    
-#ifdef _WIN32
-	// Covert _str to Unicode
-    int len = MultiByteToWideChar(CP_ACP, 0, _str, _len+1, NULL, 0) ;
-    (unsigned short *)_pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * len);
-    MultiByteToWideChar(CP_ACP, 0, _str, -1, (LPWSTR)_pWideStr, len); // note: len = _len + 1;
-#else
-    _pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * _len + 1);
-	for( __int64 i=0; i < _len+1; i++ )
-		_pWideStr[i] = _str[i];
-#endif
-	
-    // it gets cleaned up either on object destruction or the next time this method is called
-    return _pWideStr;
+
+	do 
+	{
+		errno = 0;
+		outbuf = output + converted;
+		outleft = outlen - converted;
+
+		converted = iconv(cd, (char **)&inbuf, &inleft, &outbuf, &outleft);
+		if (converted != (size_t)-1 || errno == EINVAL) 
+		{
+			// EINVAL  An  incomplete  multibyte sequence has been encoun­-tered in the input.  We'll just truncate it and ignore it.
+			break;
+		}
+
+		if (errno != E2BIG) 
+		{
+			// EILSEQ An invalid multibyte sequence has been  encountered in the input.  Bad input.
+			iconv_close(cd);
+			free(output);
+			return NULL;
+		}
+
+		
+		// E2BIG   There is not sufficient room at *outbuf.  We just need to grow our outbuffer and try again.
+		outlen += inleft * 2 + 8;
+
+		if (!(tmp = (char *)realloc(output, outlen + 4))) 
+		{
+			iconv_close(cd);
+			free(output);
+			return NULL;
+		}
+
+		output = tmp;
+		outbuf = output + converted;
+	} while (1);
+
+	// flush the iconv conversion 
+	iconv(cd, NULL, NULL, &outbuf, &outleft);
+	iconv_close(cd);
+
+	// Note: not all charsets can be nul-terminated with a single nul byte. UCS2, for example, needs 2 nul bytes and UCS4
+	// needs 4. I hope that 4 nul bytes is enough to terminate all multibyte charsets? 
+
+	// nul-terminate the string
+	memset(outbuf, 0, 4);
+
+	return output;
 }
 
-/*
-GString::operator unsigned short * ()
+#endif
+
+
+
+void GString::FromUnicode(const wchar_t *wSrc)
+{
+#ifdef _WIN32
+	const wchar_t *s = wSrc;
+	while (*s) s++;
+	int nLen = s - wSrc;
+
+	int nBytes = WideCharToMultiByte(CP_ACP, 0, wSrc, nLen, NULL, NULL, NULL, NULL);
+	SetPreAlloc(nBytes + 1);
+	WideCharToMultiByte(CP_ACP, 0, wSrc, nLen, _str, nBytes, NULL, NULL);
+	SetLength(nBytes);
+#else
+	char *p = convert("ISO-8859-1", "UTF8", (const char *)wSrc);
+	int nLen = strlen(p);
+	SetPreAlloc(nLen+1);
+	memcpy(_str,p,nLen+1);
+	SetLength( nLen );
+#endif
+}
+
+wchar_t *GString::Unicode()
+{
+	if (_pWideStr)
+	{
+		free(_pWideStr);
+		_pWideStr = 0;
+	}
+
+#ifdef _WIN32
+	// Covert _str to Unicode
+	int len = MultiByteToWideChar(CP_ACP, 0, _str, _len + 1, NULL, 0);
+	(wchar_t *)_pWideStr = (wchar_t *)malloc(sizeof(wchar_t) * len);
+	MultiByteToWideChar(CP_ACP, 0, _str, -1, (LPWSTR)_pWideStr, len); // note: len = _len + 1;
+
+#else
+//	_pWideStr = (wchar_t *)malloc(sizeof(wchar_t) * _len + 1);
+//	for (__int64 i = 0; i < _len + 1; i++)
+//		_pWideStr[i] = _str[i];
+
+	return (wchar_t *)convert("UTF8","ISO-8859-1", _str);
+
+#endif
+
+	// it gets cleaned up either on object destruction or the next time this method is called
+	return _pWideStr;
+}
+
+
+#ifdef 	_NATIVE_WCHAR_T_DEFINED 
+
+GString::operator const wchar_t * () const
 {
     if (_pWideStr)
 	{
 	    free(_pWideStr);
-		_pWideStr = 0;
+		(wchar_t *)_pWideStr = 0; // note: the typecast is necessary to cast off the constness of _pWideStr so that is may be assigned a value from within a const method
 	}
     
 #ifdef _WIN32
     // Covert _str to Unicode
     int len = MultiByteToWideChar(CP_ACP, 0, _str, _len, NULL, 0) ;
     int nAllocLen = (sizeof(unsigned short) * len);
-	(unsigned short *)_pWideStr = (unsigned short *)malloc(nAllocLen+2);
+	(wchar_t *)_pWideStr = (wchar_t *)malloc(nAllocLen + 2); // likewise here the typecast on the lvalue is necessary to cast off the constness of _pWideStr and violate the const of this method
 	memset(_pWideStr,0,nAllocLen+2);
 	MultiByteToWideChar(CP_ACP, 0, _str, _len, (LPWSTR)_pWideStr, nAllocLen);
 #else
-   	_pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * _len + 1);
-	for( __int64 i=0; i<_len+1;i++ )
-		_pWideStr[i] = _str[i];
+//   	_pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * _len + 1);
+//	for( __int64 i=0; i<_len+1;i++ )
+//		_pWideStr[i] = _str[i];
+	return (wchar_t *)convert("UTF8", "ISO-8859-1", _str);
+
 #endif
 
 
     // it gets cleaned up either on object destruction or the next time this method is called
     return _pWideStr;
 }
-*/
 
+#endif
 
 
 

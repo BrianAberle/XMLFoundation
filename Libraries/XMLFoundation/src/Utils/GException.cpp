@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2014  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -26,6 +26,15 @@ static char SOURCE_FILE[] = __FILE__;
 static char *g_pzStaticErrMap = 0;
 static GString g_strErrorFile;
 static GString *g_pstrErrorFileContents = 0;
+
+// When building a 32 bit target with VC6 or when building for legacy XP support with new Visual Studio 
+#ifndef _WIN64
+	#define SymLoadModule64			SymLoadModule
+	#define STACKFRAME64			STACKFRAME
+	#define IMAGEHLP_LINE64			IMAGEHLP_LINE
+	#define SymGetSymFromAddr64		SymGetSymFromAddr
+	#define SymGetLineFromAddr64	SymGetLineFromAddr
+#endif
 
 void SetErrorDescriptions(const char *pzErrData)
 {
@@ -121,11 +130,10 @@ void _stack_se_translator(unsigned int e, _EXCEPTION_POINTERS* p)
 {
 	HANDLE hThread;
 
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(),
-		GetCurrentProcess(), &hThread, 0, false, DUPLICATE_SAME_ACCESS );
+	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hThread, 0, false, DUPLICATE_SAME_ACCESS );
 
-	GCallStack stk(hThread, *(p->ContextRecord));
-	
+	GCallStack *stk = new GCallStack(hThread, *(p->ContextRecord));
+
 	CloseHandle( hThread );
 
 	throw stk;
@@ -193,7 +201,13 @@ bool fillModuleListTH32( ModuleList& modules, DWORD pid )
 
 	for ( i = 0; i < lenof( dllname ); ++ i )
 	{
-		hToolhelp = LoadLibrary( dllname[i] );
+#ifdef _UNICODE
+		GString g;
+		g << dllname[i];
+		hToolhelp = LoadLibrary(g); 
+#else
+		hToolhelp = LoadLibrary(dllname[i]);
+#endif
 		if ( hToolhelp == 0 )
 			continue;
 		pCT32S = (tCT32S) GetProcAddress( hToolhelp, "CreateToolhelp32Snapshot" );
@@ -262,8 +276,8 @@ bool fillModuleListPSAPI( ModuleList& modules, DWORD pid, HANDLE hProcess )
 	MODULEINFO mi;
 	HMODULE *hMods = 0;
 	char *tt = 0;
-
-	hPsapi = LoadLibrary( "psapi.dll" );
+	GString g("psapi.dll");
+	hPsapi = LoadLibrary( g );
 	if ( hPsapi == 0 )
 		return false;
 
@@ -347,85 +361,111 @@ void enumAndLoadModuleSymbols( HANDLE hProcess, DWORD pid )
 		mod = new char[(*it).moduleName.size() + 1];
 		strcpy( mod, (*it).moduleName.c_str() );
 
-		SymLoadModule( hProcess, 0, img, mod, (*it).baseAddress, (*it).size );
+		SymLoadModule64( hProcess, 0, img, mod, (*it).baseAddress, (*it).size );
 
 		delete [] img;
 		delete [] mod;
 	}
 }
 
+
+bool GCallStack::_bLockInit = false;
+CRITICAL_SECTION GCallStack::_DbgHelpLock;
+
 GCallStack::GCallStack(HANDLE hThread, CONTEXT& c)
 {
+	if (!_bLockInit) // only init the single instance of the CRITICAL_SECTION 1 time for the many instances of GCallStack
+	{
+		InitializeCriticalSection(&_DbgHelpLock);
+		_bLockInit = true;
+	}
+
 	DWORD imageType = IMAGE_FILE_MACHINE_I386;
-	HANDLE hProcess = GetCurrentProcess();
-
-	int frameNum; // counts walked frames
-
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetCurrentProcessId());
+	int frameNum = 0; // counts walked frames
+	int MAX_STACK_FRAMES = 7777; // in C# the maximum stack frames imposed by the language is 1000.  Arbitrary limit to guarantee no condition of infinate walking in corrupted memory.
+	DWORD offsetFromLine; // tells us line number in the source file
 #if defined(_LINUX64) || defined(_WIN64) || defined(_IOS)
 	unsigned __int64 offsetFromSymbol; // tells us how far from the symbol we were
 #else
 	DWORD offsetFromSymbol; // tells us how far from the symbol we were
 #endif
 
-
-
 	DWORD symOptions; // symbol handler settings
 	IMAGEHLP_SYMBOL *pSym = (IMAGEHLP_SYMBOL *) malloc( IMGSYMLEN + MAXNAMELEN );
-	char undFullName[MAXNAMELEN]; // undecorated name with all shenanigans
+
+	GString strStackName(MAXNAMELEN + 512); // undecorated method/function name + Source file and line number
 
 	IMAGEHLP_MODULE Module;
 	IMAGEHLP_LINE Line;
-	std::string symSearchPath;
-	char *tt = 0, *p;
-
-	STACKFRAME s; // in/out stackframe
+	STACKFRAME64 s; // in/out stackframe
 	memset( &s, '\0', sizeof s );
 
+//  note: converted code from [std::string symSearchPath] to [GString symSearchPath] so it will compile with the _UNICODE build flag - 8/18/2014
+	GString symSearchPath;
+
+#ifdef _UNICODE
+	wchar_t *tt = 0, *p;
+	tt = new wchar_t[TTBUFLEN];
+#else
+	char *tt = 0, *p;
 	tt = new char[TTBUFLEN];
+#endif
 
 	// build symbol search path from:
 	symSearchPath = "";
 	// current directory
-	if ( GetCurrentDirectory( TTBUFLEN, tt ) )
-		symSearchPath += tt + std::string( ";" );
+	if (GetCurrentDirectory(TTBUFLEN, tt))
+		symSearchPath << tt << "; ";
 	// dir with executable
 	if ( GetModuleFileName( 0, tt, TTBUFLEN ) )
 	{
-		for ( p = tt + strlen( tt ) - 1; p >= tt; -- p )
+#ifdef _UNICODE
+		for (p = tt + wcslen(tt) - 1; p >= tt; --p)
+#else
+		for (p = tt + strlen(tt) - 1; p >= tt; --p)	// VC6 does not have a _tcsclen() and we still support VC6
+#endif
 		{
 			// locate the rightmost path separator
 			if ( *p == '\\' || *p == '/' || *p == ':' )
 				break;
 		}
-		// if we found one, p is pointing at it; if not, tt only contains
-		// an exe name (no path), and p points before its first byte
+		// if we found one, p is pointing at it; if not, tt only contains an exe name (no path), and p points before its first byte
 		if ( p != tt ) // path sep found?
 		{
 			if ( *p == ':' ) // we leave colons in place
 				++ p;
 			*p = '\0'; // eliminate the exe name and last path sep
-			symSearchPath += tt + std::string( ";" );
+			symSearchPath << tt << "; "; 
 		}
 	}
 	// environment variable _NT_SYMBOL_PATH
-	if ( GetEnvironmentVariable( "_NT_SYMBOL_PATH", tt, TTBUFLEN ) )
-		symSearchPath += tt + std::string( ";" );
+	GString g("_NT_SYMBOL_PATH");
+	if (GetEnvironmentVariable(g, tt, TTBUFLEN))
+		symSearchPath << tt << "; ";
 	// environment variable _NT_ALTERNATE_SYMBOL_PATH
-	if ( GetEnvironmentVariable( "_NT_ALTERNATE_SYMBOL_PATH", tt, TTBUFLEN ) )
-		symSearchPath += tt + std::string( ";" );
+	g = "_NT_ALTERNATE_SYMBOL_PATH";
+	if (GetEnvironmentVariable(g, tt, TTBUFLEN))
+		symSearchPath << tt << "; ";
 	// environment variable SYSTEMROOT
-	if ( GetEnvironmentVariable( "SYSTEMROOT", tt, TTBUFLEN ) )
-		symSearchPath += tt + std::string( ";" );
+	g = "SYSTEMROOT";
+	if (GetEnvironmentVariable(g, tt, TTBUFLEN))
+		symSearchPath << tt << "; ";
 
 	if ( symSearchPath.size() > 0 ) // if we added anything, we have a trailing semicolon
 		symSearchPath = symSearchPath.substr( 0, symSearchPath.size() - 1 );
 
-	// why oh why does SymInitialize() want a writeable string?
-	strncpy( tt, symSearchPath.c_str(), TTBUFLEN );
-	tt[TTBUFLEN - 1] = '\0'; // if strncpy() overruns, it doesn't add the null terminator
+	// 8/20/2014 note: In older Windows API's SymInitialize()'s 2nd argument was not defined as "const char *", it was only "char *" 
+	// Although "const" was not defined, the API call is "const" in behavior.  In newer versions of the Windows API this has been fixed.
+	// In newer versions - SymInitialize's 2nd argument may resolve to either "const char *" OR "const wchar_t *", and in those builds the
+	// GString has a default conversion to the correct string type, however in the older build configurations, GString does not (and should not)
+	// know how to resolve to a "char *" by default, so in that case the preprocessor directive isolates the code needed to convert to "char *" 
 
-	// init symbol handler stuff (SymInitialize())
-	if ( ! SymInitialize( hProcess, tt, false ) )
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+	if (!SymInitialize(hProcess, symSearchPath.Buf(),	false))	// symSearchPath == (char *)
+#else
+	if (!SymInitialize(hProcess, symSearchPath,			true))  // symSearchPath == (const char *)  --OR--  (const wchar_t *) depending on the _UNICODE preprocessor definition
+#endif
 	{
 		goto tagCleanUp;
 	}
@@ -433,17 +473,37 @@ GCallStack::GCallStack(HANDLE hThread, CONTEXT& c)
 	symOptions = SymGetOptions();
 	symOptions |= SYMOPT_LOAD_LINES;
 	symOptions &= ~SYMOPT_UNDNAME;
-	SymSetOptions( symOptions ); // SymSetOptions()
+	SymSetOptions( symOptions );
 
 	enumAndLoadModuleSymbols( hProcess, GetCurrentProcessId() );
 
-	// init STACKFRAME for first call
-	// Notes: will have to be #ifdef-ed for Alphas; MIPSes are dead anyway,
-#ifndef _WIN64
+	// init STACKFRAME for first call, definitions found in ImageHlp.h
+#ifdef _M_IX86
+	imageType = IMAGE_FILE_MACHINE_I386;
 	s.AddrPC.Offset = c.Eip;
 	s.AddrPC.Mode = AddrModeFlat;
 	s.AddrFrame.Offset = c.Ebp;
 	s.AddrFrame.Mode = AddrModeFlat;
+	s.AddrStack.Offset = c.Esp;
+	s.AddrStack.Mode = AddrModeFlat;
+#elif _M_X64
+	imageType = IMAGE_FILE_MACHINE_AMD64;
+	s.AddrPC.Offset = c.Rip;
+	s.AddrPC.Mode = AddrModeFlat;
+	s.AddrFrame.Offset = c.Rsp;
+	s.AddrFrame.Mode = AddrModeFlat;
+	s.AddrStack.Offset = c.Rsp;
+	s.AddrStack.Mode = AddrModeFlat;
+#elif _M_IA64
+	imageType = IMAGE_FILE_MACHINE_IA64;
+	s.AddrPC.Offset = c.StIIP;
+	s.AddrPC.Mode = AddrModeFlat;
+	s.AddrFrame.Offset = c.IntSp;
+	s.AddrFrame.Mode = AddrModeFlat;
+	s.AddrBStore.Offset = c.RsBSP;
+	s.AddrBStore.Mode = AddrModeFlat;
+	s.AddrStack.Offset = c.IntSp;
+	s.AddrStack.Mode = AddrModeFlat;
 #endif
 
 	memset( pSym, '\0', IMGSYMLEN + MAXNAMELEN );
@@ -458,52 +518,77 @@ GCallStack::GCallStack(HANDLE hThread, CONTEXT& c)
 
 	offsetFromSymbol = 0;
 
-	for ( frameNum = 0; ;)
+	
+	//	DbgHelp is single threaded, so acquire a lock.
+	EnterCriticalSection(&_DbgHelpLock);
+
+	while ( frameNum < MAX_STACK_FRAMES )
 	{
 		// get next stack frame (StackWalk(), SymFunctionTableAccess(), SymGetModuleBase())
 		// if this returns ERROR_INVALID_ADDRESS (487) or ERROR_NOACCESS (998), you can
-		// assume that either you are done, or that the stack is so hosed that the next
-		// deeper frame could not be found.
-		if ( ! StackWalk( imageType, hProcess, hThread, &s, &c, NULL,
-			SymFunctionTableAccess, SymGetModuleBase, NULL ) )
-			break;
+		// assume that either you are done, or that the stack is so hosed that the next deeper frame could not be found.
+#ifdef _WIN64
+		if (!StackWalk64(imageType, hProcess, hThread, &s, &c, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL))
+#else
+		if (!StackWalk(imageType, hProcess, hThread, &s, &c, NULL, SymFunctionTableAccess, SymGetModuleBase, NULL))
+#endif
+			break;  // Maybe it failed, maybe we have finished walking the stack
 
 		if ( s.AddrPC.Offset != 0 )
-		{ // we seem to have a valid PC
-			// show procedure info (SymGetSymFromAddr())
-			if ( ! SymGetSymFromAddr( hProcess, s.AddrPC.Offset, &offsetFromSymbol, pSym ) )
+		{ 
+			// Most likely a valid stack rame
+			
+			// show procedure info 
+			if ( ! SymGetSymFromAddr64( hProcess, s.AddrPC.Offset, &offsetFromSymbol, pSym ) )
 			{
 				break;
 			}
 			else
 			{
-				// UnDecorateSymbolName()
-				UnDecorateSymbolName( pSym->Name, undFullName, MAXNAMELEN, UNDNAME_COMPLETE );
-				if (!frameNum && strstr(undFullName, "Exception"))
-					continue;
-				_stk += undFullName;
-			}
-		} // we seem to have a valid PC
+				// UnDecorateSymbolName() to get the Class::Method or function() name in tyhe callstack
+				strStackName.Empty();
+ 				UnDecorateSymbolName(pSym->Name, strStackName._str, MAXNAMELEN, UNDNAME_COMPLETE);
+				strStackName.SetLength(strlen(strStackName._str));
 
-		// no return address means no deeper stackframe
-		if ( s.AddrReturn.Offset == 0 )
+				// SymGetLineFromAddr() to get the source.cpp and the line number 
+				IMAGEHLP_LINE64 Line;
+				if (SymGetLineFromAddr64(hProcess, s.AddrPC.Offset, &offsetFromLine, &Line) != FALSE)
+				{
+					GString g(Line.FileName);  // Line.FileName conains the "c:\Full\Path\TO\Source.cpp"
+					
+					// Builds string "Foo::Bar[Source.cpp]@777"
+					strStackName << "[" << g.StartingAt(g.ReverseFind("\\") + 1) << "]@" << Line.LineNumber; 
+				}
+
+				// add the GString to the GStringList, do not add frame 0 because it will always be GException::GSeception where we divided by 0
+				if (frameNum > 0)
+					_stk += strStackName;
+			}
+		}
+		else
 		{
-			// avoid misunderstandings in the printf() following the loop
-			SetLastError( 0 );
+			// base reached
+			SetLastError(0);
 			break;
 		}
+
 		++frameNum;
 	}
+	
+	LeaveCriticalSection(&_DbgHelpLock);
+
 
 	// de-init symbol handler etc. (SymCleanup())
 	SymCleanup( hProcess );
 	free( pSym );
 tagCleanUp:;	
 	delete [] tt;
+	CloseHandle(hProcess);
 }
 
 GCallStack::~GCallStack()
 {
+
 }
 
 const GStringList *GCallStack::GetStack()
@@ -534,7 +619,7 @@ GException::GException(int nError, int nSubSystem, const char *pzText, GStringLi
 	_error = nError;
 	_subSystem = nSubSystem;
 	_cause = 0;
-	this->Format("%s",pzText);
+	_strExceptionReason = pzText;
 
 	if (pStack)
 	{
@@ -582,8 +667,7 @@ void GException::AddErrorDetail(const char* szSystem, int error, ...)
 	{
 		_subSystem = e._subSystem;
 		_error = e._error;
-
-		Format("%s", (const char *)e);
+		_strExceptionReason = e._strExceptionReason;
 		return;
 	}
 }
@@ -609,7 +693,7 @@ GException::GException(const char* szSystem, int error, ...)
 		{
 			_subSystem = 0;
 			_error = error;
-			Format("%s", "String resource descriptions not loaded");
+			_strExceptionReason = "String resource descriptions not loaded";
 			return;
 		}
 
@@ -626,33 +710,35 @@ GException::GException(const char* szSystem, int error, ...)
 
 		va_list argList;
 		va_start(argList, error);
-		FormatV((const char *)strKey, argList);
+		_strExceptionReason.FormatV((const char *)strKey, argList);
 		va_end(argList);
 	}
 	catch (GException &e)
 	{
 		_subSystem = e._subSystem;
 		_error = e._error;
-
-		Format("%s", (const char *)e);
+		_strExceptionReason = e._strExceptionReason;
 		return;
 	}
 
-#if defined GCallStack && _WIN32 // record the callstack.
+#if defined ( _WIN32) && defined (_DEBUG) // record the callstack.
 	_se_translator_function	f;
 	f = _set_se_translator(_stack_se_translator);
 	try
 	{
 		int div = 0;
-		#ifdef _MyOwnSlash // breakin the law.
-		int crash = 1\div;
+		#ifdef _MyOwnSlash // breakin the law.  Intentionally dividing by 0 to invoke the exception handler.
+			int crash = 1\div;
 		#else
-		int crash = 1/div;
+			int crash = 1/div;
 		#endif
+		crash++; // so that the local variable is used.
 	}
-	catch (GCallStack &gcs)
+	catch (GCallStack *gcs)// Note: if the library is not built with the /EHa flag == (Enable C++ Exceptions - Yes with Structured Exceptions) THEN this catch is ignored
 	{
-		_stk = *gcs.GetStack();
+		_stk.AppendList( gcs->GetStack() );
+		_set_se_translator(f);
+		delete gcs;
 	}
 	_set_se_translator(f);
 #endif
@@ -662,15 +748,16 @@ GException::GException(const GException &cpy)
 {
 	_subSystem = cpy._subSystem;
 	_error = cpy._error;
-	_ErrorDetail = cpy._ErrorDetail;
-	Format("%s", (const char *)cpy);
+	_ErrorDetail.AppendList( &cpy._ErrorDetail );
+	_stk.AppendList( &cpy._stk);
+	_strExceptionReason = cpy._strExceptionReason;
 }
 
 GException::GException(int error, const char *str)
 {
 	_subSystem = 0;
 	_error = error;
-	Format("%s", str);
+	_strExceptionReason.Format("%s", str);
 }
 
 GException::GException()
@@ -694,43 +781,68 @@ const char *GException::GetDescription()
 			strUserStack += "\n";
 	}
 
-	_ret.Format("[Error %ld:%ld] %s\n%s", (int)_subSystem, (int)_error, (const char *)*this, (const char *)strUserStack);
+	_ret.Format("[Error %ld:%ld] %s\n%s", (int)_subSystem, (int)_error, _strExceptionReason._str, (const char *)strUserStack);
 	return (const char *)_ret; 
 }
-
-
-const char *GException::ToXML(const char *pzExceptionParent/* = "TransactResultSet"*/) 
+const wchar_t *GException::GetDescriptionUnicode()
 {
-	_ret.Empty();
-
 	// Get the user stack into strUserStack
 	GString strUserStack;
 	GStringIterator it(&_ErrorDetail);
 	while (it())
 	{
-		strUserStack += "\t\t<UserStack>";
-		strUserStack.AppendEscapeXMLReserved(it++);
-		strUserStack += "</UserStack>";
+		strUserStack += it++;
 		if (it())
 			strUserStack += "\n";
 	}
 
+	_ret.Format("[Error %ld:%ld] %s\n%s", (int)_subSystem, (int)_error, _strExceptionReason._str, (const char *)strUserStack);
+	return _ret.Unicode();
+}
 
-	GString strDescription = (const char *)*this;
-	strDescription.EscapeXMLReserved();
-	
+const char *GException::ToXML(const char *pzExceptionParent/* = "TransactResultSet"*/)
+{
+	_ret.Empty();
 
-	_ret.Format("<%s>\n\t<Exception>\n\t\t<Description>%s</Description>\n\t\t"
-				"<ErrorNumber>%ld</ErrorNumber>\n\t\t<SubSystem>%d</SubSystem>\n%s\t</Exception></%s>",
-				pzExceptionParent,
-				(const char *)strDescription,
-				(int)_error,
-				(int)_subSystem,
-				(const char *)strUserStack,
-				pzExceptionParent);
+	_ret << "<" << pzExceptionParent << ">\n\t<Exception>\n\t\t<Description>";
+	_ret.AppendEscapeXMLReserved(_strExceptionReason);
+	_ret << "</Description>\n\t\t<ErrorNumber>" << _error << "</ErrorNumber>\n\t\t<SubSystem>" << _subSystem << "</SubSystem>";
 
+	// Add the user stack of ErrorDetail into _ret
+	if (!_ErrorDetail.isEmpty())
+	{
+		GStringIterator it(&_ErrorDetail);
+		_ret << "\n\t\t<UserContext>";
+		while (it())
+		{
+			_ret <<  "\n\t\t\t<Detail>";
+			_ret.AppendEscapeXMLReserved(it++);
+			_ret <<  "</Detail>";
+			if (it())
+				_ret << "\n";
+		}
+		_ret << "\n\t\t</UserContext>";
+	}
 
-	return (const char *)_ret; 
+	// Add the execution call stack into _ret
+	if (!_stk.isEmpty())
+	{
+		GStringIterator it_stk(&_stk);
+		_ret <<  "\n\t\t<CallStack>\n";
+		while (it_stk())
+		{
+			_ret << "\t\t\t<Frame>";
+			_ret.AppendEscapeXMLReserved(it_stk++);
+			_ret <<  "</Frame>";
+			if (it_stk())
+				_ret += "\n";
+		}
+		_ret += "\n\t\t</CallStack>";
+	}
+
+	_ret << "\n\t</Exception>\n</" << pzExceptionParent << ">";
+
+	return (const char *)_ret;
 }
 
 long GException::GetCause()
@@ -753,7 +865,11 @@ const char *GException::GetStackAsString()
 
 	if (_stk.isEmpty())
 	{
-		_ret = "Call stack unavailable.";
+#ifdef _DEBUG
+		_ret = "Call stack unavailable.  Build with /EHa";
+#else
+		_ret = "Call stack unavailable in Release build.";
+#endif
 	}
 	else
 	{
@@ -762,10 +878,23 @@ const char *GException::GetStackAsString()
 		while (it())
 		{
 			if (!_ret.IsEmpty())
-				_ret += "\n";
-			_ret += it++;
+				_ret << "\n";
+			_ret << it++;
 		}
 	}
 
 	return (const char *)_ret;
+}
+
+
+const wchar_t *GException::GetStackAsStringUnicode()
+{
+	GetStackAsString();
+	return _ret.Unicode();
+}
+
+const wchar_t *GException::ToXMLUnicode(const char *pzExceptionParent)
+{
+	ToXML(pzExceptionParent);
+	return _ret.Unicode();
 }

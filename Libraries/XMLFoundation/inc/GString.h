@@ -105,10 +105,10 @@ public:
 	//
 	char *_str;	   // pointer to string data
 	__int64  _len; // length of string data not counting terminating null
+	wchar_t * _pWideStr; // Unicode working storage
 
 protected:
 	__int64  _max; // current memory allocation size of _str
-    unsigned short* _pWideStr; // Unicode working storage, type is (wchar_t *)
 	int _growby;	// size of memory growth chunks.
 	void resize(); // grows _max and moves data from old memory to new larger contiguous memory
 
@@ -336,6 +336,7 @@ public:
 	// returns the length of the string
 	inline __int64 Length() const { return _len; }
 	inline __int64 GetLength() const { return _len; } // for CString interoperability
+	inline __int64 size() const { return _len; } // for std::string interoperability
 
 	// a fast 'truncate' of the string length
 	//
@@ -479,6 +480,9 @@ public:
 	// starting at position nFirst (zero-based). 
 	GString Mid  (__int64 nFirst) const;
 	GString Mid  (__int64 nFirst, __int64 nCnt) const;
+	GString substr(__int64 nFirst, __int64 nCnt) const{return Mid(nFirst, nCnt); }; // for std::string interoperability
+
+
 	// Extracts the last (that is, rightmost) nCount characters from this GString 
 	// object and returns a copy of the extracted substring. If nCount exceeds the
 	// string length, then the entire string is extracted. 
@@ -710,6 +714,7 @@ public:
 	void Dec(const char *pzAmount);
 
 	// assignment operators
+	GString & operator=(const wchar_t *);
 	GString & operator=(char);
 	GString & operator=(unsigned __int64);
 	GString & operator=(__int64);
@@ -834,9 +839,14 @@ public:
 	int operator <= (const char *) const;
 	int operator != (const char *) const;
 
-	// these two methods converrt from [char *] to [wchar_t *]
-//	operator unsigned short * ();  // wchar_t is sometimes defined as unsigned short *, which adds ambiguity and forces us to add type casts.
-	unsigned short *Unicode();
+	// these two methods convert from [char *] to [wchar_t *]
+#ifdef 	_NATIVE_WCHAR_T_DEFINED 
+	operator const wchar_t * () const; 
+#else
+	// wchar_t is sometimes defined as unsigned short *, which adds ambiguity and forces us to add type casts, therefore we cannot have an implicit Unicode conversion in all builds
+#endif
+	wchar_t *Unicode();
+	void FromUnicode(const wchar_t *);
 
 #ifdef _UNICODE
 	GString & operator<<(const wchar_t *);

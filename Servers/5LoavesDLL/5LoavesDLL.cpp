@@ -143,12 +143,20 @@ long pascal ServerStart()
 	{
 		try
 		{
-			char pzName[512];
-			memset(pzName,0,512);
-			GetModuleFileName(NULL,pzName,512);
-
+//			char pzName[512];
+//			memset(pzName,0,512);
+//			GetModuleFileName(NULL,pzName,512);
+#ifdef _UNICODE
+			GString s(512);								
+			GetModuleFileName(0, s.Unicode(), s._len);	
+			s._len = wcslen(s._pWideStr);				
+#else
+			GString s(512);								
+			GetModuleFileName(0, s._str, s._len);		
+			s._len = strlen(s._str);						
+#endif
 			GString strStartupMessage;
-			strStartupMessage << "5Loaves Windows DLL [" << pzName << "]";
+			strStartupMessage << "5Loaves Windows DLL [" << s << "]";
 
 
 			int nRet = server_start(strStartupMessage);

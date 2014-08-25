@@ -6,19 +6,19 @@
 --------------------Configuration: CustomHTTPService - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5313.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFB4A.tmp" with contents
 [
 /nologo /MDd /W3 /GX /Zi /Od /I "../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE" /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/Win32" /I "../../Libraries/XFer/inc" /D "_NO_EXCEPT" /D "__NOTRACE_STACK__" /D "_STATIC_LINK_LIB" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Servers\CustomHTTPService\CustomHTTPServiceConsole.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP5313.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5314.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPFB4A.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPFB4B.tmp" with contents
 [
 ../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE/perl510.lib wsock32.lib netapi32.lib Advapi32.lib user32.lib ../../Libraries/Debug/XMLFoundation.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"libcmtd" /out:"Debug/CustomHTTPService.exe" /libpath:"../../library/buildwin32/debug_mt" /libpath:"../../Servers/CommonSource/JavaNT/" 
 .\Debug\CustomHTTPServiceConsole.obj
 \XMLFoundation\Libraries\Debug\XMLFoundation.lib
 ]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP5314.tmp"
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSPFB4B.tmp"
 <h3>Output Window</h3>
 Compiling...
 CustomHTTPServiceConsole.cpp

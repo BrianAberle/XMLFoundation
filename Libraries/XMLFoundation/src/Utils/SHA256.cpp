@@ -16,13 +16,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #include "GlobalInclude.h"
 #include "SHA256.h"
+#include "GString.h"
+
 #include <stdio.h>
 
 static char SOURCE_FILE[] = __FILE__;
 
 #include <memory.h>
 #include <string.h> // needed for memcpy() definition on Android build
-
 
 #define  LTC_SHA256
 #define  ENDIAN_NEUTRAL
@@ -1030,7 +1031,12 @@ void SHA256Hash(unsigned char *pzData, __int64 nDataLength, unsigned char *pDige
 int SHA256FileHash(const char*pzFileName, unsigned char *pDigestDest, __int64 nBytesToHash/* = 0*/)
 {
 #ifdef WIN32
-	HANDLE hf = CreateFile(pzFileName,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+#ifdef _UNICODE
+	GString g(pzFileName);
+	HANDLE hf = CreateFile(g, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+#else
+	HANDLE hf = CreateFile(pzFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+#endif
 	if (hf == INVALID_HANDLE_VALUE)
 	{
 		return 0;
@@ -1048,7 +1054,12 @@ int SHA256FileHash(const char*pzFileName, unsigned char *pDigestDest, __int64 nB
 	{
 #ifdef WIN32
 		WIN32_FIND_DATA find;
+#ifdef _UNICODE
+		GString g(pzFileName);
+		HANDLE hFound = FindFirstFile(g, &find);
+#else
 		HANDLE hFound = FindFirstFile(pzFileName, &find);
+#endif
 	    nBytesToHash = ((__int64)find.nFileSizeHigh << 32 | find.nFileSizeLow);
 		FindClose(hFound);
 #else

@@ -6,18 +6,18 @@
 --------------------Configuration: LexTest - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP4206.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP13F5.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Examples\C++\LexTest\LexTest.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP4206.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP4207.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP13F5.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP13F6.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/LexTest.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Examples\C++\LexTest\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP4207.tmp" 
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP13F6.tmp" 
 Creating command line "link.exe ../../../libraries/Debug/XmlFoundation.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/LexTest.pdb" /debug /machine:I386 /out:"Debug/LexTest.exe" /pdbtype:sept  ".\Debug\LexTest.obj" ".\Debug\StdAfx.obj" "
 <h3>Output Window</h3>
 Compiling...

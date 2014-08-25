@@ -31,8 +31,12 @@ int DL_FreeLibrary(HMODULE a)
 }
 FARPROC DL_GetProcAddress( HINSTANCE a, const char *b)
 {
-	char buf[1024]; // imposes a 512 byte MAX_PATH
-	return GetProcAddress(a, DLAsciiToUnicode(b, buf));
+//	char buf[1024]; // imposes a 512 byte MAX_PATH
+//	return GetProcAddress(a, DLAsciiToUnicode(b, buf));
+	GString s(b);
+	s << b;
+	return GetProcAddress(a, s);		
+
 }
 
 

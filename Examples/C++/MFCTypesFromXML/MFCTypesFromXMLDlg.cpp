@@ -234,7 +234,13 @@ CMFCTypesFromXMLDlg::CMFCTypesFromXMLDlg(CWnd* pParent /*=NULL*/)
 	m_strXML2 = _T("");
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
-	
+
+	//***********************************This is my test********************************
+	GString gsText(_T("Test"));
+	CString csText(_T("Test"));
+	gsText = (LPCTSTR)csText; //Right here is the compiler error; see below
+	//***********************************This is my test********************************
+
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -386,7 +392,12 @@ void CMFCTypesFromXMLDlg::OnFromXML(const char *pzTestName)
 		return;
 	}
 	long lElapsed = getTimeMS() - lBegin;
-	m_strCompleteMessage.Format("Test[%s] Total Factorization Time:%d milliseconds",pzTestName, lElapsed);
+	m_strCompleteMessage = "Test[";
+	m_strCompleteMessage += pzTestName;
+	m_strCompleteMessage += "] Total Factorization Time : ";
+	char buf[20];
+	m_strCompleteMessage += _itoa(lElapsed,buf,10);
+	m_strCompleteMessage += "milliseconds";
 	EndWaitCursor();
 	
 	// walk the CStringList
@@ -411,18 +422,42 @@ void CMFCTypesFromXMLDlg::OnFromXML(const char *pzTestName)
 	nItems = m_arrDWords.GetSize();
 	for(i=0; i<nItems; i++)
 	{
-		CString s;
-		s.Format("%d",m_arrDWords[i]);
-		m_lstBoxArray.AddString( s );
+		GString g;
+//		s.Format("%d",m_arrDWords[i]);
+		g << m_arrDWords[i];
+		CString s(g._str);
+		m_lstBoxArray.AddString(s);
 	}
 
-	m_strCPtrListCount.Format("%d",(int)m_lstMyObjects.GetCount());
-	m_strArrCount.Format("%d",(int)m_arrMyObjects.GetSize());
-	m_strArr2Count.Format("%d",(int)m_arr2MyObjs.GetSize());
+	GString g;
+	g << m_lstMyObjects.GetCount();
+	m_strCPtrListCount = g.Buf();
+//	m_strCPtrListCount.Format("%d", (int)m_lstMyObjects.GetCount());
+
+	g.Empty();
+	g << m_arrMyObjects.GetSize();
+	m_strArrCount = g.Unicode();
+//	m_strArrCount.Format("%d",(int)m_arrMyObjects.GetSize());
+
+	g.Empty();
+	g << m_arr2MyObjs.GetSize();
+	m_strArr2Count = g._str;
+//	m_strArr2Count.Format("%d", (int)m_arr2MyObjs.GetSize());
 	
-	m_strHashCount.Format("%d",(int)m_htblTinyObjs.GetCount());
-	m_strGListObjCount.Format("%d",(int)m_glstMyObjects.GetCount());
-	m_strMap2Ptr.Format("%d",(int)m_mapStrToPtr.GetCount());
+	g.Empty();
+	g << m_htblTinyObjs.GetCount();
+	m_strHashCount = g._str;
+//	m_strHashCount.Format("%d", (int)m_htblTinyObjs.GetCount());
+
+	g.Empty();
+	g << m_glstMyObjects.GetCount();
+	m_strGListObjCount = g._str;
+//	m_strGListObjCount.Format("%d", (int)m_glstMyObjects.GetCount());
+
+	g.Empty();
+	g << m_mapStrToPtr.GetCount();
+	m_strMap2Ptr = g._str;
+//	m_strMap2Ptr.Format("%d", (int)m_mapStrToPtr.GetCount());
 
 	UpdateData(FALSE);
 }
@@ -437,8 +472,14 @@ void CMFCTypesFromXMLDlg::OnToxml()
 	long lElapsed = getTimeMS() - lBegin;
 
 	// Fast: Push it into the CString
+#ifdef _UNICODE
+	wchar_t *pC = m_strXML2.GetBuffer((int)strXML.Length()+1);
+	memcpy((void *)pC,strXML.Unicode(),sizeof(wchar_t) * strXML.Length()+1);
+#else
 	char *pC = m_strXML2.GetBuffer((int)strXML.Length()+1);
 	memcpy((void *)pC,strXML.Buf(),(int)strXML.Length()+1);
+#endif
+
 	// note:Faster would be to GString::Attach() to a CString::GetBuffer() when CString can be safely preallocated)
 	
 	m_strXML2.ReleaseBuffer((int)strXML.Length());
@@ -447,7 +488,9 @@ void CMFCTypesFromXMLDlg::OnToxml()
 	GString strComma; strComma << strXML.Length();
 	
 
-	m_strCompleteMessage3.Format("%d ms to create %s bytes(%s) of XML",lElapsed,strComma.CommaNumeric(),strAbbrev.AbbreviateNumeric());
+	GString g;
+	g.Format("%d ms to create %s bytes(%s) of XML",lElapsed,strComma.CommaNumeric(),strAbbrev.AbbreviateNumeric());
+	m_strCompleteMessage3 = g._str;
 	UpdateData(FALSE);
 }
 
@@ -579,7 +622,11 @@ void CMFCTypesFromXMLDlg::OnBtnFirstCptr()
 	{
 		CTinyXMLObject *p = (CTinyXMLObject *)m_lstMyObjects.GetNext( pos );
 		if (p)
-			AfxMessageBox(p->ToXML());
+#ifdef _UNICODE
+			AfxMessageBox(p->ToXMLUnicode());
+#else
+			AfxMessageBox(p->ToXML()); 
+#endif
 	}
 }
 
@@ -587,7 +634,11 @@ void CMFCTypesFromXMLDlg::OnBtnLastGlist()
 {
 	CTinyXMLObject *p = (CTinyXMLObject *)m_glstMyObjects.Last();
 	if (p)
-		AfxMessageBox(p->ToXML());
+#ifdef _UNICODE
+		AfxMessageBox(p->ToXMLUnicode());
+#else
+		AfxMessageBox(p->ToXML()); 
+#endif
 
 }
 
@@ -628,15 +679,23 @@ void CMFCTypesFromXMLDlg::OnBtnHashSearch()
 	CTinyXMLObject *p;
 	p = (CTinyXMLObject *)m_htblTinyObjs.Lookup("2890-7772890-777");
 	if (p)
+#ifdef _UNICODE
+		AfxMessageBox(p->ToXMLUnicode());
+#else
 		AfxMessageBox(p->ToXML());
-
+#endif
 }
 void CMFCTypesFromXMLDlg::OnBtnSearchMap() 
 {
 	void *p = 0;
-	m_mapStrToPtr.Lookup("2890-7772890-777",p);
+	GString g("2890-7772890-777");
+	m_mapStrToPtr.Lookup(g,p);
 	if (p)
-		AfxMessageBox(((CTinyXMLObject *)p)->ToXML());
+#ifdef _UNICODE
+		AfxMessageBox(((CTinyXMLObject *)p)->ToXMLUnicode());
+#else
+		AfxMessageBox(((CTinyXMLObject *)p)->ToXML()); 
+#endif
 }
 
 
@@ -685,14 +744,21 @@ int CMFCTypesFromXMLDlg::Load50kObjects(const char *pzType)
 	GXML << "<MFCTypesSample>\r\n\t<CString>50,000 Objects in " << pzType << "</CString>\r\n\t<" << pzType << ">\r\n";
 	if (!GXML.FromFileAppend("50kObjects.txt",0))
 	{
-		AfxMessageBox("50kObjects.txt test input file not found.");
+		GString g("50kObjects.txt test input file not found.");
+		AfxMessageBox(g);
 		return 0;
 	}
 	GXML << "\r\n\t</" << pzType << ">\r\n" << "</MFCTypesSample>";
 
 	// Push it into the CString
+#ifdef _UNICODE
+	wchar_t *pC = m_strXML.GetBuffer((int)GXML.Length() + 1);
+	memcpy((void *)pC, GXML.Unicode(), sizeof(wchar_t) * GXML.Length() + 1);
+#else
 	char *pC = m_strXML.GetBuffer((int)GXML.Length()+1);
 	memcpy((void *)pC,GXML.Buf(),(int)GXML.Length()+1);
+#endif
+
 	m_strXML.ReleaseBuffer((int)GXML.Length());
 	return 1;
 }
@@ -731,15 +797,18 @@ void CMFCTypesFromXMLDlg::OnBtnXml6()
 	void *p = 0;
 	GString strFoundObejcts("Indexed Objects Found:\r\n\r\n");
 
-	m_mapStrToPtr.Lookup("2890-7772890-777",p); 
+	GString g("2890-7772890-777");
+	m_mapStrToPtr.Lookup(g,p); 
 	if (p) strFoundObejcts << ((CTinyXMLObject *)p)->ToXML() << "\r\n";
 
-	m_mapStrToPtr.Lookup("21777-615621777-6156",p); 
+	g = "21777-615621777-6156";
+	m_mapStrToPtr.Lookup(g,p); 
 	if (p) 	strFoundObejcts << ((CTinyXMLObject *)p)->ToXML() << "\r\n";
 
 	long lElapsed = getTimeMS() - lBegin;
+	g.Format("%d milliseconds to search CMapCStringTpPtr 1000 times", lElapsed);
+	m_strCompleteMessage2 = g._str;
 	
-	m_strCompleteMessage2.Format("%d milliseconds to search CMapCStringTpPtr 1000 times",lElapsed);
 	UpdateData(FALSE);
 	
 	OnToxml();
@@ -768,7 +837,10 @@ void CMFCTypesFromXMLDlg::OnBtnXml7()
 		p = (CTinyXMLObject *)m_htblTinyObjs.Lookup("777-31851777-31851"); if (p && i ==0) strFoundObejcts << ((CTinyXMLObject *)p)->ToXML() << "\r\n";
 	}
 	long lElapsed = getTimeMS() - lBegin;
-	m_strCompleteMessage2.Format("%d milliseconds to search GHash 1000 times",lElapsed);
+	GString g;
+	g.Format("%d milliseconds to search GHash 1000 times", lElapsed);
+	m_strCompleteMessage2 = g._str;
+	
 	UpdateData(FALSE);
 
 	OnToxml();
@@ -807,7 +879,10 @@ void CMFCTypesFromXMLDlg::OnBtnDel()
 	CTinyXMLObject *p = (CTinyXMLObject *)m_lstMyObjects.RemoveHead();
 	if (p) p->DecRef(); // same as delete p;
 
-	m_strCPtrListCount.Format("%d",(int)m_lstMyObjects.GetCount());
+	GString g;
+	g.Format("%d", (int)m_lstMyObjects.GetCount());
+	m_strCPtrListCount = g._str;
+	
 	UpdateData(FALSE);
 }
 
@@ -821,7 +896,9 @@ void CMFCTypesFromXMLDlg::OnBtnDel2()
 	}
 	m_arrMyObjects.RemoveAll();
 
-	m_strArrCount.Format("%d",(int)m_arrMyObjects.GetSize());
+	GString g;
+	g.Format("%d", (int)m_arrMyObjects.GetSize());
+	m_strArrCount = g._str;
 	UpdateData(FALSE);
 }
 
@@ -830,8 +907,10 @@ void CMFCTypesFromXMLDlg::OnBtnDel3()
 	CTinyXMLObject *p = (CTinyXMLObject *)m_arr2MyObjs.GetAt(0);
 	m_arr2MyObjs.RemoveAt(0);
 	if (p) p->DecRef(); // same as delete p;
+	GString g;
+	g.Format("%d",(int)m_arr2MyObjs.GetSize());
+	m_strArr2Count = g._str;
 
-	m_strArr2Count.Format("%d",(int)m_arr2MyObjs.GetSize());
 	UpdateData(FALSE);
 }
 
@@ -839,8 +918,10 @@ void CMFCTypesFromXMLDlg::OnBtnDel4()
 {
 	CTinyXMLObject *p = (CTinyXMLObject *)m_glstMyObjects.RemoveFirst();
 	if (p) p->DecRef(); // same as delete p;
+	GString g;
 
-
-	m_strGListObjCount.Format("%d",(int)m_glstMyObjects.GetCount());
+	g.Format("%d", (int)m_glstMyObjects.GetCount());
+	m_strGListObjCount = g._str;
+	
 	UpdateData(FALSE);
 }
