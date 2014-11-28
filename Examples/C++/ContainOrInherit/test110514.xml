@@ -1,0 +1,18 @@
+<Model>
+	<Human>
+		<FingerPrint>m_strFingerPrint_x</FingerPrint>
+		<Gender>m_strGender_x</Gender>
+		<DNA>m_strDNA_x</DNA>
+		<Weight>m_strWeight_x</Weight>
+	</Human>
+	<Life>
+		<DNA>m_strDNA_y</DNA>
+		<Weight>m_strWeight_y</Weight>
+	</Life>
+	<Human>
+		<FingerPrint>m_strFingerPrintz</FingerPrint>
+		<Gender>m_strGender_z</Gender>
+		<DNA>m_strDNA_z</DNA>
+		<Weight>m_strWeightz</Weight>
+	</Human>
+</Model>

@@ -1,0 +1,287 @@
+
+Object Instance name: MyCustomObjectContainer
+{
+	string	OID = 
+	string	UpdateTime = 
+			References = 1	
+	--------------------------------
+	Type  :XMLObject
+	Tag   :ContainerName
+	
+	Object Instance name: ContainerName
+	{
+		Object container type		
+		--------------------------------
+		Type  :List<XMLObject *>
+		Tag   :Thing
+		
+		Contains:3 items
+		Object Instance name: MyCustomObject
+		{
+			string	OID = 
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Color
+			Value :Green
+			State :(Dirty | Valid | Uncached)
+			Kind  :Mapped Attribute
+			--------------------------------
+			Type  :int
+			Tag   :Integer
+			Value :3
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :String
+			Value :A NEW VALUE!!!!
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyCustomObject
+		{
+			string	OID = 
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Color
+			Value :Purple
+			State :(Dirty | Valid | Uncached)
+			Kind  :Mapped Attribute
+			--------------------------------
+			Type  :int
+			Tag   :Integer
+			Value :4
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :String
+			Value :Four
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+		Object Instance name: MyCustomObject
+		{
+			string	OID = 
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :string
+			Tag   :Color
+			Value :
+			State :(Clean | Null | Uncached)
+			Kind  :Mapped Attribute
+			--------------------------------
+			Type  :int
+			Tag   :Integer
+			Value :21
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :String
+			Value :Another In this list too
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+	}
+	--------------------------------
+	Type  :int
+	Tag   :Number
+	Value :707070
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :List<XMLObject *>
+	Tag   :Thing
+	
+	Contains:4 items
+	Object Instance name: MyCustomObject
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :Color
+		Value :Red
+		State :(Dirty | Valid | Uncached)
+		Kind  :Mapped Attribute
+		--------------------------------
+		Type  :int
+		Tag   :Integer
+		Value :1
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :String
+		Value :One
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyCustomObject
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :Color
+		Value :Blue
+		State :(Dirty | Valid | Uncached)
+		Kind  :Mapped Attribute
+		--------------------------------
+		Type  :int
+		Tag   :Integer
+		Value :2
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :String
+		Value :Two
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	Object Instance name: MyCustomObject
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :Color
+		Value :Perl White
+		State :(Clean | Null | Uncached)
+		Kind  :Mapped Attribute
+		--------------------------------
+		Type  :string
+		Tag   :TotallyNew
+		Value :Poetic Code
+		State :(No state tracking)
+		Kind  :Un-mapped attribute
+		--------------------------------
+		Type  :int
+		Tag   :Integer
+		Value :7
+		State :(Clean | Null | Uncached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :String
+		Value :This IS something NEW.
+		State :(Clean | Null | Uncached)
+		Kind  :Element
+	}
+	Object Instance name: MyCustomObject
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :string
+		Tag   :Color
+		Value :
+		State :(Clean | Null | Uncached)
+		Kind  :Mapped Attribute
+		--------------------------------
+		Type  :int
+		Tag   :Integer
+		Value :21
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :String
+		Value :Another NEW list Entry!
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	--------------------------------
+	Type  :XMLObject
+	Tag   :Thing2
+	
+	Object Instance name: AnotherCustomObject
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :int
+		Tag   :Integer2
+		Value :5
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :String2
+		Value :UPDATED This Contained Sub-Object
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	--------------------------------
+	Type  :XMLObject
+	Tag   :Thing3
+	
+	Object Instance name: AnotherCustomObject
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :int
+		Tag   :Integer2
+		Value :6
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+		--------------------------------
+		Type  :string
+		Tag   :String2
+		Value :Map to Thing3
+		State :(Clean | Valid | Cached)
+		Kind  :Element
+	}
+	--------------------------------
+	Type  :string
+	Tag   :Word
+	Value :Updated
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :XMLObject
+	Tag   :WrapperTag
+	
+	Object Instance name: WrapperTag
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		--------------------------------
+		Type  :XMLObject *
+		Tag   :Thing2
+		
+		Object Instance name: AnotherCustomObject
+		{
+			string	OID = 
+			string	UpdateTime = 
+					References = 1			
+			--------------------------------
+			Type  :int
+			Tag   :Integer2
+			Value :5
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+			--------------------------------
+			Type  :string
+			Tag   :String2
+			Value :Point at this
+			State :(Clean | Valid | Cached)
+			Kind  :Element
+		}
+	}
+}

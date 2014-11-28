@@ -8,3 +8,87 @@
 **MESSAGE: ****** End Object State Cache Dump ******
 **MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
 **MESSAGE: -----------------------------------------------
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******
+**WARNING: *** Tag <String2> does not map to Object <MyCustomObject> *************
+**WARNING: *** Tag <NotMapped> does not map to Object <MyCustomObjectContainer> *************
+**MESSAGE: ****** Begin Object Instance Cache Dump ******
+**MESSAGE: ****** End Object Instance Cache Dump ******
+**MESSAGE: ****** Begin Object State Cache Dump ******
+**MESSAGE: ****** End Object State Cache Dump ******
+**MESSAGE: ****** Begin Foreign Object Instance Cache Dump ******
+**MESSAGE: -----------------------------------------------
+
+**MESSAGE: ****** End Foreign Object Instance Cache Dump ******

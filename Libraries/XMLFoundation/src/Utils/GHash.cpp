@@ -23,18 +23,8 @@ static char SOURCE_FILE[] = __FILE__;
 // http://www.burtleburtle.net/bob/hash/doobs.html
 unsigned __int64 GHash::HashKey(const char *key) const
 {
-	// Dec 2013 - Changing to SpookyHash/CityHash will slow down insert and lookup.
-	// It will reduce collisions depending on the variable value of the "const char *key"
-	// I found no test case there the reduction in collisions.
 
-	// circumstances will (very slightly) slow down despite the potential for performance improvement
-	// This is why, by default, SpookyHash is NOT used.
-//	if (m_nCollisionReduction)	
-//		return SpookyHash::Hash32(key, strlen(key), 0);
-
-	// The following VERY simple hash normally(maybe always) produces slightly faster lookups... 
-
-	// 64 bit FNV1 hash
+	// Currently using 64 bit FNV1 hash
     unsigned __int64 nHash = 14695981039346656037;
     while(*key)
 	{
@@ -42,22 +32,20 @@ unsigned __int64 GHash::HashKey(const char *key) const
     }
     return nHash;
 
+// the previous code is unreachable logic intentionally
 
 	// Rotating Hash
-//	unsigned int nHash = 0;
+	// unsigned int nHash = 0;
 	while (*key)
 		nHash = (nHash<<5) + nHash + *key++;// <----------- this hash was used from 1999-2013
 //		nHash = (nHash<<4)^(nHash>>28)^(*key++);// in Dec 2013 this line of code became the hash index
 												// that line of code can be further optimized and changed
-												// to find the best use of the CPU to convert 
-												// an array of bytes into an integer(aka binary).
-	return nHash;								// For the data structure design within GHash that will use 
-												// this integer, collisions are expected and handled efficiently
-												// by fragmenting (into a B-Tree) which was avoided by "disk"
-}												// minded folks(where fragmentation IS bad) while designing their 
-												// indexing scheme, however their underestimation of a reCursive 
-												// in memory(not "disk") de-fragmentation algorithm prevented
-// number of elements							// them from finding the faster solution.  GBTree uses an iterator.
+												// to find the best use of the CPU for a hash key.  Now it uses the FN1 hash.
+	return nHash;								
+}												
+												
+												
+// number of elements							
 __int64  GHash::GetCount() const						
 {
 	return m_nCount;

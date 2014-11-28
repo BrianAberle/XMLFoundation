@@ -59,7 +59,7 @@ class XMLObjectFactoryManager
 	
 	// Now it's other purpose, even more important, is that this design pattern 
 	// eliminates global race conditions. The XMLObjectFactoryManager is basically 
-	// a global list of Fn*'s.  Each new object registers itself with a macro
+	// a global list of function pointers.  Each new object registers itself with a macro
 	// that wrote another global object.  Obviously the list must be constructed 
 	// before the first entry is added.  If they are both "global" there is no 
 	// way to guarantee construction order.  By using the static member in a 

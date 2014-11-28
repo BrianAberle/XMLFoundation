@@ -1,3 +1,4 @@
+
 // --------------------------------------------------------------------------
 //						United Business Technologies
 //			  Copyright (c) 2000 - 2014  All Rights Reserved.
@@ -11,21 +12,26 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 #include "GlobalInclude.h"
-#define __SERVER_CORE
+
+
+// must always be defined for external building to know this file and it's definitions has been included
+#define __SERVER_CORE	
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef __NO_OPENSSL		// prevent the openssl calls and library link requirements by defining __NO_OPENSSL prior to including ServerCore.cpp
+	#define __OPENSSL		// preprocessor directive used by XMLFoundation to expect openssl implementations.  NOTE: in Visual Studio project settings under linker, all settings,  change "Image Has Safe Exception Handlers" to "No (/SAFESEH:NO)" when linking openssl 
+#endif
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "XMLFoundation.h"	// lists, sorts, xmlparser, object factory, cipher, compression, and other app framework tools
 
-// comment out the following line to allow JIT Debugging(just In Time) to be hooked by your debugger
-//#define _XMLF_JIT_
+//#define _XMLF_JIT_    // comment out this line to allow JIT Debugging(just In Time) to be hooked by your debugger
 
 
-#ifdef _WIN32 // Windows 32 bit, 64 bit, Windows Mobile, WinCE, and Windows Phone all define _WIN32
+#ifdef _WIN32 // Windows 32 bit, 64 bit, Windows Mobile, and Windows Phone all define _WIN32
 	#ifdef WINCE
 		#include "WinCERuntimeC.h" // Adds common C Runtime functions to Windows CE.
-		#include <types.h>
-		typedef int socklen_t;
-		#define EBUSY  16
-		#define ETIMEDOUT WSAETIMEDOUT
+		#include <sys/types.h>
 	#elif __WINPHONE
 		#include <time.h>			// for tm struct and time()	
 		#include <Ws2tcpip.h>		
@@ -34,9 +40,9 @@
 	#else // 32 and 64 bit and also older MSC compilers
 		#define socklen_t int
 		#include <time.h>			// for tm struct and time()	
-		#include <io.h>			// for _chmod() in _WIN32
+		#include <io.h>				// for _chmod() in _WIN32
 		#include <process.h>		// for _spawnv()
-		#include <direct.h>		// for mkdir()
+		#include <direct.h>			// for mkdir()
 		#include <errno.h>
 		#if defined(_MSC_VER) && _MSC_VER <= 1200 
 			#ifndef ETIMEDOUT
@@ -45,6 +51,7 @@
 		#endif
 	#endif
 #else // Linux & Solaris & HPUX & AIX & Android & iOS
+	#include <wchar.h>      // for wcslen()
 	#include <arpa/inet.h>	// for inet_addr()
 	#include <netdb.h>		// for gethostbyname()
 	#include <unistd.h>		// for gethostname(), execv()
@@ -65,17 +72,53 @@
 #include <ctype.h>		// for isprint()
 #include <stdlib.h>		// for atol(), strtol(), srand(), rand(), atoi()
 #include <string.h>		// for strcmp(), memcpy(), memset(), strlen(), strpbrk()
-
-#ifndef WINCE
-	#include <sys/stat.h>	// for stat struct, stat(), and file stats flags
-#endif
+#include <sys/stat.h>	// for stat struct, stat(), and file stats flags
  
 #ifdef _AIX
-	#include <sys/select.h>		// for nonblocked IO event select()
+ #include <sys/select.h>		// for nonblocked IO event select()
 #endif
+
 
 #include "IntegrationLanguages.h" // integration to Perl, Python, Java, C++, VB, COM, CORBA, and TransactXML extensions
 GList g_lstActivePlugins;
+
+
+#ifdef __OPENSSL
+	#include <openssl/md4.h>
+	#include <openssl/md5.h>
+	#include <openssl/hmac.h>
+	#include <openssl/des.h>
+	#include <openssl/opensslv.h>
+
+	// you can define NO_PRAGMA_CRYPTO_LINK then add libeay32.lib to the linker input libraries at any path you prefer
+	#ifndef NO_PRAGMA_CRYPTO_LINK
+		#ifdef _WIN32
+			#ifdef _WIN64
+				#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")	
+			#elif __WINPHONE
+				#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib") // the extra .. needs to be there for the WindowsPhone example
+			#else
+				#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+
+				//  openssl uses _iob
+				//	https://social.msdn.microsoft.com/Forums/vstudio/en-US/4a1c9610-fa41-45f6-ad39-c9f6795be6f2/msvcrt-iob-disappeared?forum=vclanguage#page:2
+				//
+				// for Visual Studio newer than VC6
+				#if defined(_MSC_VER) && _MSC_VER > 1200 
+					// unless _NO_IOB__ is defined _iob is added
+					#ifndef _NO_IOB__
+						extern "C" { FILE _iob[3] = { __iob_func()[0], __iob_func()[1], __iob_func()[2] }; }
+					#endif
+				#endif
+			#endif
+		#endif
+	#endif
+#else
+	// __OPENSSL is not defined.
+	#include "md4.h"  // not actually used unless HTTP Proxy Authentication is "Negotiate" and that currently cant happen unless __OPENSSL is defined for the HMAC interfaces
+	#include "md5.h"  // not actually used unless HTTP Proxy Authentication is "Negotiate" and that currently cant happen unless __OPENSSL is defined for the HMAC interfaces
+#endif
+
 
 
 #ifdef ___XFER
@@ -97,7 +140,6 @@ GList g_lstActivePlugins;
 
 #include "SwitchBoard.h"		
 #include "GSocketHelpers.h" // nonblocksend(), nonblockrecvAny(), readableTimeout() writableTimeout() ntoh64(), SOCK_ERR
-
 #include "GPerformanceTimer.h" // only used for getTimeMS() definition
 #include "PluginBuilderLowLevelStatic.h"
 
@@ -146,9 +188,6 @@ GList g_lstActivePlugins;
 #define ATTRIB_UNUSED_BIT16				0x8000
 #endif
 
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Turn off Nagle Algorithm.  This is a major item to note with respect to performance within Internet protocols.  
 // The Nagle Algorithm is all about improving performance of TCP applications via a generalized buffering algorithm.
@@ -156,34 +195,61 @@ GList g_lstActivePlugins;
 // Large is relative to year and device.  Nagle didnt have 2 64k system buffers.  I buffer better than Nagle, 
 // especially considering that all of the protocols I have implemented via ServerCore 'hooks' (designed after ServerCore)
 // use the reserved system buffers within the protocol design.  Nagle generally improves TCP application performance
-// however Nagle can't help this server - it only slows it down and wastes memory.
+// however Nagle can't help this server - it only slows it down and wastes memory.  Search for "Turn off Nagle Algorithm"
 #ifndef TCP_NODELAY 
 	#define TCP_NODELAY 1   
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 // These are 3 Major Logic threads that a connection uses.  Needless to say - they use thread synchronization
 void *clientThread(void *);
 void *ProxyHelperThread(void *);
 void *listenThread(void *);
 
+
 // The FilePoster example uses this, this functioning "switchboard" implementation has changed little since since 2002.
 SwitchBoard			g_SwitchBoard;
 
-// global variables
+// global variables - (not user settings)
 int g_bEnableXferSwitchBoard = 0;
 GString g_strMessagingSwitchPath;
 int g_bEnableMessagingSwitchboard = 0; 
-
 gthread_mutex_t PoolExpansionLock;
 GArray *g_PoolClientThread;
 GArray *g_PoolProxyHelperThread;
-
 int g_ServerIsShuttingDown = 0;
 int g_ThreadPoolSize = 0;
 int g_ProxyPoolSize = 0;
+
+
+
+#define ARRAY_OF_OUTSTANDING_CHALLENGES						32 // 32 is the number of concurrent challenge requests supoported - the number can be any value
+unsigned __int64 g_arrChallenges[ARRAY_OF_OUTSTANDING_CHALLENGES]; 
+gthread_mutex_t g_csMtxChallengeList;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// Build flags - LOGFILE_CACHED_WRITE
+// If you are targeting a phone/tablet/embedded system use a smaller value
+// If you are targeting a Linux/Windows/Unix server use > value
+#ifndef LOGFILE_CACHED_WRITE
+	#define LOGFILE_CACHED_WRITE	128000
+//	#define LOGFILE_CACHED_WRITE	32000
+#endif
+
+#ifndef PRIMARY_POOL_SIZE
+	#define PRIMARY_POOL_SIZE	    250
+#endif
+#ifndef PROXY_POOL_SIZE
+	#define PROXY_POOL_SIZE			250
+	// if you only want the HTTP server and not the HTTP Proxy you can set
+	// #define PROXY_POOL_SIZE			0
+#endif
+
+
 int g_ThreadIDCount = 0;
-int g_TraceTransferSizes = 0;
 int g_TraceIn = 0;
 int g_TraceOut = 0;
 int g_TraceSocketHandles = 0;
@@ -195,6 +261,7 @@ int g_PingListenThread = 0;
 int g_TraceConnection = 0;
 int g_HTTPHeaderTrace = 0;
 int g_TraceHTTPFiles = 0;
+
 int g_TraceThread = 0;
 int g_LogStdOut = 0;
 int g_listenThreadsRunning = 0;
@@ -211,19 +278,44 @@ int g_bDisableLog = 0;
 int g_NoLog = 0;
 int g_nBlockedPortPenalty = 777;
 int g_bUseHTTPKeepAlives = 1;
-unsigned int g_nMaxConnections = 0xFFFFFFFF;
+int g_nMaxConnections = 500; // max connections from a single IP or sub-net connecting to this server
 int g_nTimeLimit = 0;
 int g_LogCache = 1; 
 int g_nKeepAliveTimeout = 300;  // the timeout= in the Keep-Alive of the HTTP header  ("HTTP","KeepAliveTimeOut")
-int g_nMaxKeepAlives = 150;		// the max= in the Keep-Alive of the HTTP header  ("HTTP","KeepAliveMax")
-
+unsigned int g_nMaxKeepAlives = 150;		// the max= in the Keep-Alive of the HTTP header  ("HTTP","KeepAliveMax")
+int g_nServerShutdownWait = 3;
+//////////////////////////////////////////////////////
+// Defaults for the HTTPProxy, implemented as "Protocol 11"
+bool g_bNeedHTTPProxyAuth = 1;
+int g_nHTTPProxyTimeout = 300; 
+GString g_strHTTPProxyAgentName;		 // defaults to "5Loaves"
+bool g_bHTTPProxyEnabled = 1;
+GString g_strHTTPProxyBlocked;
+GString g_strHTTPProxyCacheBlocked;
+GString g_strHTTPProxyNotBlocked;
+bool g_bHTTPProxyRestrictToSubnet = 1;	 // g_pstrHTTPProxyRestrictList will be in effect when true
+GStringList *g_pstrHTTPProxyRestrictList;// LAN subnet prefix, semicolon seperated list. like 192.168;10.10.1  block all but connections from 10.10.1.* and 192.168.*
+bool g_bEnforceNTLMv2Timestamp;			 // A Windows CE device may not have a real-time clock, therefore NTLMv2 from those devices has no timestamp.
+int  g_nAuthTimeoutSeconds = 7200;		 // 7200 seconds is 2 hours.  NTLM authenticates connections for this amount of time.
+bool g_bTraceHTTPProxy = 0;
+bool g_bTraceHTTPProxyReturn = 0;
+bool g_bTraceHTTPProxyBinary = 1;
+bool g_bTraceHTTPProxyFiles = 0;		 // enable to write "atomic" http transaction files, 1 per HTTP transaction kind.
+bool g_bHTTPProxyLogExtra = 1;
+bool g_bBlockGoogleTracking = 1;		 // enable this for better performance or privacy or to help save the earth.  Yahoo and Bing use HBase which uses less electricity than BigTable.  Google should be forced by law to upgrade for the sake of planet earth.  Until then, then helps.
+bool g_bOnly443or80 = 1;				 // by default, this HTTP Proxy only allows port 80 and 443.
+bool g_bBlockHTTPProxyAds = 1;			 // Ads make the Internet difficult to use for new users, so this will help make the Internet a better place that is less confusing to surf.  It birthed in Acedemia and .edu will see it through.  However we know ads are getting smarter - they can be in video and custom websites.
+bool g_bEnableOutboundConnectCache = 0;  // testing  -  an enterprise mid-tier or ISP server WILL want this, a phone or tablet MIGHT want this.
+bool g_bNegotiateBasic = 0;				 // for a more secure server, set to false and only allow more secure options.  Modern browsers like IE, Firefox, and Safari support NTLM. 
+bool g_bNegotiateNTLMv2 = 1;			 // only matters if __OPENSSL is defined, then it enables/disables the NTLM Negotiate forcing Basic Authentication
+//////////////////////////////////////////////////////
+GString g_strHTTPHomeDirectory; 
 GString g_strLogFile;
 GString g_strListeningOnPorts;
 
+GHash g_OutboundConnectCache;
+gthread_mutex_t g_csMtxConnectCache;
 
-// These two variables are only used for thread tuning statistical information
-unsigned int g_ThreadUsageMax = 0;
-//unsigned int g_ThreadUsageCurrent = 0;
 
 // stats for clientthread(), there are [g_ThreadPoolSize] of them
 long g_nClientthreadsInUse = 0;;
@@ -233,8 +325,24 @@ long g_nClientthreadsPeakUse = 0;
 long g_nProxyThreadsInUse = 0;;
 long g_nProxyThreadsPeakUse = 0;
 
-int g_nLockThreadBuffers = 1;
+time_t g_ServerStartTime;
 
+// more statistic counters
+__int64 g_TotalHits = 0;
+__int64 g_Total404s = 0;
+__int64 g_TotalTooBusy = 0;
+__int64 g_PreZipBytes = 0;
+__int64 g_PostZipBytes = 0;
+
+#if defined(_WIN32) && !defined(_WIN64)
+	long g_TotalConnections = 0;
+	long g_ActiveConnections = 0;
+#else
+	volatile __int64 g_TotalConnections = 0;
+	volatile __int64 g_ActiveConnections = 0;
+#endif
+
+int g_nLockThreadBuffers = 1;
 
 #ifndef _WIN32
 char g_chSlash = '/';
@@ -243,31 +351,10 @@ char g_chSlash = '\\';
 #endif
 
 
-
-
 // defined in in GString.cpp, K & R forgot this one
 char * stristr(const char * str1, const char * str2); 
-
-
 static const char *g_pzCoreErrorSection = "ServerCore";
-
 unsigned int g_RandomNumbers[8];
-
-time_t g_ServerStartTime;
-
-// statistic counters
-__int64 g_TotalHits = 0;
-long g_TotalConnections = 0;
-long g_ActiveConnections = 0;
-
-__int64 g_Total404s = 0;
-__int64 g_TotalTooBusy = 0;
-__int64 g_PreZipBytes = 0;
-__int64 g_PostZipBytes = 0;
-
-
-
-
 
 
 typedef void(*CoreInfoLog )(int, GString &);
@@ -277,9 +364,56 @@ void SetServerCoreInfoLog( void (*pfn) (int, GString &) )
 	g_CoreLog = pfn;
 }
 
-GString g_strCachedLog;
-GString g_strPreLog;
 
+// http://pgl.yoyo.org/adservers/serverlist.php?skip[]=101com.com
+const char *g_pAds = "101order.com,123found.com,180hits.de,180searchassistant.com,1x1rank.com,207.net,247media.com,24log.com,24log.de,24pm-affiliation.com,2mdn.net,2o7.net,360yield.com,4affiliate.net,4d5.net,50websads.com,518ad.com,51yes.com,600z.com,777partner.com,777seo.com,77tracking.com,7adpower.com,7bpeople.com,7search.com,99count.com,a-ads.com,a-counter.kiev.ua,a.0day.kiev.ua,a.collective-media.net,a.consumer.net,a.mktw.net,a.sakh.com,a.ucoz.net,a.ucoz.ru,a.wowinterface.com,a.xanga.com,a32.g.a.yimg.com,aaddzz.com,abacho.net,abc-ads.com,abz.com,ac.rnm.ca,accounts.pkr.com,acsseo.com,actionsplash.com,actualdeals.com,ad-flow.com,ad-images.suntimes.com,ad-pay.de,ad-rotator.com,ad-server.gulasidorna.se,ad-serverparc.nl,ad-souk.com,ad-space.net,ad-tech.com,ad-universe.com,ad-up.com,ad.100.tbn.ru,ad.103092804.com,ad.37.com,ad.71i.de,ad.980x.com,ad.a8.net,ad.abcnews.com,ad.abctv.com,ad.about.com,ad.aboutit.de,ad.aboutwebservices.com,ad.abum.com,ad.allstar.cz,ad.altervista.org,ad.amgdgt.com,ad.anuntis.com,"
+"ad.auditude.com,ad.bigpoint.net,ad.bizo.com,ad.bnmla.com,ad.bondage.com,ad.caradisiac.com,ad.centrum.cz,ad.cgi.cz,ad.chip.de,ad.choiceradio.com,ad.clix.pt,ad.cooks.com,ad.crwdcntrl.net,ad.digitallook.com,ad.doctissimo.fr,ad.domainfactory.de,ad.e-kolay.net,ad.eurosport.com,ad.f1cd.ru,ad.foxnetworks.com,ad.freecity.de,ad.gate24.ch,ad.gdmexchange.com,ad.globe7.com,ad.grafika.cz,ad.harmony-central.com,ad.hbv.de,ad.hodomobile.com,ad.httpool.com,ad.hyena.cz,ad.iinfo.cz,ad.ilove.ch,ad.infoseek.com,ad.investopedia.com,ad.ir.ru,ad.jamba.net,ad.jamster.co.uk,ad.jetsoftware.com,ad.keenspace.com,ad.leadbolt.net,ad.liveinternet.ru,ad.lupa.cz,ad.m5prod.net,ad.media-servers.netad.mediastorm.hu,ad.mgd.de,ad.moscowtimes.ru,ad.musicmatch.com,ad.nachtagenten.de,ad.netdialogs.de,ad.nozonedata.com,ad.nttnavi.co.jp,ad.nwt.cz,ad.onad.eu,ad.pandora.tv,ad.pbs.bb.ru,ad.playground.ru,ad.preferances.com,ad.profiwin.de,ad.prv.pl,ad.rambler.ru,ad.reunion.com,ad.scanmedios.com,ad.sensismediasmart.com.au,ad.seznam.cz,ad.simgames.net,"
+"ad.slutload.com,ad.smartclip.net,ad.tbn.ru,ad.technoratimedia.com,ad.thewheelof.com,ad.top50.to,ad.tv2.no,ad.tweakpc.de,ad.twitchguru.com,ad.usatoday.com,ad.virtual-nights.com,ad.watch.impress.co.jp,ad.wavu.hu,ad.way.cz,ad.weatherbug.com,ad.wsod.com,ad.wz.cz,ad.yadro.ru,ad.yourmedia.com,ad.zanox.com,ad0.bigmir.net,ad01.mediacorpsingapore.com,ad1.emediate.dk,ad1.emule-project.org,ad1.kde.cz,ad1.pamedia.com.au,ad2.bb.ru,ad2.doublepimp.com,ad2.iinfo.cz,ad2.ip.ro,ad2.linxcz.cz,ad2.lupa.cz,ad2.pamedia.com.au,ad2flash.com,ad2games.com,ad3.iinfo.cz,ad3.pamedia.com.au,ad4game.com,adaction.de,adadvisor.net,adaos-ads.net,adap.tv,adapt.tv,adbanner.ro,adbard.net,adblade.com,adboost.de.vu,adboost.net,adbooth.net,adbot.com,adbrite.com,adbroker.de,adbunker.com,adbureau.net,adbutler.com,adbutler.de,adbuyer.com,adbuyer3.lycos.com,adcash.com,adcast.deviantart.com,adcell.de,adcenter.mdf.se,adcenter.net,adcentriconline.com,adcept.net,adclick.com,adclient.rottentomatoes.com,adclient.uimserv.net,adclient1.tucows.com,"
+"adcloud.net,adcomplete.com,adconion.com,adcontent.gamespy.com,adcycle.com,add.newmedia.cz,addealing.com,addesktop.com,addfreestats.com,addme.com,adecn.com,ademails.com,adengage.com,adexpose.com,adext.inkclub.com,adf.ly,adfair.se,adfarm.mediaplex.com,adflight.com,adfly.com,adforce.com,adform.com,adgardener.com,adgoto.com,adgridwork.com,adhese.be,adhese.com,adhostcenter.com,adi.mainichi.co.jp,adimage.asiaone.com.sg,adimage.guardian.co.uk,adimages.been.com,adimages.carsoup.com,adimages.go.com,adimages.homestore.com,adimages.sanomawsoy.fi,adimg.cnet.com,adimg.com.com,adimg.uimserv.net,adimg1.chosun.com,adimgs.sapo.pt,adimpact.com,adincl.gopher.com,adinjector.net,adinterax.com,adisfy.com,adition.com,adition.de,adition.net,adjix.com,adjug.com,adjuggler.com,adjuggler.yourdictionary.com,adjustnetwork.com,adk2.com,adland.ru,adlantic.nl,adlegend.com,adlink.de,adlog.com.com,adloox.com,adlooxtracking.com,adm.ad.asap-asp.net,admagnet.net,admailtiser.com,adman.gr,adman.in.gr,adman.otenet.gr,admanagement.ch,"
+"admanager.btopenworld.com,,admanager.carsoup.com,admarketplace.net,admarvel.com,admax.nexage.com,admedia.com,admedia.ro,admeld.com,admeta.com,admex.com,adminde.ivwbox.de,adminder.com,adminshop.com,admob.com,admonitor.com,admotion.com.ar,adnet-media.net,adnet.asahi.com,adnet.biz,adnet.de,adnet.ru,adnet.worldreviewer.com,adnetinteractive.com,adnetwork.net,adnews.maddog2000.de,adocean.pl,adonspot.com,adoperator.com,adorigin.com,adpepper.dk,adpepper.nl,adperium.com,adpick.switchboard.com,adpost.com,adprofile.net,adprojekt.pl,adq.nextag.com,adreactor.com,adremedy.com,adreporting.com,adres.internet.com,adrevolver.com,adriver.ru,adrolays.de,adroll.com,adrotate.de,adrotator.net,adrotator.se,ads-click.com,ads.128b.com,ads.4tube.com,ads.5ci.lt,ads.abovetopsecret.com,ads.aceweb.net,ads.activestate.com,ads.adfox.ru,ads.administrator.de,ads.adshareware.net,ads.adultfriendfinder.com,ads.adultking.com,ads.adultswim.com,ads.advance.net,ads.adverline.com,ads.affiliates.match.com,ads.ak.facebook.com,"
+"ads.ak.facebook.com.edgesuite.net,ads.allvatar.com,ads.alt.com,ads.alwayson-network.com,ads.amdmb.com,ads.amigos.com,ads.anm.co.uk,ads.aol.co.uk,ads.aol.com,ads.apn.co.nz,ads.appsgeyser.com,ads.as4x.tmcs.net,ads.as4x.tmcs.ticketmaster.com,ads.asia1.com.sg,ads.asiafriendfinder.com,ads.ask.com,ads.aspalliance.com,ads.avazu.net,ads.batpmturner.com,ads.beenetworks.net,ads.belointeractive.com,ads.berlinonline.de,ads.betanews.com,ads.betfair.com,ads.betfair.com.au,ads.bigchurch.com,ads.bigfoot.com,ads.billiton.de,ads.bing.com,ads.bittorrent.com,ads.blog.com,ads.bloomberg.com,ads.bluelithium.com,ads.bluemountain.com,ads.bluesq.com,ads.bonniercorp.com,ads.boylesports.com,ads.brabys.com,ads.brain.pk,ads.brazzers.com,ads.bumq.com,ads.businessweek.com,ads.canalblog.com,ads.canoe.ca,ads.carocean.co.uk,ads.casinocity.com,ads.cbc.ca,ads.cc,ads.cc-dt.com,ads.cdfreaks.com,ads.centraliprom.com,ads.cgnetworks.com,ads.channel4.com,ads.cimedia.com,ads.clearchannel.com,ads.cnn.com,ads.co.com,ads.collegclub.com,"
+"ads.com.com,ads.comicbookresources.com,ads.contactmusic.com,,ads.crakmedia.com,ads.creative-serving.com,ads.creativematch.com,ads.cricbuzz.com,ads.cyberfight.ru,ads.cybersales.cz,ads.dada.it,ads.datinggold.com,ads.datingyes.com,ads.dazoot.ro,ads.deltha.hu,ads.dennisnet.co.uk,ads.desmoinesregister.com,ads.detelefoongids.nl,ads.deviantart.com,ads.digital-digest.com,ads.digitalmedianet.com,ads.digitalpoint.com,ads.directionsmag.com,ads.discovery.com,ads.domeus.com,ads.eagletribune.com,ads.easy-forex.com,ads.eatinparis.com,ads.economist.com,ads.edbindex.dk,ads.einmedia.com,ads.electrocelt.com,ads.elitetrader.com,ads.emirates.net.ae,ads.epltalk.com,ads.escalatemedia.com,ads.esmas.com,ads.eu.msn.com,ads.exactdrive.com,ads.exhedra.com,ads.expat-blog.biz,ads.expedia.com,ads.ezboard.com,ads.factorymedia.com,ads.fairfax.com.au,ads.faxo.com,ads.ferianc.com,ads.filmup.com,ads.financialcontent.com,ads.flooble.com,ads.fool.com,ads.footymad.net,ads.forbes.com,ads.forbes.net,ads.forium.de,ads.fortunecity.com,"
+"ads.fotosidan.se,ads.foxkidseurope.net,ads.foxnetworks.com,ads.foxnews.com,ads.freecity.de,ads.freeze.com,ads.friendfinder.com,ads.ft.com,ads.futurenet.com,ads.gamecity.net,ads.gameforgeads.de,ads.gamershell.com,ads.gamespyid.com,ads.gamigo.de,ads.gaming-universe.de,ads.gawker.com,ads.geekswithblogs.net,ads.glispa.com,ads.globeandmail.com,ads.gmodules.com,ads.godlikeproductions.com,ads.good.is,ads.goyk.com,ads.gplusmedia.com,ads.gradfinder.com,ads.grindinggears.com,ads.groundspeak.com,ads.gsm-exchange.com,ads.gsmexchange.com,ads.guardian.co.uk,ads.guardianunlimited.co.uk,ads.guru3d.com,ads.h1351109.stratoserver.net,ads.hardwaresecrets.com,ads.harpers.org,ads.hbv.de,ads.hearstmags.com,ads.heartlight.org,ads.hideyourarms.com,ads.hollywood.com,ads.horsehero.com,ads.horyzon-media.com,ads.iafrica.com,ads.ibest.com.br,ads.ibryte.com,ads.icq.com,ads.iforex.com,ads.ign.com,ads.img.co.za,ads.imgur.com,ads.incgamers.com,ads.indiatimes.com,ads.infi.net,ads.internic.co.il,ads.ipowerweb.com,"
+"ads.isoftmarketing.com,ads.itv.com,ads.iwon.com,ads.jewishfriendfinder.com,ads.jiwire.com,,ads.jobsite.co.uk,ads.jpost.com,ads.jubii.dk,ads.justhungry.com,ads.kaktuz.net,ads.kelbymediagroup.com,ads.kinobox.cz,ads.kinxxx.com,ads.komli.com,ads.kompass.com,ads.krawall.de,ads.lesbianpersonals.com,ads.linuxfoundation.org,ads.linuxjournal.com,ads.linuxsecurity.com,ads.livenation.com,ads.localnow.com,ads.lvz-online.de,ads.mambocommunities.com,ads.mariuana.it,ads.massinfra.nl,ads.mcafee.com,ads.mediaodyssey.com,ads.mediaturf.net,ads.medienhaus.de,ads.mgnetwork.com,ads.mmania.com,ads.moceanads.com,ads.motor-forum.nl,ads.motormedia.nl,ads.movieflix.com,ads.msn.com,ads.multimania.lycos.fr,ads.nationalgeographic.com,ads.ncm.com,ads.netclusive.de,ads.netmechanic.com,ads.networksolutions.com,ads.newdream.net,ads.newgrounds.com,ads.newmedia.cz,ads.newsint.co.uk,ads.newsquest.co.uk,ads.newtention.net,ads.nigella.com,ads.ninemsn.com.au,ads.nj.com,ads.nola.com,ads.nordichardware.com,ads.nordichardware.se,ads.nwsource.com,"
+"ads.nyi.net,ads.nytimes.com,ads.nyx.cz,ads.nzcity.co.nz,ads.o2.pl,ads.oddschecker.com,ads.okcimg.com,ads.ole.com,ads.olivebrandresponse.com,ads.oneplace.com,ads.ookla.com,ads.optusnet.com.au,ads.outpersonals.com,ads.overclockers.at,ads.p161.net,ads.passion.com,ads.pennet.com,ads.penny-arcade.com,ds.pheedo.com,ads.phpclasses.org,ads.pickmeup-ltd.com,ads.pkr.com,ads.planet.nl,ads.pni.com,ads.pof.com,ads.powweb.com,ads.primissima.it,ads.prisacom.com,ads.program3.com,ads.psd2html.com,ads.pushplay.com,ads.quaylemedia.com,ads.quoka.de,ads.rcs.it,ads.realmedia.de,ads.recoletos.es,ads.rediff.com,ads.redlightcenter.com,ads.redtube.com,ads.resoom.de,ads.returnpath.net,ads.rottentomatoes.com,ads.rpgdot.com,ads.s3.sitepoint.com,ads.satyamonline.com,ads.savannahnow.com,ads.scifi.com,ads.seniorfriendfinder.com,ads.sexinyourcity.com,ads.shizmoo.com,ads.shopstyle.com,ads.sift.co.uk,ads.silverdisc.co.uk,ads.skins.be,ads.slim.com,ads.smartclick.com,ads.smartshopping.co.uk,ads.soft32.com,ads.space.com,ads.spoonfeduk.com,"
+"ads.sprotiv.org,ads.sptimes.com,ads.stackoverflow.com,ads.stationplay.com,ads.stratics.com,ads.struq.com,ads.sun.com,ads.supplyframe.com,ads.switchboard.com,ads.t-online.de,ads.tahono.com,ads.techtv.com,ads.techweb.com,ads.telegraph.co.uk,ads.theglobeandmail.com,ads.themovienation.com,ads.thestar.com,ads.thewebfreaks.com,ads.timeout.com,ads.tjwi.info,ads.tmcs.net,ads.top500.org,ads.totallyfreestuff.com,ads.townhall.com,ads.trinitymirror.co.uk,ads.tripod.com,ads.tripod.lycos.co.uk,ads.tripod.lycos.de,ads.tripod.lycos.es,ads.tripod.lycos.it,ads.tripod.lycos.nl,ads.tripod.spray.se,ads.tso.dennisnet.co.uk,ads.tweetmeme.com,ads.uknetguide.co.uk,ads.ultimate-guitar.com,ads.uncrate.com,ads.undertone.com,ads.unixathome.org,ads.uploading.com,ads.usatoday.com,ads.v3.com,ads.verticalresponse.com,ads.vgchartz.com,ads.videosz.com,ads.viewx.co.uk,ads.virtual-nights.com,ads.virtualcountries.com,ads.vnumedia.com,ads.weather.ca,ads.web.aol.com,ads.web.cs.com,ads.web.de,ads.webmasterpoint.org,ads.websiteservices.com,"
+"ads.whi.co.nz,ads.whoishostingthis.com,ads.wiezoekje.nl,ads.wikia.nocookie.net,ads.wineenthusiast.com,ads.wunderground.com,ads.wwe.biz,ads.xhamster.com,ads.xtra.co.nz,ads.y-0.net,ads.yimg.com,ads.yldmgrimg.net,ads.yourfreedvds.com,ads.youtube.com,ads.zdnet.com,ads.ztod.com,ads03.redtube.com,ads1.canoe.ca,ads1.mediacapital.pt,ads1.msn.com,ads1.rne.com,ads1.theglobeandmail.com,ads1.virtual-nights.com,ads10.speedbit.com,ads180.com,ads2.brazzers.com,ads2.clearchannel.com,ads2.collegclub.com,ads2.collegeclub.com,ads2.exhedra.com,ads2.gamecity.net,ads2.jubii.dk,ads2.net-communities.co.uk,ads2.oneplace.com,ads2.rne.com,ads2.virtual-nights.com,ads2.xnet.cz,ads2004.treiberupdate.de,ads3.gamecity.net,ads3.virtual-nights.com,ads4.clearchannel.com,ads4.gamecity.net,ads4.virtual-nights.com,ads4homes.com,ads5.canoe.ca,ads5.virtual-nights.com,ads6.gamecity.net,ads7.gamecity.net,ads8.com,adsatt.abc.starwave.com,Adsatt.ABCNews.starwave.com,adsatt.espn.go.com,adsatt.espn.starwave.com,Adsatt.go.starwave.com,adscale.de,"
+"adscholar.com,adscpm.com,adsdaq.com,adsdk.com,adsend.de,adserv.evo-x.de,adserv.gamezone.de,,adserv.iafrica.com,adserv.qconline.com,adserv.quality-channel.de,adserver-live.yoc.mobi,adserver.3digit.de,adserver.43plc.com,adserver.71i.de,adserver.adultfriendfinder.com,adserver.aidameter.com,adserver.aol.fr,adserver.barrapunto.com,adserver.beggarspromo.com,adserver.betandwin.de,adserver.bing.com,adserver.bizhat.com,adserver.bluewin.ch,adserver.break-even.it,adserver.cams.com,adserver.clashmusic.com,adserver.com,adserver.designertoday.com,adserver.digitoday.com,adserver.dotcommedia.de,adserver.finditquick.com,adserver.flossiemediagroup.com,adserver.freecity.de,adserver.freenet.de,adserver.friendfinder.com,adserver.gb2.motorpresse.de,adserver.gb3.motorpresse.de,adserver.hardsextube.com,adserver.hardwareanalysis.com,adserver.html.it,adserver.ig.com.br,adserver.irishwebmasterforum.com,adserver.itsfogo.com,adserver.janes.com,adserver.kyoceramita-europe.com,adserver.libero.it,adserver.motorpresse.de,"
+"adserver.n9nedegrees.com,adserver.news.com.au,adserver.ngz-network.de,adserver.nydailynews.com,adserver.o2.pl,adserver.oddschecker.com,adserver.pl,adserver.plhb.com,adserver.portalofevil.com,adserver.portugalmail.net,adserver.portugalmail.pt,adserver.quizdingo.com,adserver.realhomesex.net,adserver.sanomawsoy.fi,adserver.sciflicks.com,adserver.sharewareonline.com,adserver.snowball.com,adserver.spankaway.com,adserver.startnow.com,adserver.theonering.net,adserver.twitpic.com,adserver.viagogo.com,adserver.virginmedia.com,adserver.yahoo.com,adserver01.de,adserver1-images.backbeatmedia.com,adserver1.backbeatmedia.com,adserver1.mindshare.de,adserver1.mokono.com,adserver1.ogilvy-interactive.de,adserver1.shareconnector.com,adserver1.w00tmedia.net,adserver2.mindshare.de,adserver2.popdata.de,adserverplus.com,adserversolutions.com,adserveuk.com,adserving.eleven-agency.com,adservinginternational.com,adsfac.eu,adsfac.net,adsfac.us,adshost1.com,adshuffle.com,adside.com,adskape.ru,adsklick.de,adsmarket.com,"
+"adsmart.co.uk,adsmart.com,adsmart.net,adsmusic.com,adsoftware.com,adsoldier.com,adsonar.com,adspace.ro,adspeed.net,,adspirit.de,adsponse.de,adsremote.scrippsnetworks.com,adsrevenue.net,adsrv.deviantart.com,adsrv.iol.co.za,adsstat.com,adstat.4u.pl,adstest.weather.com,adsymptotic.com,adsynergy.com,adsys.townnews.com,adsystem.simplemachines.org,adsystem.tt-forums.net,adtech.de,adtechus.com,adtegrity.net,adthis.com,adtiger.de,adtoll.com,adtology.com,adtology3.com,adtoma.com,adtrade.net,adtrading.de,adtrak.net,adtriplex.com,adult-adv.com,adultadvertising.com,adv-adserver.com,adv-banner.libero.it,adv.cooperhosting.net,adv.freeonline.it,adv.hwupgrade.it,adv.livedoor.com,adv.webmd.com,adv.wp.pl,adv.yo.cz,adv08.edintorni.net,advariant.com,adventory.com,advert.bayarea.com,advert.dyna.ultraweb.hu,advertarium.com.ua,adverticum.com,adverticum.net,adverticus.de,advertise.com,advertiseireland.com,advertisespace.com,advertising.com,advertising.guildlaunch.net,advertisingbanners.com,advertisingbox.com,"
+"advertmarket.com,advertmedia.de,advertpro.sitepoint.com,advertpro.ya.com,adverts.carltononline.com,adverts.digitalspy.co.uk,advertserve.com,advertstream.com,advertwizard.com,advideo.uimserv.net,adview.ppro.de,advisormedia.cz,adviva.com,adviva.net,advnt.com,advprotraffic.com,adwareremovergold.com,adwhirl.com,adwitserver.com,adworldnetwork.com,adworx.at,adworx.be,adworx.nl,adx.allstar.cz,adx.arip.co.th,adx.atnext.com,adx.gainesvillesun.com,adxpansion.com,adxpose.com,adxvalue.com,adyea.com,adzerk.net,adzerk.s3.amazonaws.com,adzones.com,af-ad.co.uk,afbtracking09.com,affbuzzads.com,affili.net,affiliate.1800flowers.com,affiliate.7host.com,affiliate.doubleyourdating.com,affiliate.dtiserv.com,affiliate.gamestop.com,affiliate.kitapyurdu.com,affiliate.mercola.com,affiliate.mogs.com,affiliate.offgamers.com,affiliate.travelnow.com,affiliate.viator.com,affiliatefuel.com,affiliatefuture.com,affiliates.allposters.com,affiliates.babylon.com,affiliates.devilfishpartners.com,affiliates.digitalriver.com,"
+"affiliates.globat.com,affiliates.ige.com,affiliates.internationaljock.com,affiliates.jlist.com,affiliates.quintura.com,affiliates.streamray.com,,affiliates.thinkhost.net,affiliates.thrixxx.com,affiliates.ultrahosting.com,affiliatetracking.com,affiliatetracking.net,affiliatewindow.com,affiliation-france.com,ah-ha.com,aidu-ads.de,aim4media.com,aistat.net,ajouter.net,alclick.com,alenty.com,alexa-sitestats.s3.amazonaws.com,all4spy.com,alladvantage.com,allosponsor.com,amazingcounters.com,amung.us,an.tacoda.net,anahtars.com,analytics.live.com,analytics.yahoo.com,anm.intelli-direct.com,annonser.dagbladet.no,apdsrv.com,apex-ad.com,api.intensifier.de,apture.com,arc1.msn.com,arcadebanners.com,ard.xxxblackbook.com,as.webmd.com,as1.advfn.com,as2.advfn.com,as5000.com,assets.loomia.com,assets1.exgfnetwork.com,assoc-amazon.com,at-adserver.alltop.com,atdmt.com,athena-ads.wikia.com,atopsites.com,atwola.com,auctionads.com,auctionads.net,audience2media.com,audit.median.hu,audit.webinform.hu,auto-bannertausch.de,"
+"autohits.dk,avenuea.com,avpa.javalobby.org,avres.net,avsads.com,awempire.com,awin1.com,aylarl.com,azfront.com,b-1st.com,ba.afl.rakuten.co.jp,babs.tv2.dk,backbeatmedia.com,banik.redigy.cz,banner-exchange-24.de,banner.ad.nu,banner.alphacool.de,banner.ambercoastcasino.com,banner.blogranking.net,banner.buempliz-online.ch,banner.casino.net,banner.casinodelrio.com,banner.cotedazurpalace.com,banner.coza.com,banner.cz,banner.easyspace.com,banner.elisa.net,banner.eurogrand.com,banner.featuredusers.com,banner.getgo.de,banner.goldenpalace.com,banner.img.co.za,banner.inyourpocket.com,banner.jobsahead.com,banner.joylandcasino.com,banner.kiev.ua,banner.linux.se,banner.media-system.de,banner.mindshare.de,banner.nixnet.czbanner.noblepoker.com,banner.northsky.com,banner.orb.net,banner.penguin.cz,banner.prestigecasino.com,banner.rbc.ru,banner.relcom.ru,banner.supereva.it,banner.tanto.de,banner.titan-dsl.de,banner.vadian.net,banner.webmersion.com,banner.wirenode.com,bannerads.de,bannerads.zwire.com,bannerbank.ru,"
+"mbannerboxes.com,bannercommunity.de,bannerconnect.com,bannerconnect.net,bannerexchange.cjb.net,bannergrabber.internet.gr,bannerhost.com,bannerimage.com,,bannerlandia.com.ar,bannermall.com,bannermarkt.nl,bannerpower.com,banners.adultfriendfinder.com,banners.amigos.com,banners.apnuk.com,banners.asiafriendfinder.com,banners.audioholics.com,banners.babylon-x.com,banners.bol.com.br,banners.cams.com,banners.clubseventeen.com,banners.czi.cz,banners.dine.com,banners.direction-x.com,banners.directnic.com,banners.easydns.com,banners.ebay.com,banners.expressindia.com,banners.freett.com,banners.friendfinder.com,banners.getiton.com,banners.iq.pl,banners.isoftmarketing.com,banners.lifeserv.com,banners.linkbuddies.com,banners.passion.com,banners.resultonline.com,banners.sexsearch.com,banners.sugeridos.com,banners.sys-con.com,banners.thomsonlocal.com,banners.videosz.com,banners.virtuagirlhd.com,banners.wunderground.com,bannerserver.com,bannersgomlm.com,bannershotlink.perfectgonzo.com,bannersng.yell.com,"
+"bannerspace.com,bannerswap.com,bannertesting.com,bannery.cz,bannieres.acces-contenu.com,bans.adserver.co.il,bans.bride.ru,barnesandnoble.bfast.com,baypops.com,bbelements.com,bbn.img.com.ua,begun.ru,belstat.com,belstat.nl,berp.com,best-pr.info,best-top.ro,bestsearch.net,bidbuddy.com,bidclix.com,bidclix.net,bidvertiser.com,bigads.guj.de,bigbangmedia.com,bigclicks.com,billboard.cz,bitads.net,bizad.nikkeibp.co.jp,bizban.net,bizrate.com,blast4traffic.com,blingbucks.com,blogads.com,blogcounter.de,blogherads.com,blogrush.com,blogtoplist.se,blogtopsites.com,blueadvertise.com,bluehornet.com,bluekai.com,bluelithium.com,bluewhaleweb.com,bm.annonce.cz,bn.bfast.com,boersego-ads.de,boldchat.com,boom.ro,boost-my-pr.de,box.anchorfree.net,bpath.com,braincash.com,brandreachsys.com,bravenet.com,bridgetrack.com,british-banners.com,bs.yandex.ru,budsinc.com,bullseye.backbeatmedia.com,buyhitscheap.com,buysellads.com,bvalphaserver.com,bwp.download.com,c.bigmir.net,c.compete.com,c1.nowlinux.com,campaign.bharatmatrimony.com,"
+"canadatop.com,caniamedia.com,carbonads.com,carbonads.net,casalemedia.com,casalmedia.com,cash4banner.de,cash4members.com,cash4popup.de,cashcrate.com,cashengines.com,cashfiesta.com,cashlayer.com,cashpartner.com,casinogames.com,casinopays.com,casinorewards.com,casinotraffic.com,casinotreasure.com,cbanners.virtuagirlhd.com,cben1.net,cbmall.com,cbx.net,cecash.com,ceskydomov.alias.ngs.modry.cz,cetrk.com,cgicounter.puretec.de,ch.questionmarket.com,channelintelligence.com,chart.dk,chartbeat.com,chartbeat.net,checkm8.com,checkstat.nl,chestionar.ro,chitika.net,ciaoclick.com,cibleclick.com,cityads.telus.net,cj.com,cjbmanagement.com,cjlog.com,claria.com,class-act-clicks.com,click-fr.com,click.absoluteagency.com,click.fool.com,click.kmindex.ru,click2freemoney.com,click2paid.com,clickability.com,clickadz.com,clickagents.com,clickbank.com,clickbank.net,clickbooth.com,clickboothlnk.com,clickbrokers.com,clickchatsold.com,clickcompare.co.uk,clickdensity.com,clickedyclick.com,clickforwebmasters.com,"
+"clickhereforcellphones.com,clickhouse.com,clickhype.com,clicklink.jp,clickmedia.ro,clickosmedia.com,clicks.equantum.com,clicks.mods.de,clicks.stripsaver.com,clickserve.cc-dt.com,clicksor.com,clicktag.de,clickthrucash.com,clickthruserver.com,clickthrutraffic.com,clicktorrent.info,clicktrace.info,clicktrack.ziyu.net,clicktracks.com,clicktrade.com,clickxchange.com,clickz.com,clicmanager.fr,clictrafic.com,clients.tbo.com,clixgalore.com,clkads.com,cluster.adultworld.com,clustrmaps.com,cmpstar.com,cnomy.com,cnt.one.ru,cnt.spbland.ru,cnt1.pocitadlo.cz,code-server.biz,colonize.com,comclick.com,commindo-media-ressourcen.de,commissionmonster.com,compactbanner.com,comprabanner.it,connextra.com,contaxe.de,content.ad,contextweb.com,conversionruler.com,cookies.cmpnet.com,coremetrics.com,count.rbc.ru,count.rin.ru,count.west263.com,count6.rbc.ru,counted.com,counter.avtoindex.com,counter.bloke.com,counter.cgiworld.net,counter.cnw.cz,counter.cz,counter.dreamhost.com,counter.fateback.com,counter.mirohost.net,"
+"counter.mojgorod.ru,counter.nowlinux.com,counter.rambler.ru,counter.search.bg,counter.sparklit.com,counter.times.lv,counter.yadro.ru,counters.honesty.com,counting.kmindex.ru,counts.tucows.com,coupling-media.de,cpalead.com,cpays.com,cpmstar.com,cpxadroit.com,cpxinteractive.com,cqcounter.com,crakmedia.com,craktraffic.com,crawlability.com,crazypopups.com,creafi-online-media.com,creative.ak.facebook.com,creative.whi.co.nz,creatives.as4x.tmcs.net,creatives.livejasmin.com,crispads.com,criteo.com,crowdgravity.com,crtv.mate1.com,crwdcntrl.net,ctnetwork.hu,cubics.com,customad.cnn.com,cyberbounty.com,cybermonitor.com,d1.openx.org,danban.com,dapper.net,datashreddergold.com,dbbsrv.com,dc-storm.com,de17a.com,dealdotcom.com,debtbusterloans.com,decknetwork.net,default-homepage-network.com,deloo.de,demandbase.com,depilflash.tv,di1.shopping.com,dialerporn.com,didtheyreadit.com,digits.com,direct-xxx-access.com,directaclick.com,directivepub.com,directleads.com,directorym.com,directtrack.com,discountclick.com,"
+"displayadsmedia.com,displaypagerank.com,dist.belnk.com,dmtracker.com,dmtracking.alibaba.com,dmtracking2.alibaba.com,dnads.directnic.com,doclix.com,domaining.in,domainsponsor.com,domainsteam.de,donorschoose.org,doubleclick.com,doubleclick.de,doubleclick.net,drumcash.com,dynamic.fmpub.net,e-adimages.scrippsnetworks.com,e-bannerx.com,e-debtconsolidation.com,e-m.fr,e-planning.net,e.kde.cz,eadexchange.com,easyad.info,easyhits4u.com,ebuzzing.com,ecircle-ag.com,ecoupons.com,edgeio.com,effectivemeasure.net,eiv.baidu.com,elitedollars.com,elitetoplist.com,emarketer.com,emediate.dk,emediate.eu,emonitor.takeit.cz,engine.awaps.net,engine.espace.netavenir.com,enginenetwork.com,enoratraffic.com,enquisite.com,entercasino.com,entrecard.s3.amazonaws.com,epiccash.com,ero-advertising.com,esellerate.net,estat.com,etargetnet.com,ethicalads.net,etracker.de,eu-adcenter.net,eu1.madsone.com,eur.a1.yimg.com,eurekster.com,euro-linkindex.de,euroclick.com,european-toplist.de,europeanbanners.com,europebanner.net,euroranking.de,"
+"euros4click.de,eusta.de,evergage.com,evidencecleanergold.com,ewebcounter.com,exchange-it.com,exchange.bg,exchangead.com,exchangeclicksonline.com,exit76.com,exitexchange.com,exitfuel.com,exoclick.com,exogripper.com,experteerads.com,exponential.com,express-submit.de,extads.web.de,extractorandburner.com,extreme-dm.com,eyeblaster.com,eyewonder.com,ezula.com,f5biz.com,fast-adv.it,fastclick.com,fastclick.com.edgesuite.net,fc.webmasterpro.de,feedbackresearch.com,feedjit.com,ffxcam.fairfax.com.au,filitrac.com,fimc.net,fimserve.com,findcommerce.com,findyourcasino.com,fineclicks.com,first.nova.cz,firstlightera.com,flashtalking.com,fleshlightcash.com,flexbanner.com,flowgo.com,flurry.com,fonecta.leiki.com,foo.cosmocode.de,forex-affiliate.net,forrestersurveys.com,fpctraffic.com,fpctraffic2.com,fragmentserv.iac-online.de,free-banners.com,freebanner.com,freelogs.com,freeonlineusers.com,freepay.com,freestat.pl,freestats.com,freestats.tv,freewebcounter.com,funklicks.com,funpageexchange.com,fusionads.net,fusionquest.com,"
+"fxclix.com,fxstyle.net,galaxien.com,game-advertising-online.com,gamehouse.com,gamesites100.net,gamesites200.com,gamesitestop100.com,gator.com,gbanners.hornymatches.com,gemius.pl,geo.digitalpoint.com,geoadserving.coffeetree.info,geobanner.adultfriendfinder.com,geovisite.com,german-linkindex.de,getclicky.com,getfreecounter.com,globalismedia.com,globaltakeoff.net,globaltrack.com,globe7.com,gmads.net,go-clicks.de,go-rank.de,goingplatinum.com,gold.weborama.fr,goldstats.com,google-analytics.com,googleadservices.com,googlesyndication.com,gostats.com,gp.dejanews.com,gpr.hu,grafstat.ro,grapeshot.co.uk,gtop.ro,gtop100.com,gtsads.com,harrenmedia.com,harrenmedianetwork.com,havamedia.net,heias.com,hentaicounter.com,herbalaffiliateprogram.com,hexusads.fluent.ltd.uk,heyos.com,hidden.gogoceleb.com,hightrafficads.com,histats.com,hit-parade.com,hit-ranking.de,hit.bg,hit.ua,hit.webcentre.lycos.co.uk,hitbox.com,hitcents.com,hitexchange.net,hitfarm.com,hitiz.com,hitlist.ru,hitlounge.com,hitometer.com,hits.europuls.eu,"
+"hits.informer.com,hits.puls.lv,hits4me.com,hits4pay.com,hitslink.com,hittail.com,hollandbusinessadvertising.nl,homepageking.de,hostedads.realitykings.com,hotkeys.com,hotlog.ru,hotrank.com.tw,httpool.com,hurricanedigitalmedia.com,hydramedia.com,hyperbanner.net,hypertracker.com,i-clicks.net,i.xx.openx.com,i1img.com,i1media.no,ia.iinfo.cz,iad.anm.co.uk,iadnet.com,iconadserver.com,icptrack.com,idcounter.com,identads.com,idot.cz,idregie.com,ientrymail.com,iesnare.com,ifa.tube8live.com,ilbanner.com,ilead.itrack.it,iliillliO00OO0.321.cn,ilovecheating.com,image.ugo.com,imageads.canoe.ca,imagecash.net,images-pw.secureserver.net,images.v3.com,imarketservices.com,img.prohardver.hu,imgpromo.easyrencontre.com,imonitor.nethost.cz,impact.as,imprese.cz,impressionmedia.cz,impressionz.co.uk,imrworldwide.com,inboxdollars.com,inc.com,incentaclick.com,indexstats.com,indieclick.com,industrybrains.com,inetlog.ru,infinite-ads.com,infinityads.com,infolinks.com,information.com,infra-ad.com,initgroup.com,inringtone.com,"
+"insightexpress.com,insightexpressai.com,inspectorclick.com,instantmadness.com,intelliads.com,intellitxt.com,interactive.forthnet.gr,interclick.com,intergi.com,internetfuel.com,interreklame.de,interstat.hu,ip.ro,ip193.cn,iperceptions.com,ipro.com,ireklama.cz,itbannerexchange.com,itfarm.com,itop.cz,its-that-easy.com,itsptp.com,jbeet.cjt1.net,jcount.com,jedonkey.cjt1.net,jinkads.de,jkazaa.cjt1.net,jnova.cjt1.net,joetec.net,jokedollars.com,js.users.51.la,juicyads.com,jumptap.com,justrelevant.com,justwebads.com,k.iinfo.cz,kanoodle.com,keymedia.hu,kissmetrics.com,kliks.nl,kompasads.com,kontera.com,kt-g.de,ktu.sv2.biz,lakequincy.com,layer-ad.de,layer-ads.de,lbn.ru,lct.salesforce.com,leadboltads.net,leadclick.com,leadingedgecash.com,levelrate.de,lfstmedia.com,liftdna.com,ligatus.com,ligatus.de,lightningcast.net,lightspeedcash.com,link-booster.de,link4ads.com,linkadd.de,linkbucks.net,linkbuddies.com,linkexchange.com,linkexchange.ru,linkprice.com,linkrain.com,linkreferral.com,links-ranking.de,"
+"linkshighway.com,linkshighway.net,linkstorms.com,linkswaper.com,linktarget.com,liquidad.narrowcastmedia.com,liveintent.com,liveinternet.ru,liverail.com,loading321.com,log.btopenworld.com,logua.com,lop.com,lucidmedia.com,lv.boost-my-pr.com,lynxtrack.com,lzjl.com,m.webtrends.com,m1.webstats4u.com,m4n.nl,madclient.uimserv.net,madisonavenue.com,mads.cnet.com,mads.gamespot.com,madvertise.de,mailusnow123.com,malware-scan.com,marchex.com,marketing.888.com,marketing.nyi.net,marketing.osijek031.com,marketingsolutions.yahoo.com,maroonspider.com,mas.sector.sk,mastermind.com,matchcraft.com,max.i12.de,maximumcash.com,mbn.com.ua,mbs.megaroticlive.com,mbuyu.nl,mdotm.com,measuremap.com,media-adrunner.mycomputer.com,media-servers.net,media.ftv-publicite.fr,media.funpic.de,media1first.com,media6degrees.com,mediaarea.eu,mediacharger.com,mediadvertising.ro,mediageneral.com,mediamayhemcorp.com,mediamgr.ugo.com,mediaplazza.com,mediaplex.com,mediascale.de,mediatext.com,mediax.angloinfo.com,mediaz.angloinfo.com,medleyads.com,"
+"megacash.de,megago.com,megastats.com,megawerbung.de,memorix.sdv.fr,metaffiliation.com,metanetwork.com,methodcash.com,metrics.windowsitpro.com,mgid.com,miarroba.com,microstatic.pl,microticker.com,midnightclicking.com,misstrends.com,miva.com,mixpanel.com,mixtraffic.com,mlm.de,mmismm.com,moatads.com,mobclix.com,mocean.mobi,modemspeedbooster.com,moneyexpert.com,monsterpops.com,mopub.com,mr-rank.de,mrskincash.com,mtree.com,muk.247realmedia.com,musiccounter.ru,muwmedia.com,myaffiliateprogram.com,mybloglog.com,mycounter.ua,mypagerank.net,mypagerank.ru,mypowermall.com,myrating.ljseek.com,mystat-in.net,mystat.pl,mytop-in.net,n69.com,naiadsystems.com,naj.sk,namimedia.com,nastydollars.com,navigator.io,navrcholu.cz,nbjmp.com,ndparking.com,nedstat.com,nedstat.nl,nedstatbasic.net,nedstatpro.net,neocounter.neoworx-blog-tools.net,neocounter.net,neoffic.com,net-filter.com,netaffiliation.com,netagent.cz,netclickstats.com,netcommunities.com,netdirect.nl,netflame.cc,netincap.com,netpool.netbookia.net,netshelter.net,"
+"network.business.com,network.realmedia.com,neudesicmediagroup.com,newads.bangbros.com,newbie.com,newnet.qsrch.com,newnudecash.com,newopenx.detik.com,newt1.adultadworld.com,newt1.adultworld.com,newtopsites.com,ng3.ads.warnerbros.com,ngadcenter.net,ngs.impress.co.jp,nitroclicks.com,novem.pl,numax.nu-1.com,nuseek.com,oas-central.realmedia.com,oas.benchmark.fr,oas.foxnews.com,oas.repubblica.it,oas.roanoke.com,oas.salon.com,oas.toronto.com,oas.uniontrib.com,oas.villagevoice.com,oas.wwwheise.de,oascentral.businessweek.com,oascentral.chicagobusiness.com,oascentral.fortunecity.com,oascentral.ggl.com,oascentral.register.com,oewa.at,oewabox.at,offerforge.com,offermatica.com,oinadserver.com,olivebrandresponse.com,omniture.com,onclickads.com,onclickads.net,oneandonlynetwork.com,onenetworkdirect.com,onestat.com,onestatfree.com,onewaylinkexchange.net,online-metrix.net,onlinecash.com,onlinecashmethod.com,onlinerewardcenter.com,openad.tf1.fr,openad.travelnow.com,openads.friendfinder.com,openads.org,openclick.com,"
+"openx.angelsgroup.org.uk,openx.blindferret.com,opienetwork.com,optimost.com,optmd.com,ota.cartrawler.com,otto-images.developershed.com,overture.com,owebmoney.ru,oxado.com,oxcash.com,oxen.hillcountrytexas.com,pagead.l.google.com,pagerank-estate-spb.ru,pagerank-ranking.com,pagerank-ranking.de,pagerank-server7.de,pagerank-submitter.com,pagerank-submitter.de,pagerank-suchmaschine.de,pagerank-united.de,pagerank4u.eu,pagerank4you.com,pageranktop.com,partage-facile.com,partner-ads.com,partner.gonamic.de,partner.pelikan.cz,partner.topcities.com,partnerad.l.google.com,partnercash.de,partners.priceline.com,passion-4.net,passport.baidu.com,pay-ads.com,pay-to-promote.com,paycounter.com,paydayasap.com,paypopup.com,payserve.com,pbnet.ru,pcash.imlive.com,pcekspert.com,peep-auktion.de,peer39.com,pennyweb.com,pepperjamnetwork.com,percentmobile.com,perf.weborama.fr,perfiliate.com,performancing.com,performancingads.com,pgmediaserve.com,pgpartner.com,pheedo.com,phoenix-adrunner.mycomputer.com,phpadsnew.new.natuurpark.nl,"
+"phpmyvisites.net,picadmedia.com,pillscash.com,pimproll.com,planetactive.com,play4traffic.com,playhaven.com,plugrush.com,pointroll.com,pokerstrategy.com,pop-under.ru,pops.freeze.com,popub.com,popunder.ru,popup.msn.com,popupmoney.com,popupnation.com,popups.infostart.com,popupsponsor.com,popuptraffic.com,porntrack.com,postmasterbannernet.com,postrelease.com,potenza.cz,pr-star.de,pr-ten.de,pr5dir.com,praddpro.de,prchecker.info,precisioncounter.com,predictad.com,premium-offers.com,primaryads.com,primetime.net,privatecash.com,pro-advertising.com,pro.i-doctor.co.kr,proext.com,profero.com,professorbanner.com,projectwonderful.com,promo.badoink.com,promo.ulust.com,promo1.webcams.nl,promobenef.com,promos.fling.com,promote.pair.com,promotion-campaigns.com,promozia.de,pronetadvertising.com,propellerads.com,proranktracker.com,proton-tm.com,protraffic.com,provexia.com,prsitecheck.com,psstt.com,pub.chez.com,pub.club-internet.fr,pub.hardware.fr,pub.opt.pf,pubdirecte.com,publicidad.elmundo.es,pubmatic.com,"
+"pubs.lemonde.fr,pulse360.com,q.azcentral.com,qctop.com,qnsr.com,quantcast.com,quantserve.com,quarterserver.de,questaffiliates.net,quigo.com,quinst.com,quisma.com,rad.msn.com,radarurl.com,radiate.com,rampidads.com,rank-master.com,rank-master.de,rank8.de,rankchamp.de,ranking-charts.de,ranking-hits.de,ranking-id.de,ranking-links.de,ranking-liste.de,ranking-street.de,rankingchart.de,rankingscout.com,rankingscout.org,rankyou.com,rapidcounter.com,rate.ru,ratings.lycos.com,rb1.design.ru,reachjunction.com,readserver.net,realads.realmedia.com,realcastmedia.com,realclix.com,realmedia-a800.d4p.net,realtechnetwork.com,realteencash.com,realtracker.com,reduxmedia.com,reduxmediagroup.com,reedbusiness.com,reefaquarium.biz,referralware.com,regnow.com,reinvigorate.net,reklam.rfsl.se,reklama.mironet.cz,reklama.reflektor.cz,reklamcsere.hu,reklame.unwired-i.net,reklamer.com.ua,relevanz10.de,relmaxtop.com,remotead.cnet.com,republika.onet.pl,retaildirect.realmedia.com,retargeter.com,revenue.net,revenuedirect.com,"
+"revenuepilot.com,revsci.net,revstats.com,rewardster.com,richmails.com,richmedia.yimg.com,richwebmaster.com,rightstats.com,rl.auto.ru,rlcdn.com,rle.ru,rmads.msn.com,rmedia.boston.com,roar.com,robotreplay.com,roia.biz,rok.com.com,rose.ixbt.com,rotabanner.com,roxr.net,rpxnow.com,rtbpop.com,rts.doublepimp.com,ru-traffic.com,ru4.com,rubiconproject.com,s2d6.com,sageanalyst.net,sbx.pagesjaunes.fr,scambiobanner.aruba.it,scanscout.com,scopelight.com,scorecardresearch.com,scratch2cash.com,scripte-monster.de,searchfeast.com,searchmarketing.com,searchramp.com,secure.webconnect.net,sedoparking.com,sedotracker.com,seeq.com,sensismediasmart.com.au,seo4india.com,serv0.com,servedbyadbutler.com,servedbyopenx.com,servethis.com,service1.adten.de,services.hearstmags.com,serving-sys.com,sexaddpro.de,sexcounter.com,sexinyourcity.com,sexlist.com,sextracker.com,sexystat.com,sezwho.com,shareadspace.com,shareasale.com,sharepointads.com,sher.index.hu,shinystat.com,shinystat.it,shoppingads.com,siccash.com,sidebar.angelfire.com,"
+"sinoa.com,sitebrand.geeks.com,sitemerkezi.net,sitemeter.com,sitestat.com,sixsigmatraffic.com,slickaffiliate.com,sm.aport.ru,sma.punto.net,smart4ads.com,smartadserver.com,smartbase.cdnservices.com,smowtion.com,snapads.com,snoobi.com,socialspark.com,softclick.com.br,spa.snap.com,spacash.com,sparkstudios.com,specificmedia.co.uk,specificpop.com,spezialreporte.de,spinbox.techtracker.com,spinbox.versiontracker.com,sponsorads.de,sponsorpro.de,sponsors.thoughtsmedia.com,spot.fitness.com,sprinks-clicks.about.com,spylog.com,spywarelabs.com,spywarenuker.com,spywords.com,srbijacafe.org,srwww1.com,starffa.com,start.freeze.com,stat.cliche.se,stat.dealtime.com,stat.dyna.ultraweb.hu,stat.pl,stat.su,stat.tudou.com,stat.webmedia.pl,stat.zenon.net,stat24.com,stat24.meta.ua,statcounter.com,static.fmpub.net,static.itrack.it,staticads.btopenworld.com,statistik-gallup.net,statm.the-adult-company.com,stats.blogger.com,stats.cts-bv.nl,stats.directnic.com,stats.hyperinzerce.cz,stats.mirrorfootball.co.uk,stats.olark.com,"
+"stats.suite101.com,stats.surfaid.ihost.com,stats.townnews.com,stats.unwired-i.net,stats.wordpress.com,stats4all.com,statxpress.com,steelhouse.com,steelhousemedia.com,subscribe.hearstmags.com,sugoicounter.com,superclix.de,superstats.com,supertop.ru,supertop100.com,suptullog.com,surfmusik-adserver.de,swordfishdc.com,t.pusk.ru,tacoda.net,tailsweep.co.uk,tailsweep.com,tailsweep.se,takru.com,tangerinenet.biz,tapad.com,targad.de,targetingnow.com,targetnet.com,targetpoint.com,tatsumi-sys.jp,tcads.net,tdsearchware.com,techclicks.net,teenrevenue.com,teknosurf3.com,teliad.de,test.com,text-link-ads.com,textad.sexsearch.com,textads.biz,textads.opera.com,textlinks.com,tfag.de,theadhost.com,theanswerto.com,thebugs.ws,thecounter.com,thefreesitez.com,therapistla.com,therichkids.com,thesearchworks.com,thruport.com,tinybar.com,tizers.net,tlvmedia.com,tntclix.co.uk,top-casting-termine.de,top-site-list.com,top.list.ru,top.mail.ru,top.one.ru,top.proext.com,top100-images.rambler.ru,top100.mafia.ru,top123.ro,top20.com,"
+"top20free.com,top66.ro,top90.ro,topbarh.box.sk,topblogarea.se,topbloglists.com,topbucks.com,topforall.com,topgamesites.net,toplist.cz,toplist.pornhost.com,toplista.mw.hu,toplistcity.com,topmango.com,topmmorpgsites.com,topping.com.ua,toprebates.com,topsafelist.net,topsajt.com,topsearcher.com,topsir.com,topsite.lv,topsites.com.br,topstats.com,totemcash.com,touchclarity.com,touchclarity.natwest.com,tour.brazzers.com,tpnads.com,track.adform.net,track.anchorfree.com,track.collegehumor.com,track.gawker.com,trackalyzer.com,tracker.icerocket.com,tracking.gajmp.com,tracking.koego.com,tracking.yourfilehost.com,tracking101.com,trackingsoft.com,trackmysales.com,tradedoubler.com,traffic-exchange.com,traffic.liveuniversenetwork.com,trafficadept.com,trafficcdn.liveuniversenetwork.com,trafficfactory.biz,trafficholder.com,trafficjunky.net,trafficleader.com,trafficmasterz.net,trafficmaxx.de,trafficsecrets.com,trafficspaces.net,trafficstrategies.com,trafficswarm.com,traffictrader.net,trafficz.com,trafficz.net,"
+"traffiq.com,trafic.ro,traficdublu.ro,travis.bosscasinos.com,trekblue.com,trekdata.com,trendcounter.com,tribalfusion.com,trix.net,truehits.net,truehits1.gits.net.th,truehits2.gits.net.th,tsms-ad.tsms.com,tubedspots.com,tubemogul.com,turn.com,tvmtracker.com,twittad.com,tyroo.com,uarating.com,ukbanners.com,ultramercial.com,ultsearch.com,unanimis.co.uk,untd.com,updated.com,upspiral.com,urlcash.net,us.a1.yimg.com,usapromotravel.com,usmsad.tom.com,utarget.co.uk,utils.mediageneral.net,v1.cnzz.com,validclick.com,valuead.com,valueclick.com,valueclickmedia.com,valuecommerce.com,valuesponsor.com,veille-referencement.com,ventivmedia.com,vericlick.com,vertadnet.com,veruta.com,vervewireless.com,vg.ad.asap-asp.net,vibrantmedia.com,video-stats.video.google.com,videoegg.com,view4cash.de,viewpoint.com,visistat.com,visit.webhosting.yahoo.com,visitbox.de,visitorprofiler.com,visual-pagerank.fr,visualrevenue.com,voicefive.com,vpon.com,vrs.cz,vs.tucows.com,wads.webteh.com,warlog.info,warlog.ru,wdads.sx.atl.publicus.com,"
+"web-stat.com,web.informer.com,web2.deja.com,webads.co.nz,webads.nl,webangel.ru,webcash.nl,webcounter.cz,webcounter.goweb.de,webgains.com,webmaster-partnerprogramme24.de,webmasterplan.com,webmasterplan.de,weborama.fr,webpower.com,webreseau.com,webseoanalytics.com,websitepagerank.net,websponsors.com,webstat.channel4.com,webstat.com,webstat.net,webstats4u.com,webtrackerplus.com,webtraffic.se,webtraxx.de,webtrendslive.com,wegcash.com,werbung.meteoxpress.com,wetrack.it,whaleads.com,whenu.com,whispa.com,whoisonline.net,wholesaletraffic.info,widespace.com,widgetbucks.com,wikia-ads.wikia.com,window.nixnet.cz,wintricksbanner.googlepages.com,wipub.com,witch-counter.de,wlmarketing.com,wmirk.ru,wondoads.de,woopra.com,worldwide-cash.net,wtlive.com,www-banner.chat.ru,www-google-analytics.l.google.com,www.banner-link.com.br,www.dnps.com,www.kaplanindex.com,www.money4exit.de,www.photo-ads.co.uk,www1.gto-media.com,www8.glam.com,x-traceur.com,x6.yakiuchi.com,xchange.ro,xclicks.net,xertive.com,xg4ken.com,xiti.com,"
+"xplusone.com,xponsor.com,xq1.net,xrea.com,xtendmedia.com,xtremetop100.com,xxxcounter.com,xzoomy.com,y.ibsys.com,yab-adimages.s3.amazonaws.com,yabuka.com,yadro.ru,yesads.com,yesadvertising.com,yieldads.com,yieldlab.net,yieldmanager.com,yieldmanager.net,yoc.mobi,yoggrt.com,yourtracking.net,z.times.lv,z5x.net,zangocash.com,zanox-affiliate.de,zanox.com,zantracker.com,zde-affinity.edgecaching.net,zedo.com,zencudo.co.uk,zenzuu.com,zeus.developershed.com,zeusclicks.com,zintext.com,zmedia.com,ad.doubleclick.net,";
+
+
+
+GString g_strCachedLog(LOGFILE_CACHED_WRITE);
+
+
+GString g_strPreLog;
 gthread_mutex_t g_csMtx3;
 int g_csMtxInit3 = 0;
 void InfoLog(int nMsgID, GString &strSrc)
@@ -295,6 +429,7 @@ void InfoLog(int nMsgID, GString &strSrc)
 		try
 		{
 			// This allows an application to trap special messages for dynamic debug breaks of special message notification handlers.
+			// It also allows visual distinction between two processes - both writing to the same log file....
 			strSrc.Prepend(g_strPreLog);
 			g_CoreLog(nMsgID,strSrc);
 
@@ -324,42 +459,50 @@ void InfoLog(int nMsgID, GString &strSrc)
 	strftime(pzTime, 128, "%H:%M:%S", newtime);
 	
 	GString strTime;
-	strTime.Format("%s[%03d] %s",pzTime,nMsgID,(const char *)strSrc);
+	strTime.Format("%s[%03d] %s",pzTime,(int)nMsgID,(const char *)strSrc);
 
 	strTime.TrimRightWS();
 	strTime += "\t\r\n\r\n";  // the '\t' is to make a record delimiter that will not occur in the data.  HTTP headers contain "\r\n\r\n" and may be logged.
 
-	if (!g_csMtxInit3)
-	{
-		g_csMtxInit3 = 1;
-		gthread_mutex_init(&g_csMtx3, NULL);
-	}
 	
-	gthread_mutex_lock(&g_csMtx3);
-	try
+	if (!g_strLogFile.IsEmpty())
 	{
-		if (g_LogCache)
+		if (!g_csMtxInit3)
 		{
-			g_strCachedLog << strTime;
-			if (g_strCachedLog.Length() > 32000)
+			g_csMtxInit3 = 1;
+			gthread_mutex_init(&g_csMtx3, NULL);
+		}
+		
+		gthread_mutex_lock(&g_csMtx3);
+		try
+		{
+			if (g_LogCache)
 			{
-				g_strCachedLog.ToFileAppend(g_strLogFile);
-				g_strCachedLog.Empty();
-			}
-		}
-		else
-		{
-			strTime.ToFileAppend(g_strLogFile);
-		}
+				g_strCachedLog << strTime;
 
-	}catch(...)
+				if ( g_strCachedLog._len > LOGFILE_CACHED_WRITE )
+				{
+					g_strCachedLog.ToFileAppend(g_strLogFile);
+					g_strCachedLog.Empty();
+				}
+			}
+			else
+			{
+				strTime.ToFileAppend(g_strLogFile);
+			}
+
+		}catch(...)
+		{
+			if (!g_LogStdOut)
+				g_NoLog = 1; // quit trying to log due to disk error
+		}
+		gthread_mutex_unlock(&g_csMtx3);
+	}
+	else
 	{
 		if (!g_LogStdOut)
-			g_NoLog = 1; // quit trying
+			g_NoLog = 1; // quit trying to log because no log file name was configured
 	}
-	gthread_mutex_unlock(&g_csMtx3);
-
-
 		
 	if (g_LogStdOut)
 	{
@@ -376,7 +519,7 @@ void InfoLog(int nMsgID, const char *pDataToLog)
 }
 void InfoLogFlush()
 {
-	if (g_LogCache && g_strCachedLog.Length())
+	if ( g_LogCache && g_strCachedLog.Length() )
 	{
 		gthread_mutex_lock(&g_csMtx3);
 		try
@@ -390,7 +533,16 @@ void InfoLogFlush()
 		gthread_mutex_unlock(&g_csMtx3);
 	}
 }
+void *loggingThread(void *)
+{
+	while(!g_ServerIsShuttingDown)
+	{
+		PortableSleep(3,0);
 
+		InfoLogFlush();
+	}
+	return 0;
+}
 
 
 void DataTrace(const char *pzTag, const char *pData, int nBytes, const char *pzFileOverride = 0)
@@ -408,7 +560,7 @@ void DataTrace(const char *pzTag, const char *pData, int nBytes, const char *pzF
 
 	// Format it
 	GString strBinary(strLabel);
-	strBinary.FormatBinary((unsigned char *)pData,nBytes);
+	strBinary.FormatBinary((unsigned char *)pData,(int)nBytes);
 
 
 	// write it to disk
@@ -602,7 +754,6 @@ void InitRandomNumbers()
 		for(int nIndex2=0; nIndex2 < 8; nIndex2++)
 			g_RandomNumbers[nIndex2] += rand();	
 	}
-	InfoLog(6,"Done");
 
 	// finally make sure none of the numbers are == 0, it breaks other algorithms
 	// that depend on them as valid seed numbers
@@ -856,7 +1007,7 @@ int AddTime( IPLog** Root, const char *pzIP )
 			//	caught a resource hog
 			GString strErr;
 			strErr << pzIP << ": violated connect limit of " << nConnectLimit << " over " << N << " seconds.";
-			InfoLog(25,strErr);
+			InfoLog(4,strErr);
 
 
 			// if we are configured to 'shut this guy off' for a little while
@@ -925,7 +1076,7 @@ int AddTime( IPLog** Root, const char *pzIP )
 //
 #define ACTIVE_CONN_HASH_SIZE 200000
 #define HASHLOCK_ARR_SIZE 50
-static long HashOfActiveConnections[ACTIVE_CONN_HASH_SIZE];
+long HashOfActiveConnections[ACTIVE_CONN_HASH_SIZE];
 static gthread_mutex_t ArrayOfLocks[HASHLOCK_ARR_SIZE];
 
 struct ConnHashInit
@@ -952,7 +1103,7 @@ struct ConnHashInit
 
 
 // nChange of 1 increments, -1 decrements
-static unsigned int ConnectionCounter ( const char *pzAddress, int nChange )
+static int ConnectionCounter ( const char *pzAddress, int nChange )
 {
 	const unsigned char *ip = (const unsigned char *)pzAddress;
 	unsigned long   h = 0, g;
@@ -969,8 +1120,13 @@ static unsigned int ConnectionCounter ( const char *pzAddress, int nChange )
 	{
 #ifdef _WIN32						
 		InterlockedIncrement(&HashOfActiveConnections[idx]);	// this is lockless
+	#ifdef _WIN64
+		InterlockedIncrement64(&g_ActiveConnections);
+		InterlockedIncrement64(&g_TotalConnections);
+	#else
 		InterlockedIncrement(&g_ActiveConnections);
 		InterlockedIncrement(&g_TotalConnections);
+	#endif
 #else
 		int nLockIdx = idx % HASHLOCK_ARR_SIZE;
 		gthread_mutex_lock(&ArrayOfLocks[nLockIdx]);			// and this blocks 50 times less than a single global lock
@@ -986,7 +1142,12 @@ static unsigned int ConnectionCounter ( const char *pzAddress, int nChange )
 	{
 #ifdef _WIN32
 		InterlockedIncrement(&HashOfActiveConnections[(ACTIVE_CONN_HASH_SIZE / 2) + idx]);
+	#ifdef _WIN64
+		InterlockedDecrement64(&g_ActiveConnections);
+	#else
 		InterlockedDecrement(&g_ActiveConnections);
+	#endif
+
 #else
 		int nLockIdx = idx % HASHLOCK_ARR_SIZE;
 		gthread_mutex_lock(&ArrayOfLocks[nLockIdx]);			
@@ -996,8 +1157,7 @@ static unsigned int ConnectionCounter ( const char *pzAddress, int nChange )
 #endif
 	}
 	
-	return HashOfActiveConnections[idx] - 
-			HashOfActiveConnections[(ACTIVE_CONN_HASH_SIZE / 2) + idx];
+	return HashOfActiveConnections[idx] - HashOfActiveConnections[(ACTIVE_CONN_HASH_SIZE / 2) + idx];
 }
 
 
@@ -1140,7 +1300,7 @@ void GetBalanceTo(const char *pzBalance, GString &strDest)
 }
 
 
-// feel free to put anything you need in this table
+// feel free to replace this entire table, with special file types that will be served up by this HTTP Server
 const char *mimeTypeTable[] = {
    "mpeg",  "video/x-mpeg", //(*.mpeg,*.mpg,*.m1s,*.m1v,*.m1a,*.m75,*.m15,*.mp2,*.mpm,*.mpv,*.mpa)
    "mpg",  "video/x-mpeg",
@@ -1234,6 +1394,10 @@ public:
 	char szProxyToServer[1024];
 	char szHTTPProxyFirewall[1024];
 	int nProxyTimeout;
+	
+	bool bIsLogging;
+	GString strLogFile;
+
 	int bIsTunnel;
 
 	// ThreadStartupData describes the static aspects of a type of connection,
@@ -1252,6 +1416,7 @@ public:
 	}
 	ThreadStartupData()
 	{
+		bIsLogging = 0;
 		nTooFrequent = 0;
 		nTooMany = 0;
 		nRefused = 0;
@@ -1274,6 +1439,11 @@ public:
 ThreadStartupData g_TSD;
 
 
+#define PROXY_STATE_READING_REQUEST		0x01
+#define PROXY_STATE_READING_RESPONSE	0x02
+#define PROXY_STATE_AWAITING_REQUEST	0x04
+#define PROXY_STATE_AWAITING_RESPONSE	0x08
+
 
 class ThreadConnectionData
 {
@@ -1282,8 +1452,12 @@ public:
 
 
 	int *pnProxyClosed;
+	int *pnProxyFlags;
 	ThreadStartupData *pTSD;
-	int sockfd;	// the handle for 'this' accept()'ed connection on pTSD->nPort
+
+	int sockfd;		// the handle for 'this' accept()'ed connection on pTSD->nPort
+	int *pnsockfd;	// pointer to sockfd in another ThreadData.
+	
 	int *pnProxyfd;	
 	unsigned long *plLastActivityTime;
 	int *pbHelperThreadIsRunning;
@@ -1305,6 +1479,8 @@ public:
 	char pzRemoteKey[1024];
 	int nConnectRouteSize;
 	int nAction; // 1=Proxy, 2=Tunnel, 3=Destination, 4=ConvertHTTP
+
+	GString strAction; // this is the same strAction in the ThreadData, it's context depends on the protocol and task
 
 	// if using HTTP authentication to make a request outside the local network
 	GString strLocalNetworkAuthenticate; // "user:password"
@@ -1330,8 +1506,11 @@ public:
 		nPollThreadID = 0;
 
 		pnProxyClosed = pFrom->pnProxyClosed;
+		pnProxyFlags = pFrom->pnProxyFlags;
 		pTSD = pFrom->pTSD;
 		sockfd = pFrom->sockfd;
+		pnsockfd = pFrom->pnsockfd;
+
 		pnProxyfd = pFrom->pnProxyfd;
 		plLastActivityTime = pFrom->plLastActivityTime;
 		pbHelperThreadIsRunning = pFrom->pbHelperThreadIsRunning;
@@ -1376,7 +1555,10 @@ public:
 		plLastActivityTime = 0;
 		pbHelperThreadIsRunning = 0;
 		pnProxyClosed = 0;
+		pnProxyFlags = 0;
 		sockfd = 0;
+		pnsockfd = 0;
+
 		bInUse = 0;
 		nLastPollConnectStatus = 0;
 		pNext = 0;
@@ -1403,7 +1585,18 @@ public:
 
 
 	ThreadStartupData *pTSD;
-	int *pnProxyClosed;
+	/////////////////////////////////////////////////////////
+	int nProxyClosed;	 // 0 is "Not Closed" so 0 is a Running Proxy.  1 2 3 are stopping states.  777 is uninitialized.
+	int *pnProxyClosed;  // points to a nProxyClosed in another ThreadData for shared memory between those 2 threads
+	/////////////////////////////////////////////////////////
+	int	sockfd;			 // this is the accepted fd from the client in the clientthread() - not used in the ProxyWorkerThread, set to -1
+	int *pnsockfd;		 // points to a sockfd in another ThreadData.  not used in clientthread()
+	/////////////////////////////////////////////////////////
+	int nProxyFlags;	
+	int *pnProxyFlags;
+	int nProxyfd;
+	/////////////////////////////////////////////////////////
+
 
 	gthread_t chld_thr;
 
@@ -1413,14 +1606,15 @@ public:
 	gthread_mutex_t lockFinished;
 	gthread_cond_t	condFinished;
 
-	int	sockfd;
 	int nThreadIsBusy;
 	int nThreadID;
 	int m_bUseThreads;
 	int nSequence; // nCmdSeq
 	long starttime;
 
-	int *m_pnKeepAlive;
+	__int64 nTotalBytesProxied; // clientthread sent to server				|| ProxyHelperThread sent to client
+	__int64 nTotalBytesRead;    // clientthread read from browser/client	|| ProxyHelperThread read from server
+	__int64 nTotalBytesSent;    // clientthread sent to client				|| 0
 
 	int nParentThreadID;
 
@@ -1447,8 +1641,11 @@ public:
 	char pzPollSectionName[64];
 
 
-
 	char pzIP[1024];
+	
+	// this space will vary per protocol, 
+	// for the HTTP Proxy it is the remote connect to this form "80@www.server.com"
+	// for the HTTP Server it is the Referrer
 	char pzConnectRoute[1024];
 	int nAction; // 1=Proxy, 2=Tunnel, 3=Destination, 4=ConvertHTTP
 
@@ -1461,15 +1658,24 @@ public:
 		Buf2 = 0;
 		
 		nSequence = 0;
-		m_pnKeepAlive = 0;
+		nTotalBytesProxied = 0;
+		nTotalBytesRead = 0;
+		nTotalBytesSent = 0;
+
+		nProxyFlags = 0;
+
 		nAction = 0; // none
 		pzIP[0] = 0;
 		pzPollSectionName[0] = 0;
 		pzConnectRoute[0] = 0;
+		
+		nProxyClosed = 777; // 777 is uninitialized, 0 is an open proxy
+		nProxyfd = -1; // -1 is an invalid socket handle
 
 		nParentThreadID = 0;
 		pcondHelper = 0;
 		pnProxyClosed = 0;
+		pnProxyFlags = 0;
 		plLastActivityTime = 0;
 		pbHelperThreadIsRunning = 0;
 		pTSD = 0;
@@ -1582,7 +1788,7 @@ void DestroyThreadPool(GArray *pPool, int nPoolSize)
 		if (lstHungOrBusy.Size())
 		{
 			// we can kill them here, if needed
-			InfoLog(1, "Threads still working.");
+			InfoLog(5, "Threads still working.");
 		}
 	}
 }
@@ -1603,11 +1809,28 @@ try
 			{
 				if (bOnlyEndIt)
 				{
-					PortableClose(td->sockfd,"Core3");
-					*td->pnProxyClosed = 1; // 1 == Shut down in progress.
+					if ( td->nProxyClosed == 0 )
+					{
+						td->nProxyClosed = 1; // 1 == Shut down in progress.
+					}
+
+					GString g("******* ADMIN MANUALLY CLOSED fd:");
+					g << td->sockfd << " on tid:" << ntidToKill << " connected out to[" << td->pzConnectRoute << "] fd:" << td->nProxyfd << " Action=[" << td->strAction << "]";
+					InfoLog(8567,g);
+
+
+					PortableClose(td->sockfd,	 "KillTid");
+					PortableClose(td->nProxyfd,"KillTid");
+					td->sockfd = -1;
+					td->nProxyfd = -1;
 				}
 				else
 				{
+					GString g("******* ADMIN MANUALLY KILLED tid:");
+					g << td->nThreadID << " fd:" << td->sockfd << " connected out to[" << td->pzConnectRoute << "] fd:" << td->nProxyfd << " Action=[" << td->strAction << "]";
+					InfoLog(8567,g);
+
+
 					int nRet = gthread_cancel (td->chld_thr);
 					if (nRet == 0) // if it worked
 					{
@@ -1616,6 +1839,7 @@ try
 						gthread_create(&td->chld_thr,NULL, clientThread, (void *)td );
 						td->nThreadIsBusy = 0;
 					}
+
 				}
 				return 0;
 			}
@@ -1680,10 +1904,19 @@ void AttachToClientThreadHelper(ThreadData *pTD, ThreadConnectionData *pTCD)
 {
 	ThreadStartupData *pTSD = pTCD->pTSD;
 
-	pTD->sockfd = pTCD->sockfd;
+//	if (!IsOpenSocket(pTCD->sockfd))
+//	{
+//		// break in the debugger
+//	}
+
+	pTD->sockfd = pTCD->sockfd;		// the accepted fd for clientthread, nothing for ProxyHelperThread
+	pTD->pnsockfd = pTCD->pnsockfd; // nothing for clientthread, pointer to the shared client side fd in ThreadData
+
 	pTD->pTSD = pTSD;
+	pTD->strAction = pTCD->strAction;
 	pTD->pcondHelper = pTCD->pcondHelper;
 	pTD->pnProxyClosed = pTCD->pnProxyClosed;
+	pTD->pnProxyFlags =  pTCD->pnProxyFlags;
 	pTD->nParentThreadID = pTCD->nParentThreadID;
 	pTD->pnProxyfd = pTCD->pnProxyfd;
 	pTD->plLastActivityTime = pTCD->plLastActivityTime;
@@ -1697,7 +1930,7 @@ void AttachToClientThreadHelper(ThreadData *pTD, ThreadConnectionData *pTCD)
 
 	if (pTCD->nConnectRouteSize) // protocols 6,11, and 2 use this
 	{
-		memcpy(pTD->pzConnectRoute,pTCD->pzConnectRoute,pTCD->nConnectRouteSize);
+		strcpy(pTD->pzConnectRoute,pTCD->pzConnectRoute );  
 	}
 	gthread_cond_signal(  &(pTD->cond) ); 
 }
@@ -1761,23 +1994,38 @@ ThreadData *AttachToClientThread(ThreadConnectionData *pTCD, GArray *pGPool,int 
 				{
 					pNewTD = new ThreadData;
 					pNewTD->nThreadIsBusy = 1;
+					int nReCreateRetry = 0; 
 
-					if(pGPool == g_PoolClientThread) // there are two thread pools, decide which one we are dealing with
+					while(!bCreatedThread && nReCreateRetry++ < 3)
 					{
-						if ( gthread_create(&pNewTD->chld_thr,NULL, clientThread, (void *)pNewTD ) == 0)
+						if(pGPool == g_PoolClientThread) // there are two thread pools, decide which one we are dealing with
 						{
-							bCreatedThread = 1;
+							if ( gthread_create(&pNewTD->chld_thr,NULL, clientThread, (void *)pNewTD ) == 0)
+							{
+								bCreatedThread = 1;
+							}
+						}
+						else
+						{
+							if (gthread_create(&pNewTD->chld_thr,NULL, ProxyHelperThread, (void *)pNewTD ) == 0)
+							{
+								bCreatedThread = 1;
+							}
+						}
+						if (!bCreatedThread)
+						{
+							gsched_yield();
 						}
 					}
-					else
-					{
-						if (gthread_create(&pNewTD->chld_thr,NULL, ProxyHelperThread, (void *)pNewTD ) == 0)
-						{
-							bCreatedThread = 1;
-						}
-					}
+
 					if(bCreatedThread)
 					{
+if (nReCreateRetry > 1)
+{
+	// never happens.
+	InfoLog(1234567,"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^a retry fixed it!");
+}
+
 						while(pNewTD->nThreadIsBusy) // when it's not busy, it is ready, initialized and waiting
 						{
 							gsched_yield(); // it won't take more than a loop or two
@@ -1814,7 +2062,7 @@ ThreadData *AttachToClientThread(ThreadConnectionData *pTCD, GArray *pGPool,int 
 					//10=-- Server Too Busy
 					GString strLog;
 					strLog.LoadResource(g_pzCoreErrorSection, 10);
-					InfoLog(28,strLog);
+					InfoLog(6,strLog);
 
 					// bad news.  The requests are coming faster than we can deal with them, and we are not configured to, or cannot, create another thread to handle this request.
 					// If this happens, you need a bigger thread pool, more memory,  or a faster server. - depending on your configuration settings
@@ -1822,7 +2070,7 @@ ThreadData *AttachToClientThread(ThreadConnectionData *pTCD, GArray *pGPool,int 
 					g_TotalTooBusy++;
 
 					// reject the pending connection.
-					PortableClose(pTCD->sockfd,"Core4");
+					PortableClose(*pTCD->pnsockfd,"Core4");
 					return 0;
 				}
 			}
@@ -2168,20 +2416,20 @@ void BuildHTTPHeader(char *header, const char *pzFileName, const char *pzConnect
 
 
 // Return file content from an HTTP request.
-int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int nSize, const char *pzRequestingIP, int nKeepAlive, int bisHead, char *buf1, char*buf2, int *nTotalProxiedBytes)
+int ReturnFile(ThreadData *td, const char *pzHTTPGET, int nSize, const char *pzRequestingIP, int nKeepAlive, int bisHead, char *buf1, char*buf2, __int64 *nTotalProxiedBytes)
 {
 	g_TotalHits++;
 	
 	char pzFilePartialPath[1024];		// relative path (ex. /images/pic.gif)
 	GString strFileNoPath;				// no path - file name only (ex. pic.gif)
 	GString strExt(" ");				// ext only(ex.  gif)
-	GString strFileName(pzHomeDir);		// complete path (ex. d:\home/images/pic.gif)
+	GString strFileName(g_strHTTPHomeDirectory);		// complete path (ex. d:\home/images/pic.gif)
 	GString strError(512);		// only used when sending back a 404, or 301				
 	GString strHTML(512);		// only used when sending back a 404, or 301
 
 
-	if (!pzHomeDir || pzHomeDir[0] == 0) // the HTTP server is enabled, perhaps to run the switchboard, but there are 
-										 // no files to serve via HTTP requests because there is no home directory
+	if ( g_strHTTPHomeDirectory.IsEmpty() ) // the HTTP server is enabled, perhaps to run the switchboard, but there are 
+											// no files to serve via HTTP requests because there is no home directory
 	{
 		// build a 404 Error
 		strError = "HTTP/1.1 403 Forbidden\r\n";
@@ -2327,7 +2575,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 	
 	
 	// if strFileName contains only the home-dir path... give them the homepage
-	if (pzHomeDir && strFileName.Compare(pzHomeDir) == 0)
+	if ( strFileName.Compare( g_strHTTPHomeDirectory ) == 0 )
 	{
 		const char *pzIndex = GetProfile().GetString("HTTP","Index",false);
 		if (pzIndex)
@@ -2524,8 +2772,6 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 		const char *pzBalanceFile = GetProfile().GetString("HTTP-Balance",strFileNoPath,false);
 		const char *pzBalanceType = GetProfile().GetString("HTTP-Balance",strExt,false);
 
-		
-		
 		const char *pzBalanceRange = 0;
 		if ( pzBalanceFile || pzBalanceType || pzBalanceRange )
 		{
@@ -2560,7 +2806,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 				{
 					GString strMsg("Redirected To:");
 					strMsg += strBalanceToServer;
-					InfoLog(30,strMsg);
+					InfoLog(7,strMsg);
 				}
 
 				strHTML = "";
@@ -2576,7 +2822,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 			{
 				GString strMsg("NOT Redirected:");
 				strMsg += strFileNoPath;
-				InfoLog(31,strMsg);
+				InfoLog(8,strMsg);
 			}
 		}
 	}
@@ -2592,7 +2838,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 	{
 		GString strLog;
 		strLog << "[" << strFileNoPath << "] to [" << pzRequestingIP << "]  HTTP referrer [" << strReferer << "]";
-		InfoLog(111,strLog);
+		InfoLog(9,strLog);
 	}
 
 
@@ -2766,7 +3012,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 			{
 				GString strErr;
 				strErr.Format("\nEncryptedHomeDir file[%s]\nReports:[%s]",(const char *)strFileName,(const char *)strErrorOut);
-				InfoLog(32,strErr);
+				InfoLog(10,strErr);
 
 				// build a 404 Error
 				strError = "HTTP/1.1 404 Not Found\r\n";
@@ -2798,7 +3044,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 					buf = new char[lBytes +1];
 					if (fread(buf,sizeof(char),lBytes,fp) != (unsigned int)lBytes)
 					{
-						InfoLog(33,"Failed to read entire file\n");
+						InfoLog(11,"Failed to read entire file\n");
 						lBytes = 0;
 					}
 				}
@@ -2840,7 +3086,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 								buf = new char[lBytes +1];
 								if (fread(buf,sizeof(char),lBytes,fp) != (unsigned int)lBytes)
 								{
-									InfoLog(34,"Failed to read entire file\n");
+									InfoLog(12,"Failed to read entire file\n");
 									lBytes = 0;
 								}
 							}
@@ -2899,7 +3145,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 							int nChunkSize = (nBytesToSend > MAX_RAW_CHUNK) ? MAX_RAW_CHUNK : nBytesToSend;
 							if (fread(pzBlockData,sizeof(char),nChunkSize,fp) != (unsigned int)nChunkSize)
 							{
-								InfoLog(35,"Failed to read file chunk\n");
+								InfoLog(13,"Failed to read file chunk\n");
 								lBytes = 0;
 								break;
 							}
@@ -2963,7 +3209,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 
 							if (fread(pzCacheData + nHeaderOffset,sizeof(char),nChunkSize,fp) != (unsigned int)nChunkSize)
 							{
-								InfoLog(36,"Failed to read file chunk\n");
+								InfoLog(14,"Failed to read file chunk\n");
 								lBytes = 0;
 								break;
 							}
@@ -3076,7 +3322,7 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 						//12=HTTP Content File [%s] requested but not found
 						GString strLog;
 						strLog.Format("File[%s] or Method[%s] Not found",(const char *)strFileName,(const char *)strFileNoPath);
-						InfoLog(37,strLog);
+						InfoLog(15,strLog);
 
 					}
 				}
@@ -3097,66 +3343,36 @@ int ReturnFile(ThreadData *td, const char *pzHomeDir, const char *pzHTTPGET, int
 
 
 
-void ProxyLog(const char *szConfigSectionName, int nThreadID, char *pData, int nBytes, const char *prefix )
+void ProxyLog(const char *pzLogFile, int nThreadID, char *pData, int nBytes, const char *prefix )
 {
-	GString strLogFile (    GetProfile().GetPath(szConfigSectionName,"LogPath",false)   );
-	if (strLogFile.Length())
+	if ( pzLogFile && strlen(pzLogFile))
 	{
-		char pzJoulDate[16];
-		char pzTime[64];
-		struct tm *newtime;
-		time_t ltime;
-		time(&ltime);
-		newtime = gmtime(&ltime);
-		strftime(pzJoulDate, 16, "%j%Y", newtime);
-		strftime(pzTime, 64, "%H:%M:%S", newtime);
-		
-		
-		#ifdef _WIN32
-			_mkdir(strLogFile);
-		#else
-			mkdir(strLogFile,777);
-		#endif
-
-
-		strLogFile += pzJoulDate;
-		#ifdef _WIN32
-			mkdir(strLogFile);
-		#else
-			mkdir(strLogFile,777);
-		#endif
-
-		// where to log it
-		strLogFile += g_chSlash;
-		strLogFile += szConfigSectionName;
-		strLogFile += ".txt";
-
-		// log prefix header
-		GString strPrefix("\n\n\n");
-		strPrefix << prefix;
-		strPrefix.write(pzTime,8);
-		strPrefix << "-";
-		char pzBytes[16];
-		sprintf(pzBytes,"%06d",(int)nBytes);
-		strPrefix.write(pzBytes,6);
-		strPrefix << ">\n";
-
-		// log binary
-		if (GetProfile().GetBool(szConfigSectionName,"LogBinary",false))
+		try
 		{
+			char pzTime[64];
+			struct tm *newtime;
+			time_t ltime;
+			time(&ltime);
+			newtime = gmtime(&ltime);
+			strftime(pzTime, 64, "%H:%M:%S", newtime);
+			
+			// log prefix header
+			GString strPrefix("\r\n\r\n");
+			strPrefix.write(pzTime,8);
+			strPrefix << " " << prefix;
+			strPrefix << "-";
+			char pzBytes[16];
+			sprintf(pzBytes,"%06d",(int)nBytes);
+			strPrefix.write(pzBytes,6);
+			strPrefix << ">bytes\r\n";
+
+			// log binary
 			GString strBinary(strPrefix);
-			strBinary.FormatBinary((unsigned char *)pData,nBytes);
-			strBinary.ToFileAppend(strLogFile);
+			strBinary.FormatBinary((unsigned char *)pData,(int)nBytes);
+			strBinary.ToFileAppend(pzLogFile);
 		}
-		else // or log text
+		catch(...)
 		{
-			FILE *fp = fopen((const char *)strLogFile,"a");
-			if (fp)
-			{
-				fwrite((const char *)strPrefix,1,(int)strPrefix.Length(),fp);
-				fwrite(pData,1,nBytes,fp);
-				fclose(fp);
-			}
 		}
 	}
 }
@@ -3167,7 +3383,7 @@ int PrepForServer(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 {
 	if (nDataSize > MAX_DATA_CHUNK)
 	{
-		InfoLog(40,"protocol error - packet too big");
+		InfoLog(16,"protocol error - packet too big");
 		return 0;
 	}
 	
@@ -3226,7 +3442,7 @@ int PrepForServer(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				{
 					GString strErr("Compress failed. point 1, code:");
 					strErr << cRet;
-					InfoLog(39,strErr);
+					InfoLog(17,strErr);
 					*newLength = 0;
 					return 0;
 				}
@@ -3237,7 +3453,7 @@ int PrepForServer(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				}catch(...)
 				{
 					GString strErr("Compress failed. point 2");
-					InfoLog(39,strErr);
+					InfoLog(18,strErr);
 					*newLength = 0;
 					return 0;
 				}
@@ -3303,7 +3519,7 @@ int PrepForServer(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 
 			if (nDataSize*8 % BLOCK_SIZE)
 			{
-				InfoLog(40,"protocol error.");
+				InfoLog(19,"protocol error.");
 				return 0;
 			}
 
@@ -3325,7 +3541,7 @@ int PrepForServer(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 			// ASSERTION, the byte pad count must be less than a block size
 			if (chPad > 16)
 			{
-				InfoLog(41,"Wrong Password.");
+				InfoLog(20,"Wrong Password.");
 				return 0;
 			}
 			// and the new size removes the last block and padding bits added to the second to last block.
@@ -3375,14 +3591,14 @@ int PrepForServer(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 					//14=Decompress failed.  Wrong password-key attempt?
 					GString strLog;
 					strLog.LoadResource(g_pzCoreErrorSection, 14);
-					InfoLog(42,strLog);
+					InfoLog(21,strLog);
 
 					*newLength = 0;
 					return 0;
 				}
 				}catch(...)
 				{
-					InfoLog(42,"Decompress failed - unknown error");
+					InfoLog(22,"Decompress failed - unknown error");
 					*newLength = 0;
 					return 0;
 				}
@@ -3428,7 +3644,7 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				//15=protocol error - invalid block size[%d]
 				GString strLog;
 				strLog.LoadResource(g_pzCoreErrorSection, 15, nDataSize);
-				InfoLog(43,strLog);
+				InfoLog(23,strLog);
 				return 0;
 			}
 
@@ -3446,7 +3662,7 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				//16=Wrong password-key attempt?
 				GString strLog;
 				strLog.LoadResource(g_pzCoreErrorSection, 16);
-				InfoLog(44,strLog);
+				InfoLog(24,strLog);
 				return 0;
 			}
 			// get the first byte of the last 128 bit block
@@ -3457,7 +3673,7 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				//16=Wrong password-key attempt?
 				GString strLog;
 				strLog.LoadResource(g_pzCoreErrorSection, 16);
-				InfoLog(45,strLog);
+				InfoLog(25,strLog);
 				return 0;
 			}
 
@@ -3506,14 +3722,14 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 					//14=Decompress failed.  Wrong password-key attempt?
 					GString strLog;
 					strLog.LoadResource(g_pzCoreErrorSection, 14);
-					InfoLog(46,strLog);
+					InfoLog(26,strLog);
 
 					*newLength = 0;
 					return 0;
 				}
 				}catch(...)
 				{
-					InfoLog(46,"Decompress failed - unknown error");
+					InfoLog(27,"Decompress failed - unknown error");
 					*newLength = 0;
 					return 0;
 				}
@@ -3566,7 +3782,7 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				{
 					GString strErr("Compression failed - code:");
 					strErr << cRet;
-					InfoLog(47,strErr);
+					InfoLog(28,strErr);
 					*newLength = 0;
 				}
 				else
@@ -3576,7 +3792,7 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 				}
 				}catch(...)
 				{
-					InfoLog(47,"Compression failed - unknown error");
+					InfoLog(29,"Compression failed - unknown error");
 					*newLength = 0;
 				}
 				
@@ -3649,8 +3865,11 @@ int PrepForClient(unsigned short sAttribs, int bIsTunnel,CipherData *pcd, char *
 // after calling ReadPacketHTTP(), this code:
 // int nHTTPHeaderLen = pContent - pzHTTPHeader; 
 // will get you the HTTP header len IN THE FIRST packet read.
-int ReadPacketHTTP(int fd, int *pnBytesInBuf, char *Buf, unsigned int *nPktIndex, unsigned long *pnContentLen = 0, char **ppContent = 0, int nTimeOutSec = 60, int nTimeOutMicroSec = 0)
+
+int ReadPacketHTTP(int fd, int *pnBytesInBuf, char *Buf, unsigned int *nPktIndex, unsigned long *pnContentLen = 0, char **ppContent = 0, int nTimeOutSec = 300, int nTimeOutMicroSec = 0)
 {
+	Buf[*pnBytesInBuf] = 0; // purely for debugging asthetics
+
 	int nHeaderLength = 0;
 	int nBytes = 0;
 	char *pContent = 0;
@@ -3673,31 +3892,70 @@ int ReadPacketHTTP(int fd, int *pnBytesInBuf, char *Buf, unsigned int *nPktIndex
 			if(g_TraceConnection && rslt == 0)
 			{
 				GString strErr;
-				strErr.Format("ReadPacketHTTP SUB timeout(%d seconds) code %d",(int)nTimeOutSec,(int)SOCK_ERR);
-				InfoLog(47,strErr);
+				strErr.Format("ReadPacketHTTP Timed out waiting for data. (%d seconds) code %d  fd:%d",(int)nTimeOutSec,(int)SOCK_ERR,(int)fd);
+				InfoLog(30,strErr);
 			}
-			return rslt; 
+			if(g_TraceConnection && rslt == -1)
+			{
+		int nErrorCode = 0;
+		int size = sizeof(nErrorCode);
+#ifdef _WIN32
+		getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, &size);
+#else
+		getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, (socklen_t *)&size);
+#endif
+
+				GString strErr;
+				strErr.Format("*******ReadPacketHTTP Errored while waiting for data from fd:%d  code:%d SO_ERROR=%d",(int)fd,(int)SOCK_ERR,(int)nErrorCode);
+				InfoLog(31,strErr);
+			}
+			// return rslt; was replaced with return -1 in September 2014
+			return -1; 
 		}
 
+
+
 		int nRcvRetryCount = 0;
-SUB_RCV_RETRY:		
+SUB_RCV_RETRY:
 		nBytes = recv(fd, Buf, nRemaining, 0 ); // take what ever is available and return to caller
+		if (nBytes == 0)
+		{
+			if(g_TraceConnection)
+			{
+				GString strErr("ReadPacketHTTP aborted reading HTTP Header - the connection was closed by the remote side.");
+				InfoLog(32,strErr);
+			}
+
+			// this most likely means that the remote side of the connection closed the socket
+			if(g_TraceConnection)
+			{
+				GString strErr;
+				strErr.Format("????ReadPacketHTTP Errored while waiting for data. Code:%d  from fd:%d",(int)SOCK_ERR,(int)fd);
+				InfoLog(33,strErr);
+			}
+			return -1; // In September 2014, ReadPacketHTTP() added this logic to return -1 when recv() returns 0.  
+					   // previously the logic fell though, and returned 1. 
+
+		}
 		if (nBytes == -1)
 		{
+			int nErr = SOCK_ERR;
 			// 10035 = Resource temporarily unavailable
-			if (SOCK_ERR == 10035)
+			if (nErr == 10035)
 			{
 				goto SUB_RCV_RETRY; 
 			}
-			if(nRcvRetryCount++ < 3 && SOCK_ERR != 10054 && SOCK_ERR != 10038) 
+			if(nRcvRetryCount++ < 3 && nErr != 10054 && nErr != 10038) 
 			{
-				gsched_yield();
+				PortableSleep(0,150000 * nRcvRetryCount);
 				goto SUB_RCV_RETRY; 
 			}
+
 			return -1; 
 		}
 		*nPktIndex -= nBytes;
 		*pnBytesInBuf += nBytes;
+		Buf[*pnBytesInBuf] = 0; // purely for debugging asthetics
 		return 1; // process the data
 	}
 
@@ -3711,7 +3969,21 @@ SUB_RCV_RETRY:
 	// failure during wait || time limit expired
 	if (rslt == -1 || rslt == 0)
 	{
-		return rslt;
+		if(g_TraceConnection && rslt == 0)
+		{
+			GString strErr;
+			strErr.Format("*******ReadPacketHTTP Timed out waiting for data. (%d seconds) code %d  fd=%d",(int)nTimeOutSec,(int)SOCK_ERR,(int)fd);
+			InfoLog(34,strErr);
+		}
+		if(g_TraceConnection && rslt == -1)
+		{
+
+			GString strErr;  //Code 10038 
+			strErr.Format("*******ReadPacketHTTP Errored while waiting for data. Code:%d  from fd:%d",(int)SOCK_ERR,(int)fd);
+			InfoLog(35,strErr);
+		}
+		// return rslt; was replaced with return -1 in September 2014
+		return -1; 
 	}
 
 	// enters a byte by byte read while bReadingHTTPHeader is true.  
@@ -3729,6 +4001,14 @@ RCV_RETRY:
 		{
 			if(nBytes == 0)
 			{
+				if(g_TraceConnection)
+				{
+					Buf[*pnBytesInBuf] = 0;
+					GString strErr("ReadPacketHTTP Aborted reading HTTP Header - connection closed by the remote side. recv() returns 0. fd=");
+					strErr << fd << " SOCK_ERR= " << SOCK_ERR << " nBytes=" << nBytes << " *pnBytesInBuf=" << *pnBytesInBuf << " Data=" << Buf;
+					InfoLog(36,strErr);
+
+				}
 				return -1;
 			}
 
@@ -3739,10 +4019,17 @@ RCV_RETRY:
 			}
 			if(nRcvRetryCount++ < 3 && SOCK_ERR != 10054 && SOCK_ERR != 10038)
 			{
-				gsched_yield();
+				PortableSleep(0,150000 * nRcvRetryCount);
 				goto RCV_RETRY; 
 			}
 			// The client aborted, or timed out, or g_bPartialHeaderWait is OFF and 0 bytes was returned during the header read.
+			if(g_TraceConnection) // 10053
+			{
+				Buf[*pnBytesInBuf] = 0;
+				GString strErr("ReadPacketHTTP - connection closed by the remote side. recv() returns -1. fd=");
+				strErr << fd << " SOCK_ERR= " << SOCK_ERR << " nBytes=" << nBytes << " *pnBytesInBuf=" << *pnBytesInBuf << " Data=" << Buf;
+				InfoLog(37,strErr);
+			}
 			return -1; 
 		}
 		
@@ -3767,17 +4054,39 @@ RCV_RETRY:
 		// if g_bPartialHeaderWait is true - wait for the remainder of the TCP data, otherwise the connection will get dropped.
 		if (bReadingHTTPHeader && g_bPartialHeaderWait)
 		{
-			// todo: check the I/O stats of buffered size, this call could be avoided for each byte of header data.
+			// todo: check the I/O stats of buffered data size in the socket queue, then this call could be avoided for each byte of header data giving us more CPU to spend elsewhere.
 			rslt = readableTimeout(fd, g_nPartialHeaderWaitSec, 0);
 			if (rslt == -1 || rslt == 0)
 			{
-				return -1; // note: not "return rslt;" so the caller closes the connection and does not wait any longer.
+				if(g_TraceConnection && rslt == 0)
+				{
+					GString strErr;
+					strErr.Format("ReadPacketHTTP Timed out waiting for data. (%d seconds) code %d",(int)nTimeOutSec,(int)SOCK_ERR);
+					InfoLog(38,strErr);
+				}
+				if(g_TraceConnection && rslt == -1)
+				{
+
+					GString strErr;
+					strErr.Format("???k ReadPacketHTTP Errored while waiting for data. Code:%d ",(int)SOCK_ERR);
+					InfoLog(39,strErr);
+				}
+				// return rslt; was replaced with return -1 in September 2014
+				return -1; 
+
 			}
 		}
 	}
 	
 	if (bReadingHTTPHeader == 1) // if we bailed because we hit g_nMaxHTTPHeaderSize hang up the connection
 	{
+		if(g_TraceConnection && rslt == -1)
+		{
+			GString strErr;
+			strErr.Format("ReadPacketHTTP is closing the connection because the client has sent[%d] bytes of HTTP header and we only allow[%d] bytes.",(int)*pnBytesInBuf , (int)g_nMaxHTTPHeaderSize);
+			InfoLog(40,strErr);
+		}
+		
 		return -1;
 	}
 
@@ -3808,24 +4117,48 @@ RCV_RETRY:
 		// failure during wait || time limit expired waiting for content data
 		if (rslt == -1 || rslt == 0)
 		{
-			return rslt; 
+			if(g_TraceConnection && rslt == 0)
+			{
+				GString strErr;
+				strErr.Format("ReadPacketHTTP Timed out waiting for data. (%d seconds) code %d",(int)nTimeOutSec,(int)SOCK_ERR);
+				InfoLog(41,strErr);
+			}
+			if(g_TraceConnection && rslt == -1)
+			{
+				GString strErr;
+				strErr.Format("???9 ReadPacketHTTP Errored while waiting for data from fd:%d Code:%d",fd,(int)SOCK_ERR);
+				InfoLog(42,strErr);
+			}
+			// return rslt; was replaced with return -1 in September 2014
+			return -1; 
 		}
+		nRcvRetryCount = 0;
 RETRY:
-		
 		nBytes = recv(fd, &Buf[*pnBytesInBuf], nReadSize, 0 );
 		// now we have the entire header + nBytes of the content length - the total of which does not exceed MAX_RAW_CHUNK
 
 		if (nBytes < 1)
 		{
+			if(nBytes == 0)
+			{
+				if(g_TraceConnection)
+				{
+					GString strErr("ReadPacketHTTP Aborted reading HTTP - the connection was closed by the remote side.");
+					InfoLog(43,strErr);
+				}
+				return -1;
+			}
+
 			// 10035 = Resource temporarily unavailable
-			if (SOCK_ERR == 10035)
+			int nErr = SOCK_ERR;
+			if (nErr == 10035)
 			{
 				// gsched_yield();
 				goto RETRY; 
 			}
-			if(nRcvRetryCount++ < 3 && SOCK_ERR != 10054 && SOCK_ERR != 10038) 
+			if(nRcvRetryCount++ < 3 && nErr != 10054 && nErr != 10038) 
 			{
-				gsched_yield();
+				PortableSleep(0,150000 * nRcvRetryCount);
 				goto RETRY; 
 			}
 
@@ -3892,8 +4225,8 @@ READ_PACKET_BEGIN:
 
 		if (nNextPktSize < 0)
 		{
-			GString strLog = "Invalid packet size (misconfigured?)";
-			InfoLog(48,strLog);
+			GString strLog = "*******Invalid packet size (misconfigured?)";
+			InfoLog(44,strLog);
 			return -1;
 		}
 
@@ -3911,7 +4244,7 @@ READ_PACKET_BEGIN:
 				// 17=Protocol error. If you are attempting to proxy or 'bounce' TCP, enable RawPacketProxy=yes in the correct subsection of the config file.
 				GString strLog;
 				strLog.LoadResource(g_pzCoreErrorSection, 17);
-				InfoLog(49,strLog);
+				InfoLog(45,strLog);
 				return -1;
 			}
 		}
@@ -3937,7 +4270,7 @@ READ_PACKET_BEGIN:
 		else 
 		{
 			int rslt = readableTimeout(fd, nTimeOutSec, nTimeOutMicro);
-			if ( rslt > 0)
+			if ( rslt > 0 )
 			{
 				// slide the data to the front of the buffer to make room for this packet
 				if (*nPktIndex > 0)
@@ -3953,62 +4286,100 @@ READ_PACKET_BEGIN:
 					// 18=ReadPacket buffer overrun.
 					GString strLog;
 					strLog.LoadResource(g_pzCoreErrorSection, 18);
-					InfoLog(50,strLog);
+					InfoLog(46,strLog);
 
 					return -1;
 				}
 
+
+				int nReRecvRetry;
+				nReRecvRetry = 0;
+RE_RECV:
 				// read data from the server
 				int nBytes = recv(fd, &Buf[*pnBytesInBuf], MAX_DATA_CHUNK - *pnBytesInBuf, 0 );
+
 				if (nBytes > 0)
 				{
 					char *pNewDataBegin = &Buf[*pnBytesInBuf];
 					*pnBytesInBuf = *pnBytesInBuf + nBytes;
-					if (g_DataTrace) DataTrace("raw rx", pNewDataBegin, nBytes);
+					if (g_DataTrace) 
+					{
+						DataTrace("raw rx", pNewDataBegin, nBytes);
+					}
+					
 					goto READ_PACKET_BEGIN;
 				}
-				else // nBytes = -1 || 0
+				else if (nBytes == -1)
 				{
-					// recv() failed (connection closed by server)
-					if(g_TraceConnection)
+					int nErr = SOCK_ERR;
+
+					if (nErr == 10035)
 					{
-						InfoLog(51,"111 ReadPacket::recv() failed (connection closed by server)");
+						gsched_yield();
+						goto RE_RECV;
 					}
+					else if(nReRecvRetry++ < 3 && nErr != 10054 && nErr != 10038) 
+					{
+						PortableSleep(0,150000 * nReRecvRetry);
+						goto RE_RECV;
+					}
+
+					// recv() failed (connection closed by server)
+					GString strErr("*******recv() stopped.  nBytesInBuf=");
+					strErr << *pnBytesInBuf << "  *nPktIndex=" << *nPktIndex << "  bIsHTTP=" << bIsHTTP << "  nBufBytesNeeded=" << nBufBytesNeeded << "  bPacketSync=" << bPacketSync;
+					InfoLog(47,strErr);
+
 					return -1;
 				}
-			}
-			else if (rslt == -1)
-			{
-				// failure during wait (connection closed by server)
-				if(g_TraceConnection)
+				else if (nBytes == 0)
 				{
-					InfoLog(52,"ReadPacket::failure during wait");
+					// the connection was closed by the remote side. but it's odd we got 0 bytes rather than an error.
+					GString strErr("*******recv() quit.  nBytesInBuf=");
+					strErr << *pnBytesInBuf << "  *nPktIndex=" << *nPktIndex << "  bIsHTTP=" << bIsHTTP << "  nBufBytesNeeded=" << nBufBytesNeeded << "  bPacketSync=" << bPacketSync;
+					InfoLog(48,strErr);
+
+					// no retry here
+					return -1;
 				}
+
+			}
+			else if (rslt == -1) // rslt from readableTimeout()
+			{
+				GString strErr("*******readableTimeout() quit.  nBytesInBuf=");
+				strErr << *pnBytesInBuf << "  *nPktIndex=" << *nPktIndex << "  bIsHTTP=" << bIsHTTP << "  nBufBytesNeeded=" << nBufBytesNeeded << "  bPacketSync=" << bPacketSync;
+				InfoLog(49,strErr);
+
 				return -1;
 			}
-			else 
-			{
-				// rslt = 0, the time limit expired.
-			}
-			
-			// no data or only a partial packet available - nothing to do.
+
+			// no data or only a partial packet available - nothing to do because readableTimeout() timed out.
 			return 0;
 		}
 	}
 	else
 	{
 		int rslt = readableTimeout(fd, nTimeOutSec, nTimeOutMicro );
-		if ( rslt > 0)
+		
+		// if there is data on the port ready to read.
+		if ( rslt > 0 )
 		{
 			if (bIsHTTP)
 			{
+				if (*nPktIndex == -1)
+				{
+					*nPktIndex = 0; // initial value for the first packet read.
+				}
+
 				// Buf will contain the HTTP packet
 				int nBytes  = 0;
 				*pnBytesInBuf = nBytes; // no preread bytes exist in the destination buffer
 				*ppPkt = Buf;
+				
 				int nRet = ReadPacketHTTP(fd, pnBytesInBuf, Buf, (unsigned int *)nPktIndex, 0, 0, nTimeOutSec, nTimeOutMicro);
 				*nPktLen = *pnBytesInBuf; // HTTP reads: nPktLen always == nBytesInBuf
-				return nRet;
+
+
+				return nRet; // SOCK_ERR=183, 10054, 10014
 			}
 
 
@@ -4029,7 +4400,7 @@ RETRY_ON_ERR:
 					nMinRead -= nBytes;
 					nBufi += nBytes;
 					*pnBytesInBuf += nBytes;
-					readableTimeout(fd, nTimeOutSec, nTimeOutMicro );
+					readableTimeout( fd, nTimeOutSec, nTimeOutMicro );
 					goto RETRY_ON_ERR;
 				}
 				*pnBytesInBuf = nBytes;
@@ -4039,24 +4410,42 @@ RETRY_ON_ERR:
 				// 10035 = Resource temporarily unavailable
 				if (SOCK_ERR == 10035)
 				{
-					// gsched_yield();
 					goto RETRY_ON_ERR; 
 				}
-				if (nRetryOnErrCount++ > 2 || SOCK_ERR == 10054 || SOCK_ERR == 10038 )
+				
+				// this says, "if we are NOT going to retry the error"
+				if (nRetryOnErrCount++ > 3 || SOCK_ERR == 10054 || SOCK_ERR == 10038 )
 				{
-					// recv() failed or session complete (connection closed by server)
 					return -1;
 				}
-				else
+				else // else we will retry
 				{
-					PortableSleep(0,100000);
-					gsched_yield();
+					PortableSleep(0,100000 * nRetryOnErrCount);
 					goto RETRY_ON_ERR;
 				}
 			}
 			else if (nBytes == 0) 
 			{
-				//InfoLog("ReadPacket returns 0. Drop connection.");
+				// added September 2014	to proxy the last of our recv() buffer on error				
+				if (*pnBytesInBuf > 0 && !bIsHTTP && !bPacketSync) // if this is a raw data proxy
+				{
+					*ppPkt = Buf;
+					*nPktLen = *pnBytesInBuf;
+					*psAttrFlags = 0;	// no attributes - raw data
+					return 1; // process the data now
+				}
+				int nErrorCode = 0;
+				int size = sizeof(nErrorCode);
+				#ifdef _WIN32
+						getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, &size);
+				#else
+						getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, (socklen_t *)&size);
+				#endif
+
+				GString strErr("*******recv() quit.");
+				strErr << "from fd:" << fd << " bytes on-hand:" << *pnBytesInBuf << "  *nPktIndex=" << *nPktIndex << "  bIsHTTP=" << bIsHTTP << "  bPacketSync=" << bPacketSync  << " SOCK_ERR=" << SOCK_ERR << "  SO_ERROR=" << nErrorCode;
+				InfoLog(50,strErr);
+
 				return -1;
 			}
 
@@ -4078,12 +4467,33 @@ RETRY_ON_ERR:
 				return 1; // process the data now
 			}
 		}
-		else if (rslt == -1)
+		else if (rslt == -1) //  -1 is an error from readableTimeout()
 		{
+			// added September 2014					
+			if (*pnBytesInBuf > 0 && !bIsHTTP && !bPacketSync) // if this is a raw data proxy
+			{
+				*ppPkt = Buf;
+				*nPktLen = *pnBytesInBuf;
+				*psAttrFlags = 0;	// no attributes - raw data
+				return 1; // process the data now
+			}
+
+			int nErrorCode = 0;
+			int size = sizeof(nErrorCode);
+			#ifdef _WIN32
+					getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, &size);
+			#else
+					getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, (socklen_t *)&size);
+			#endif
+
+			GString strErr("*******readableTimeout() quit. ");
+			strErr << "fd:" << fd << " Bytes=" << *pnBytesInBuf << "  *nPktIndex=" << *nPktIndex << "  bIsHTTP=" << bIsHTTP << "  bPacketSync=" << bPacketSync  << " SOCK_ERR=" << SOCK_ERR << "  SO_ERROR=" << nErrorCode;
+			InfoLog(51,strErr);
+
 			// failure during wait (connection closed by server)
 			return -1;
 		}
-		
+
 		// no data or only a partial packet available - nothing to do.
 		return 0;
 	}
@@ -4161,8 +4571,7 @@ unsigned short BuildAttributesHeader(const char *pzCfgSection, int nProtocol, in
 
 
 
-
-
+char junkBuffer[MAX_DATA_CHUNK];
 int	DoConnect(const char *pzConnectTo, int nPort, int nFromID, int nToID)
 {
 	if (!pzConnectTo || !pzConnectTo[0])
@@ -4171,7 +4580,7 @@ int	DoConnect(const char *pzConnectTo, int nPort, int nFromID, int nToID)
 		{
 			GString strInfo;
 			strInfo.Format("*******FAILED Outbound[%d:(null)]---(tid:%d<->%d)", (int)nPort,(int)nFromID, (int)nToID);
-			InfoLog(57,strInfo);
+			InfoLog(52,strInfo);
 		}
 		return -1;
 	}
@@ -4186,13 +4595,87 @@ int	DoConnect(const char *pzConnectTo, int nPort, int nFromID, int nToID)
 		return g_SwitchBoard.ConnectToServer( strInternalConnect );
 	}
 
+	int fd = -1;
+
+	
+	//
+	// Note: The GHash uses a key of "Port@www.domain.com" directly to the socket handle. 
+	//       When we hash a key and get a value, subtract 1 to make it a socket handle because
+	//       0 is a valid socket handle which will come back as 1 if it is found and 0 if it is not.
+	//       This is why we add 1 when putting it in and subtract 1 when taking it out.
+	//
+	if ( g_bEnableOutboundConnectCache )
+	{
+		GString gKey;
+		gKey << nPort << "@"  << pzConnectTo;
+		gKey.MakeLower();
+NEXT_IN_CACHE:
+		gthread_mutex_lock(&g_csMtxConnectCache);
+
+#if defined( _LINUX64) || defined (_IOS) || defined(_WIN64)
+		int fdCached = (int)(__int64)g_OutboundConnectCache.RemoveKey(gKey);
+#else
+		int fdCached = (int)g_OutboundConnectCache.RemoveKey(gKey);
+#endif
+		gthread_mutex_unlock(&g_csMtxConnectCache);
+		if (fdCached)
+		{
+			fd = fdCached - 1; // return to the actual socket handle value which may be 0 or >
+
+			int error = 0;
+			socklen_t len = sizeof (error);
+			if ( getsockopt (fd, SOL_SOCKET, SO_ERROR, (char *)&error, &len ) != 0)
+			{
+				PortableClose(fd,"ExpiredInCacheA");
+				goto NEXT_IN_CACHE;
+			}
+
+			int rslt = readableTimeout(fd, 0, 7);
+			// -1 == failure during wait   0 == the 7 microsecond time limit expired, 1 there is data
+			if (rslt == -1 )
+			{
+				PortableClose(fd,"ExpiredInCacheB");
+				goto NEXT_IN_CACHE;
+			}
+			if ( rslt == 1 )
+			{
+				// there is junk on the port that was intended for the last client that used this connection - but that client must have closed before getting this data
+				int nJunk = nonblockrecvAny ( fd, junkBuffer, MAX_DATA_CHUNK, 1 ); 
+				if (nJunk == -1)
+				{
+					PortableClose(fd,"ExpiredInCacheC");
+					goto NEXT_IN_CACHE;
+				}
+
+				if (g_bHTTPProxyLogExtra)
+				{
+					GString g;
+					junkBuffer[nJunk] = 0;
+					g << "Fresh fd from Cache:" << fd << " had data in queue - throw it away[" << junkBuffer << "]";
+					g.ReplaceChars("\r\n\r\n",'~');
+					InfoLog(123432,g);  
+				}
+			}
+
+
+			// getsockopt() returned 0.  According to SO_ERROR the socket is good, however it COULD still have been silently disconnected
+
+			if(g_TraceSocketHandles || g_TraceConnection)
+			{
+				GString strInfo;
+				strInfo.Format("CACHED Connected Out[%d@%s]  fd:%d  (tid:%d<->%d)", (int)nPort,pzConnectTo, (int)fd,(int)nFromID, (int)nToID);
+				InfoLog(57,strInfo);
+			}
+			return fd;
+		}
+	}
+
 	if(g_TraceConnection)
 	{
 		GString strInfo;
-		strInfo.Format("Outbound[%d:%s]---(tid:%d<->%d)", (int)nPort,pzConnectTo, (int)nFromID, (int)nToID);
-		InfoLog(58,strInfo);
+		strInfo.Format("Try Outbound [%d@%s]---(tid:%d<->%d)", (int)nPort,pzConnectTo, (int)nFromID, (int)nToID);
+		InfoLog(53,strInfo);
 	}
-	int fd = -1;
 
 	// else make an outbound-connect....
 	struct sockaddr_in their_addr; 
@@ -4201,18 +4684,26 @@ int	DoConnect(const char *pzConnectTo, int nPort, int nFromID, int nToID)
 	their_addr.sin_addr.s_addr = inet_addr (pzConnectTo);
 	if (their_addr.sin_addr.s_addr == -1)
 	{
+		int nDNSResolutionRetries = 0;
+DNSResolutionRETRY:
 		// resolve a DNS server name if inet_addr() came up empty.
 		struct hostent *pHE = (struct hostent *)gethostbyname(pzConnectTo);
 		if (pHE == 0)
 		{ 
-			// 27=Info:Failed to resolve[%s].
-//			GString strInfo;
-//			strInfo.Format("Info:Failed to resolve[%s]", pzConnectTo);
-//			InfoLog(59,strInfo);
+			if (nDNSResolutionRetries++ < 3)
+			{
+				PortableSleep(0,250000);
+				goto DNSResolutionRETRY;
+			}
+			// Info:Failed to resolve[%s].
+			if(g_TraceConnection)
+			{
+				GString strInfo;
+				strInfo.Format("*******FAILED to gethostbyname(%s): (tid:%d<->%d)",pzConnectTo, (int)nFromID, (int)nToID);
+				InfoLog(54,strInfo);
+			}
 
-			// we failed to resolve, not due to DNS error but due to the
-			// inability to obtain a network connection, likely on a mobile
-			// device that is 'sleeping'
+			// we failed to resolve, possibly not due to DNS error but due to the inability to obtain a network connection, likely on a mobile device that is 'sleeping' 
 			goto NO_CONNECT;
 		}
 		memcpy((char *)&(their_addr.sin_addr), pHE->h_addr,pHE->h_length); 
@@ -4225,18 +4716,29 @@ int	DoConnect(const char *pzConnectTo, int nPort, int nFromID, int nToID)
 		{
 			GString strInfo;
 			strInfo.Format("*******FAILED: Outbound[%d:%s]---(tid:%d<->%d)  NO SOCKET", (int)nPort,pzConnectTo, (int)nFromID, (int)nToID);
-			InfoLog(60,strInfo);
+			InfoLog(55,strInfo);
 		}
 		goto NO_CONNECT;
 	}
-	
+int nReConnectTries;
+nReConnectTries = 0;
+RE_CONNECT:
 	if (connect(fd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) != 0)
 	{
 		if(g_TraceConnection)
 		{
 			GString strInfo;
-			strInfo.Format("*******FAILED: Outbound[%d:%s]---(tid:%d<->%d)  NO CONNECT", (int)nPort,pzConnectTo, (int)nFromID, (int)nToID);
-			InfoLog(61,strInfo);
+			if (nReConnectTries == 3)
+				strInfo.Format("*******FAILED: Outbound[%d:%s]---(tid:%d<->%d)  NO CONNECT", (int)nPort,pzConnectTo, (int)nFromID, (int)nToID);
+			else
+				strInfo.Format("*******RE-TRY%d: Outbound[%d:%s]---(tid:%d<->%d)  NO CONNECT",nReConnectTries+1, (int)nPort,pzConnectTo, (int)nFromID, (int)nToID);
+			InfoLog(56,strInfo);
+		}
+
+		if (nReConnectTries++ < 3)
+		{
+			PortableSleep(0,250000 * (nReConnectTries + 1));  // the first retry in in 1/4 of a second (at 250,000 microcesonds) and the duration to the next retry is twice that
+			goto RE_CONNECT;
 		}
 
 		PortableClose(fd,"Core6");
@@ -4247,11 +4749,11 @@ int	DoConnect(const char *pzConnectTo, int nPort, int nFromID, int nToID)
 
 	AddDebugSocket(fd);
 
-	if (g_TraceSocketHandles)
+	if(g_TraceSocketHandles || g_TraceConnection)
 	{
-		GString strTrace("Connect Socket:");
-		strTrace << fd << "   on port:" << nPort << "  to:" << pzConnectTo << "  " << nFromID << ":" << nToID;
-		InfoLog(888,strTrace);
+		GString strInfo;
+		strInfo.Format("Connected Out[%d@%s]  fd:%d  (tid:%d<->%d)", (int)nPort,pzConnectTo, (int)fd,(int)nFromID, (int)nToID);
+		InfoLog(57,strInfo);
 	}
 
 NO_CONNECT:
@@ -4262,19 +4764,433 @@ NO_CONNECT:
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////  Begin NTLM Code ////////////////////////////////////////////
+
+// The specification is a bit scattered, and the implementation example is tightly coupled 
+// with application structure - so this is largely reverse-engineered by testing with 
+// the NTLMv2 implementation in Firefox, Safari, and IE.  It was better to be late than early 
+// to this technology, because this is a clean implementation tested with all 3 clients.
+// ----------  
+// http://www.opensource.apple.com/source/CFNetwork/CFNetwork-128/HTTP/NTLM/NtlmGenerator.cpp
+// http://www.innovation.ch/personal/ronald/ntlm.html
+// vs
+// https://developer.gnome.org/evolution-exchange/stable/ximian-connector-ntlm.html
+// ----------
+// see this for SPNEGO:
+// see: http://tools.ietf.org/html/rfc4559    
+// http://msdn.microsoft.com/en-us/library/ms995331.aspx
+// ----------
+// Chrome has historically been NTLM challenged with a handful of versions working with NTLMv2 and a handful that dont.
+// http://code.google.com/p/chromium/issues/detail?id=14206
+// http://stackoverflow.com/questions/8616818/integrated-windows-auth-ntlm-on-a-mac-using-google-chrome-or-safari
+// ----------
+struct TypeMessageSwitch
+{
+	char    protocol[8];     // 'N', 'T', 'L', 'M', 'S', 'S', 'P', '\0'
+	unsigned long  type;             // 0x01
+};
+
+struct Type1Message
+{
+	char    protocol[8];     // 'N', 'T', 'L', 'M', 'S', 'S', 'P', '\0'
+	unsigned long  type;             // 0x01
+	unsigned long  flags;
+
+	unsigned short domain_len;		 // domain string length
+	unsigned short domain_len_alloc; // domain string length
+    unsigned long  domain_off;       // domain string offset
+
+	unsigned short host_len;		// host string length
+    unsigned short host_len_alloc;  // host string length
+    unsigned long  host_off;		// host string offset (always 0x20)
+
+    char    Message[512];			// host string (ASCII) then domain string (ASCII) 
+	Type1Message()
+	{
+		memset(&protocol[0],0,sizeof(Type1Message));
+	}
+};
+
+
+void ShowAuthenticateFlags(unsigned long flags, GString &strDebugFlags)
+{
+	if ( (flags & 0x00000001) != 0 )
+		strDebugFlags << "NegotiateUnicode  ";	// Unicode
+	if ( (flags & 0x00000002) != 0 )
+		strDebugFlags << "NegotiateASCII  ";	// OEM
+	if ( (flags & 0x00000004) != 0 )
+		strDebugFlags << "RequestTarget   ";	// If set, a TargetName field of the CHALLENGE_MESSAGE (section 2.2.1.2) MUST be supplied
+	if ( (flags & 0x00000008) != 0 )
+		strDebugFlags << "0x00000008     ";		// not used should be 0
+	if ( (flags & 0x00000010) != 0 )
+		strDebugFlags << "NegotiateSign  ";		// If set, requests session key negotiation for message signatures. If the client sends NTLMSSP_NEGOTIATE_SIGN to the server in the NEGOTIATE_MESSAGE, the server MUST return NTLMSSP_NEGOTIATE_SIGN to the client in the CHALLENGE_MESSAGE
+	if ( (flags & 0x00000020) != 0 )
+		strDebugFlags << "NegotiateSeal  ";		// If set, requests session key negotiation for message confidentiality. If the client sends NTLMSSP_NEGOTIATE_SEAL to the server in the NEGOTIATE_MESSAGE, the server MUST return NTLMSSP_NEGOTIATE_SEAL to the client in the CHALLENGE_MESSAGE. Clients and servers that set NTLMSSP_NEGOTIATE_SEAL SHOULD always set NTLMSSP_NEGOTIATE_56 and NTLMSSP_NEGOTIATE_128, if they are supported.
+	if ( (flags & 0x00000040) != 0 )
+		strDebugFlags << "NegotiateDataGram   ";// If set, requests connectionless authentication
+	if ( (flags & 0x00000080) != 0 )
+		strDebugFlags << "NegotiateLMKey     ";	// If set, requests LAN Manager (LM) session key computation
+	if ( (flags & 0x00000100) != 0 )
+		strDebugFlags << "0x00000100   ";		// not used should be 0
+	if ( (flags & 0x00000200) != 0 )
+		strDebugFlags << "NegotiateNTLM   ";	// If set, requests usage of the NTLM v1 session security protocol. NTLMSSP_NEGOTIATE_NTLM MUST be set in the NEGOTIATE_MESSAGE to the server and the CHALLENGE_MESSAGE to the client.
+	if ( (flags & 0x00000400) != 0 )
+		strDebugFlags << "0x00000400   ";		// not used should be 0
+	if ( (flags & 0x00000800) != 0 )
+		strDebugFlags << "0x00000800";			// If set, the connection SHOULD be anonymous
+	if ( (flags & 0x00001000) != 0 )
+		strDebugFlags << "NegotiateDomainSupplied   ";  // If set, the domain name is provided  
+	if ( (flags & 0x00002000) != 0 )
+		strDebugFlags << "NegotiateWorkstationSupplied   ";   // This flag indicates whether the Workstation field is present. If this flag is not set, the Workstation field MUST be ignored.
+	if ( (flags & 0x00004000) != 0 )
+		strDebugFlags << "NegotiateLocalCall   "; 
+	if ( (flags & 0x00008000) != 0 )
+		strDebugFlags << "NegotiateAlwaysSign   "; // If set, requests the presence of a signature block on all messages. NTLMSSP_NEGOTIATE_ALWAYS_SIGN MUST be set in the NEGOTIATE_MESSAGE to the server and the CHALLENGE_MESSAGE to the client. NTLMSSP_NEGOTIATE_ALWAYS_SIGN is overridden by NTLMSSP_NEGOTIATE_SIGN and NTLMSSP_NEGOTIATE_SEAL, if they are supported.
+	if ( (flags & 0x00010000) != 0 )
+		strDebugFlags << "TargetTypeDomain   "; //  If set, TargetName MUST be a domain name. The data corresponding to this flag is provided by the server in the TargetName field of the CHALLENGE_MESSAGE. If set, then NTLMSSP_TARGET_TYPE_SERVER MUST NOT be set.
+	if ( (flags & 0x00020000) != 0 )
+		strDebugFlags << "TargetTypeServer   "; // If set, TargetName MUST be a server name. The data corresponding to this flag is provided by the server in the TargetName field of the CHALLENGE_MESSAGE. If this bit is set, then NTLMSSP_TARGET_TYPE_DOMAIN MUST NOT be set. This flag MUST be ignored in the NEGOTIATE_MESSAGE and the AUTHENTICATE_MESSAGE.
+	if ( (flags & 0x00040000) != 0 )
+		strDebugFlags << "TargetTypeShare";		
+	if ( (flags & 0x00080000) != 0 )
+		strDebugFlags << "NegotiateNTLMv2   ";	// If set, requests usage of the NTLM v2 session security.
+	if ( (flags & 0x00100000) != 0 )
+		strDebugFlags << "0x00100000   ";		// If set, requests an identify level token. An alternate name for this field is NTLMSSP_NEGOTIATE_IDENTIFY
+	if ( (flags & 0x00200000) != 0 )
+		strDebugFlags << "0x00200000   ";		// not used must be 0     or  RequestAcceptResponse
+	if ( (flags & 0x00400000) != 0 )
+		strDebugFlags << "0x00400000   ";		// RequestNonNTSessionKey   - If set, requests the usage of the LMOWF
+	if ( (flags & 0x00800000) != 0 )
+		strDebugFlags << "NegotiateTargetInfo   "; // If set, indicates that the TargetInfo fields in the CHALLENGE_MESSAGE (section 2.2.1.2) are populated
+	if ( (flags & 0x01000000) != 0 )
+		strDebugFlags << "0x01000000   ";		// not used must be 0     or  Requests identify level token
+	if ( (flags & 0x02000000) != 0 )
+		strDebugFlags << "NegotiateVersion   "; // Version field is present. If set, requests the protocol version number. The data corresponding to this flag is provided in the Version field of the NEGOTIATE_MESSAGE, the CHALLENGE_MESSAGE, and the AUTHENTICATE_MESSAGE
+	if ( (flags & 0x04000000) != 0 )
+		strDebugFlags << "0x04000000   ";		// not used must be 0
+	if ( (flags & 0x08000000) != 0 )
+		strDebugFlags << "0x08000000   ";		// not used must be 0
+	if ( (flags & 0x10000000) != 0 )
+		strDebugFlags << "0x10000000   ";		// not used must be 0
+	if ( (flags & 0x20000000) != 0 )
+		strDebugFlags << "Negotiate128   ";		// If set, requests 128-bit session key negotiation. An alternate name for this field is NTLMSSP_NEGOTIATE_128. If the client sends NTLMSSP_NEGOTIATE_128 to the server in the NEGOTIATE_MESSAGE, the server MUST return NTLMSSP_NEGOTIATE_128 to the client in the CHALLENGE_MESSAGE only if the client sets NTLMSSP_NEGOTIATE_SEAL or NTLMSSP_NEGOTIATE_SIGN. Otherwise it is ignored. If both NTLMSSP_NEGOTIATE_56 and NTLMSSP_NEGOTIATE_128 are requested and supported by the client and server, NTLMSSP_NEGOTIATE_56 and NTLMSSP_NEGOTIATE_128 will both be returned to the client
+	if ( (flags & 0x40000000) != 0 )
+		strDebugFlags << "KeyExchange   ";		//	If set, requests an explicit key exchange
+	if ( (flags & 0x80000000) != 0 )	
+		strDebugFlags << "Negotiate56   ";		// If set, requests 56-bit encryption. If the client sends NTLMSSP_NEGOTIATE_SEAL or NTLMSSP_NEGOTIATE_SIGN with NTLMSSP_NEGOTIATE_56 to the server in the NEGOTIATE_MESSAGE, the server MUST return NTLMSSP_NEGOTIATE_56 to the client in the CHALLENGE_MESSAGE. Otherwise it is ignored. If both NTLMSSP_NEGOTIATE_56 and NTLMSSP_NEGOTIATE_128 are requested and supported by the client and server, NTLMSSP_NEGOTIATE_56 and NTLMSSP_NEGOTIATE_128 will both be returned to the client.
+
+}
+
+
+
+// negotiate request flags 
+#define NTLM_Unicode				0x00000001
+#define NTLM_ASCII					0x00000002
+#define NTLM_RequestTarget			0x00000004
+#define NTLM_NegotiateSign			0x00000010 
+#define NTLM_NegotiateSeal			0x00000020 
+#define NTLM_NegotiateNTLM			0x00000200 		
+#define NTLM_DomainSupplied			0x00001000
+#define NTLM_WorkstationSupplied	0x00002000
+#define NTLM_NegotiateLocalCall		0x00004000
+#define NTLM_AlwaysSign				0x00008000
+#define NTLM_TargetTypeDomain		0x00010000
+#define NTLM_TargetTypeServer		0x00020000
+#define NTLM_NegotiateNTLMv2		0x00080000
+#define NTLM_NegotiateTargetInfo	0x00800000
+#define NTLM_NegotiateVersion		0x02000000 
+#define NTLM_Negotiate56			0x80000000
+#define NTLM_Negotiate128			0x20000000
+#define NTLM_KeyExchange			0x40000000
+
+
+// This is the reverse of this code that is implemented in the browser: 
+//		http://dxr.mozilla.org/mozilla-central/source/security/manager/ssl/src/nsNTLMAuthModule.cpp
+//
+// the official documentation for Type2Message: http://msdn.microsoft.com/en-us/library/cc236642.aspx
+struct Type2Message 
+{
+	char    protocol[8];     // 'N', 'T', 'L', 'M', 'S', 'S', 'P', '\0'
+	unsigned long  type;
+
+	unsigned short target_len;		 // domain string length
+	unsigned short target_len_alloc; // domain string length
+    unsigned long  target_off;       // target_off = &datablock[0] - &protocol[0];  // the 1st byte of datablock is target
+
+	unsigned long  flags;       
+	unsigned __int64 challenge;		 
+	unsigned long  context_low;
+	unsigned long  context_high;
+
+	unsigned short datablock_len;		 
+	unsigned short datablock_alloc;	
+    unsigned long  datablock_off;   // &datablock[target_len] - &protocol[0];  // starts AFTER the Target
+//	--------------------------------------  == 48
+	char  chMajorVersion;  
+	char  chMinorVersion;
+	short sBuildNumber;			
+	char  chNotUsed1;				// and   http://msdn.microsoft.com/en-us/library/cc236654.aspx
+	char  chNotUsed2;  
+	char  chNotUsed3;  
+	char  chNTLMRevisionCurrent;
+//	-------------------------------------   == 56
+
+	unsigned __int64 unknown;		 //     == 64  
+
+	char datablock [512];
+
+	void get(GString *pArg1,GString *pArg2,GString *pArg3) // DOMAIN, SERVER, my.server.com
+	{
+		unsigned short *pArg1Type = (unsigned short *)(void *)(&protocol[datablock_off]);
+		unsigned short *pArg1Len =  (unsigned short *)(void *)(&protocol[datablock_off + 2]);
+		if (*pArg1Type > 5 || *pArg1Len > 256)
+			return;
+		void *pArgspaceArg1 =						  (void *)(&protocol[datablock_off + 4]);
+		pArg1->FromUnicode( (wchar_t *)pArgspaceArg1, *pArg1Len / 2 );
+
+		unsigned short *pArg2Type = (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len]);
+		unsigned short *pArg2Len =  (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 2]);
+		if (*pArg2Type > 5 || *pArg2Len > 256)
+			return;
+		void *pArgspaceArg2 =						  (void *)(&protocol[datablock_off + 4 + *pArg1Len + 4]);
+		pArg2->FromUnicode( (wchar_t *)pArgspaceArg2, *pArg2Len / 2 );
+
+		unsigned short *pArg3Type =  (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len]);
+		unsigned short *pArg3Len =   (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 2]);
+		if (*pArg3Type > 5 || *pArg3Len > 256 || *pArg3Len + *pArg2Len + *pArg1Len > sizeof(datablock) )
+			return;
+		void *pArgspaceArg3 =						  (void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 4]);
+		pArg3->FromUnicode( (wchar_t *)pArgspaceArg3, *pArg3Len / 2 );
+	}
+
+	// pzArg4 = 0 or FQDN Host Name
+	// pzArg3 = 0 or DNS Domain Name
+	// pzArg2 = 0 or NetBIOS Server Name
+	// pzArg1 = 0 or NetBIOS Domain Name
+	Type2Message(__int64 nChallenge, const wchar_t *pzTarget, const wchar_t *pzArg1, const wchar_t *pzArg2, const wchar_t *pzArg3, const wchar_t *pzArg4 )
+	{
+		strcpy(protocol,"NTLMSSP");
+		memset(datablock,0,sizeof(datablock));
+		challenge = nChallenge;
+		type = 2;
+		context_low = 0;
+		context_high = 0;
+		chNotUsed1 = 0;
+		chNotUsed2 = 0;  
+		chNotUsed3 = 0;  
+		unknown = 0;
+
+		// 6.2.9200 is Windows 8
+		// 6.1.7600 is Windows 7
+		// 6.0.6000 is Windows Vista
+		chMajorVersion = 6;  
+		chMinorVersion = 1;  
+		sBuildNumber = 7600; //  FYI: The build number has increased by exactly 1600 each time and each number is exactly divisible by 16.  This reserves the bottom four bits of the number for custom purposes.
+		chNTLMRevisionCurrent = 15 ; // 15 == 0x0F;
+		//Windows Vista								6.0.6000 (08.11.2006)
+		//Windows Vista, Service Pack2				6.0.6002 (04.02.2008)
+		//Windows Server 2008						6.0.6001 (27.02.2008)
+		//Windows 7, RTM (Release to Manufacturing)	6.1.7600.16385 (22.10.2009)
+		//Windows 7									6.1.7601
+		//Windows Server 2008 R2, RTM (RTM)			6.1.7600.16385 (22.10.2009)
+		//Windows Server 2008 R2, SP1				6.1.7601
+		//Windows Home Server 2011					6.1.8400 (05.04.2011)
+		//Windows Server 2012						6.2.9200 (04.09.2012)
+		//Windows 8									6.2.9200 (26.10.2012)
+		//Windows Phone 8							6.2.10211 (29.10.2012)     10211 is less than 10800 which will presumably be Windows 9
+		//Windows Server 2012 R2					6.3.9200 (18.10.2013)
+		//Windows 8.1								6.3.9200 (18.10.2013)
+		//Windows 8.1, Update 1						6.3.9600 (08.04.2014)
+
+
+		// Note: Type1 flags sent in:
+        // FireFox  Flags:NegotiateUnicode  NegotiateASCII  RequestTarget   NegotiateSign  NegotiateLMKey     NegotiateNTLM   NegotiateDomainSupplied   NegotiateWorkstationSupplied   NegotiateAlwaysSign   NegotiateNTLMv2   NegotiateVersion   Negotiate128   KeyExchange   Negotiate56	
+        // IE       Flags:NegotiateUnicode  NegotiateASCII  RequestTarget   NegotiateSign  NegotiateLMKey     NegotiateNTLM   NegotiateDomainSupplied   NegotiateWorkstationSupplied   NegotiateAlwaysSign   NegotiateNTLMv2   NegotiateVersion   Negotiate128   KeyExchange   Negotiate56	
+        // Safari   Flags:NegotiateUnicode  NegotiateASCII  RequestTarget   NegotiateSign  NegotiateLMKey     NegotiateNTLM   NegotiateAlwaysSign															 NegotiateNTLMv2   NegotiateVersion   Negotiate128   KeyExchange   Negotiate56	
+
+		// Type2 flags with challenge sent out:
+		flags =	NTLM_Unicode |	NTLM_RequestTarget | NTLM_NegotiateNTLM | NTLM_AlwaysSign | NTLM_TargetTypeServer |NTLM_NegotiateNTLMv2 | NTLM_NegotiateTargetInfo | NTLM_NegotiateVersion |  NTLM_Negotiate128 | NTLM_Negotiate56;
+
+		target_len = target_len_alloc = wcslen(pzTarget) * 2;
+		memcpy(datablock, pzTarget, target_len);
+		target_off    = &datablock[0]  -		 &protocol[0];
+		datablock_off = &datablock[target_len] - &protocol[0];
+
+		int a = (pzArg1) ? wcslen(pzArg1) * 2 : 0;
+		int b = (pzArg2) ? wcslen(pzArg2) * 2 : 0;
+		int c = (pzArg3) ? wcslen(pzArg3) * 2 : 0;
+		int d = (pzArg4) ? wcslen(pzArg4) * 2 : 0;
+
+
+		datablock_len = 16 + (a + b + c + d) + 4; // two-two byte shorts occur nArgCount times.  + string lengths + 4 byte termination
+
+		unsigned short *pArg1Type = (unsigned short *)(void *)(&protocol[datablock_off]);
+		unsigned short *pArg1Len =  (unsigned short *)(void *)(&protocol[datablock_off + 2]);
+		void *pArgspaceArg1 =						  (void *)(&protocol[datablock_off + 4]);
+		*pArg1Type = 2; // 2 = NetBIOS Domain Name 
+		*pArg1Len = a;
+		memcpy(pArgspaceArg1,pzArg1,*pArg1Len);
+
+		unsigned short *pArg2Type = (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len]);
+		unsigned short *pArg2Len  = (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 2]);
+		void *pArgspaceArg2 =						  (void *)(&protocol[datablock_off + 4 + *pArg1Len + 4]);
+		*pArg2Type = 1; // 1 = NetBIOS Server Name 
+		*pArg2Len = b;
+		memcpy(pArgspaceArg2,pzArg2,*pArg2Len);
+
+		unsigned short *pArg3Type = (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len]);
+		unsigned short *pArg3Len =  (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 2]);
+		void *pArgspaceArg3 =						  (void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 4]);
+		*pArg3Type = 4;// 4= DNS Domain Name 
+		*pArg3Len = c;
+		memcpy(pArgspaceArg3,pzArg3,*pArg3Len);
+
+		unsigned short *pArg4Type = (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 4 + *pArg3Len]);
+		unsigned short *pArg4Len =  (unsigned short *)(void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 4 + *pArg3Len + 2]);
+		void *pArgspaceArg4 =						  (void *)(&protocol[datablock_off + 4 + *pArg1Len + 4 + *pArg2Len + 4 + *pArg3Len + 4]);
+		*pArg4Type = 3;// 3 = FQDN Host Name 
+		*pArg4Len = d;
+		memcpy(pArgspaceArg4,pzArg4,*pArg4Len);
+
+		// 4 termnination bytes is included in the datablock_len calculation
+		unsigned long *pTerminator =(unsigned long *)(void *)(&protocol[datablock_off + 16 + a + b + c + d]);
+		*pTerminator = 0;
+	}
+};
+
+struct TypeNTLMv2
+{
+	char ntlmv2_hash[16];
+
+	unsigned int signature2;					 //0: 0x01010000
+	unsigned int reservedZeros;					// 4: reserved, zeroes
+	unsigned __int64 timestamp;					// 8: Timestamp A 64-bit unsigned integer that contains the current system time, represented as the number of ticks elapsed since midnight of January 1, 1601 (UTC).  The ANSI Date defines January 1, 1601 as day 1, and is used as the origin of COBOL integer dates. This epoch is the beginning of the previous 400-year cycle of leap years in the Gregorian calendar, which ended with the year 2000.  Initially, epoch time was measured in 60ths of a second. The origin of the term "Gregorian" is relating to Pope Gregory I OR to the plainsong chants of the Roman Catholic Church that he taught, the calendar introduced in 1582 by Pope Gregory XIII we call "Gregorian".  Glossolalia 101 : http://simple.wikipedia.org/wiki/Gregorian_chant   http://www.youtube.com/watch?v=9WgqQH5GNkA
+	unsigned __int64 clientChallenge;			// 16: client challenge
+	unsigned int unkZeros;						// 24: unknown, zeroes
+
+	unsigned short name1Kind;					// 28: target info from server
+	unsigned short name1Len;					// 30: target info from server
+	char datablock[512];						// 30: target info from server followed by string2Kind, string2Len, and string2data so on until a 4 byte 0 terminates the pattern.
+	
+	int getStrings(GString &Arg1, short *p1, GString &Arg2, short *p2, GString &Arg3, short *p3,GString &Arg4, short *p4)
+	{
+		// if we need the values, this implementation will be just like Type2Message::get()
+		return 0;
+	}
+};
+
+
+
+
+void hmac_v2X(unsigned char *keyMD4digest16bytes, const unsigned char *pzUserAndDomainUpperCase, int nstrLength, const unsigned char *challenge, const unsigned char *blob, unsigned bloblen, unsigned char *V2Digest)
+{
+	try
+	{
+		#ifdef __OPENSSL
+			HMAC_CTX ctx;
+			unsigned char hash[EVP_MAX_MD_SIZE];
+			unsigned int len = 0;
+			
+			HMAC(EVP_md5(), keyMD4digest16bytes, MD4_DIGEST_LENGTH, pzUserAndDomainUpperCase, nstrLength, hash, &len);
+
+			// V2 = HMAC-MD5(NTLMv2hash, challenge + blob) + blob 
+			HMAC_Init(&ctx, hash, len, EVP_md5());
+
+			HMAC_Update(&ctx, challenge, 8); // 8 is the number of bytes in the challenge
+
+			HMAC_Update(&ctx, blob, bloblen);
+
+			HMAC_Final(&ctx, V2Digest, &len);
+
+			HMAC_cleanup(&ctx);
+		#endif
+	}
+	catch(...)
+	{
+		InfoLog(6354,"****** HMAC Failed");
+	}
+}
+
+
+struct Type3Message
+{
+    char    protocol[8];     // 'N', 'T', 'L', 'M', 'S', 'S', 'P', '\0'
+    unsigned long    type;            // 0x03
+
+    unsigned short   lm_resp_len;     // @12 LanManager response length (always 0x18)
+    unsigned short   lm_resp_len2;    // @14 LanManager response length (always 0x18)
+    unsigned short   lm_resp_off;     // @16 LanManager response offset
+    unsigned char    zero2[2];		  // @18 
+
+    unsigned short   nt_resp_len;     // @20 NT response length    (each MD5 Hash is 16 bytes)
+    unsigned short   nt_resp_len2;    // @22 NT response length 
+    unsigned short   nt_resp_off;     // @24 NT response offset // 0x54 = 84
+    unsigned char    zero3[2];		  // @26
+
+    unsigned short   dom_len;         // @28 domain string length domain (server) name
+    unsigned short   dom_len2;        // @30 domain string length
+    unsigned short   dom_off;         // @32 domain string offset (always 0x40)
+    unsigned char    zero4[2];		  // @34
+
+    unsigned short   user_len;        // @36 username string length
+    unsigned short   user_len2;       // @38 username string length
+    unsigned short   user_off;        // @40 username string offset
+    unsigned char    zero5[2];		  // @42
+
+    unsigned short   host_len;        // @44 host string length
+    unsigned short   host_len2;       // @46 host string length
+    unsigned short   host_off;        // @48 host string offset
+    unsigned char    zero6[2];		  // @50
+									  
+    unsigned short   sessionkey_len;  // @52: session key             session nonce =  server challenge | client nonce
+    unsigned short   sessionkey_len2; // @54: session key             session nonce =  server challenge | client nonce
+    unsigned short   sessionkey_off;  // @56: session key             session nonce =  server challenge | client nonce
+    unsigned char    zero7[2];		  // @58
+
+	unsigned int     flags;			  // @60: negotiated flags
+	unsigned char    datablock[512];
+};
+
+////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////  End of NTLM related code ///////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 // Convert															TO
 // -------------------------------------------------------------------------------------------------------------------
 // GET http://www.Domain.com/Index.html HTTP/1.0					GET Index.html HTTP/1.0
 // GET http://www.Domain.com/Index HTTP/1.1							GET Index HTTP/1.1
-// GET http://www.Domain.com/images/pi_startc.jpg HTTP/1.1			GET /images/pic.jpg HTTP/1.1
+// GET http://www.Domain.com/images/pic.jpg HTTP/1.1			GET /images/pic.jpg HTTP/1.1
 // -------------------------------------------------------------------------------------------------------------------
 // subsequent commands on Keep-Alive connections copy pIn to pOut as the data may look like this:
 // GET /menu.js HTTP/1.0
 // GET /images/pic.jpg HTTP/1.1
 // GET \menu.js HTTP/7.0
 // -------------------------------------------------------------------------------------------------------------------
-int ConvertHTTPProxy(char *pIn, int nInLen, char *pOut, GString &strPxyConnectTo, int &nConvertedLen, int *pbIsCONNECT)
+
+//				>> "GET http://www.yahoo.com/ HTTP/1.1[\r][\n]"
+//				>> "User-Agent: Browser[\r][\n]"
+//  in			>> "Host: www.yahoo.com[\r][\n]"
+//				>> "Proxy-Connection: Keep-Alive[\r][\n]"
+//				>> "[\r][\n]"
+//
+//				<< "HTTP/1.0 407 Proxy Authentication Required[\r][\n]"
+//				<< "Server: 5Loaves"
+//	out			<< "Proxy-Authenticate: NTLM[\r][\n]"
+//				<< "Proxy-Authenticate: Basic realm="5Loaves"[\r][\n]"
+//				<< "Proxy-Connection: close[\r][\n]"
+//
+//				>> "GET http://www.yahoo.com/ HTTP/1.0[\r][\n]"
+//				>> "User-Agent: Browser[\r][\n]"
+//	in			>> "Proxy-Authorization: NTLM "[\n]"
+//				>> "Host: www.yahoo.com[\r][\n]"
+//				>> "Proxy-Connection: Keep-Alive[\r][\n]"
+//				>> "[\r][\n]"
+
+int ConvertHTTPProxyInternal(char *pIn, int nInLen, char *pOut, GString &strPxyConnectTo, int *pnConvertedLen, int *pbIsCONNECT)
 {
 	//	note: pIn must not == pOut, memory may not overlap   
 
@@ -4285,12 +5201,26 @@ int ConvertHTTPProxy(char *pIn, int nInLen, char *pOut, GString &strPxyConnectTo
 		if (pPort)
 		{
 			strPxyToPort.SetFromUpTo(pPort+1, " ");
-			if ( strPxyToPort.Compare("443") )
-				return 0; // note: limit to only allow port 443 blocks potential attack
-			strPxyConnectTo = "443@";
+			if ( g_bOnly443or80 &&  strPxyToPort.Compare("443") && strPxyToPort.Compare("80" ))
+			{
+				GString g("******* Blocked proxy to port[");
+				g << strPxyToPort << "] for [" << pIn << "]";
+				g.ReplaceChars("\r\n",'~');
+				InfoLog(456,g);
+
+				// note: This HTTP Proxy only allows port 80 and 443, removing this return removes the limitation.
+				return 0; 
+			}
+			strPxyConnectTo = strPxyToPort;
+			strPxyConnectTo << "@"; // = "443@";
 		}
+		else
+		{
+			strPxyConnectTo = "80@";
+		}
+
 		strPxyConnectTo.AppendFromUpTo(pIn+8, ":");
-		nConvertedLen = 0;
+		*pnConvertedLen = 0;
 		
 		if (pbIsCONNECT)
 			*pbIsCONNECT = 1;
@@ -4300,27 +5230,27 @@ int ConvertHTTPProxy(char *pIn, int nInLen, char *pOut, GString &strPxyConnectTo
 	if (pbIsCONNECT)
 		*pbIsCONNECT = 0;
 
-	char *pSpace = strpbrk(pIn," "); // HTTP verb left of space
+	char *pSpace = strpbrk(pIn," "); // we want the HTTP verb left of space
 	if (pSpace)
 	{
 		if (pSpace[1] == '/' || pSpace[1] == '\\')
 		{
 			memcpy(pOut,pIn,nInLen);
-			nConvertedLen = nInLen;
+			*pnConvertedLen = nInLen;
 			return 1; // Proxy conversion success
 		}
 		else if ( memcmp(pSpace+1,"http://",7) == 0  ||  memcmp(pSpace+1,"HTTP://",7) == 0)
 		{
-			nConvertedLen = pSpace-pIn+1;
-			memcpy(pOut,pIn,nConvertedLen);  // "GET " or "POST " moved to destination
+			*pnConvertedLen = pSpace-pIn+1;
+			memcpy(pOut,pIn,*pnConvertedLen);  // "GET " or "POST " moved to destination
 
 
-			char *pSlash = strpbrk(pSpace+8,"/"); // first / after "http://" (End of server name)
+			char *pSlash = strpbrk(pSpace+8,"/"); // first / after "http://" www.xxxx.com/  <--that slash
 			if (pSlash)
 			{
-				int nCpySize = pSlash-pIn;//  nCpySize = size of  "GET http://www.Server.com/"
-				memcpy(&pOut[nConvertedLen],pSlash,nInLen-nCpySize);
-				nConvertedLen += nInLen-nCpySize;
+				int nCpySize = pSlash-pIn;//  nCpySize = size of  "GET http://www.xxxx.com"
+				memcpy(&pOut[*pnConvertedLen],pSlash,nInLen-nCpySize);
+				*pnConvertedLen += nInLen-nCpySize;
 				strPxyConnectTo.WriteOn(pSpace+8,pSlash - (pSpace+8)); // copy the server name "www.Server.com"
 				
 				char *pColon = strpbrk(strPxyConnectTo.Buf(),":");
@@ -4332,17 +5262,112 @@ int ConvertHTTPProxy(char *pIn, int nInLen, char *pOut, GString &strPxyConnectTo
 					strTemp << (pColon + 1) << '@' << strPxyConnectTo.Buf();
 					strPxyConnectTo = strTemp;
 				}
+				else
+				{
+					strPxyConnectTo.Prepend("80@");
+				}
 				return 1; // Proxy conversion success
 			}
 		}
 		else
 		{
-			// todo: investigate how this can happen.
-			InfoLog(1,"********* HTTPProxy FAILURE");
+			// I have never seen this error but i might someday
+			InfoLog(58,"\r\n\r\n******************************* HTTPProxy FAILURE ***************************\r\n\r\n");
 		}
 	}
 	return 0; // no proxy conversion
 }
+
+int ConvertHTTPProxy(char *pIn, int nInLen, char *pOut, GString &strPxyConnectTo, int *pnConvertedLen, int *pbIsCONNECT)
+{
+	pIn[nInLen] = 0;
+	int nInHTTPHeaderLen = -1; // a POST may be followed by content so nInLen may be  > nInHTTPHeaderLen
+	char *prnrn = strstr(pIn, "\r\n\r\n");
+	if (prnrn)
+	{
+		nInHTTPHeaderLen = prnrn - pIn + 4;
+	}
+
+	int nContentLen = -1; // not all HTTP request have a Content-Length - they may be terminated with an /r/n/r/n
+	char *pCL = stristr(pIn, "Content-Length: ");
+	if (pCL)
+	{
+		nContentLen = atoi(pCL + 16); // 16 is strlen("Content-Length: ")
+	}
+
+	int nRet = ConvertHTTPProxyInternal(pIn, nInLen, pOut, strPxyConnectTo, pnConvertedLen, pbIsCONNECT);
+	
+
+	// a "CONNECT ...." command has a 0 byte *pnConvertedLen, and pbIsCONNECT will be true
+	if (nRet && *pnConvertedLen)
+	{
+		// POST / HTTP 1.1\r\ncontent-length: 7 \r\n\r\n1234567
+
+
+		// remove the "Proxy-Authorization:",
+		char *p = stristr(pOut, "Proxy-Authorization:");
+		if (p)
+		{
+			char *prn    = strstr(p, "\r\n");
+			if (!prn)
+			{
+				InfoLog (4267,"Failed to convert invalid HTTP headers");
+				return 0;
+			}
+			prn += 2;
+			
+			int nDiff = prn - p;
+			if (nDiff < 0)
+			{
+				int i=0; i++; // debug break here
+			}
+			*pnConvertedLen -= prn - p;
+
+			memmove(p,prn,(*pnConvertedLen) - (p - pOut) );
+		}
+		else
+		{
+			// the /r/n's may or may not be there - so remove them. (we will readd them)
+			int nEatRNs = *pnConvertedLen - 1;
+			while ( pOut[nEatRNs] == '\r' || pOut[nEatRNs] == '\n' )
+			{
+				nEatRNs--;
+				(*pnConvertedLen)--;
+			}
+			memcpy(&pOut[*pnConvertedLen],"\r\n\r\n\0",5);
+			*pnConvertedLen += 4; // do not count the null
+		}
+
+		// after an NTLM Negotiate, the "Host:" no longer exists in the HTTP headers from IE because it was after the Proxy-Auth
+		char *pHost = stristr(pOut, "Host: ");
+		if (!pHost)
+		{
+			// add the "Host: " to the HTTP Headers
+			char *prnrn = stristr(pOut, "\r\n\r\n");
+			strcpy(prnrn + 2,"Host: ");
+			int nAt = strPxyConnectTo.Find('@');
+			nAt++; // one byte past the @
+			memcpy(prnrn + 8, strPxyConnectTo._str + nAt,  strPxyConnectTo._len - nAt);
+			memcpy(prnrn + 8 + strPxyConnectTo._len - nAt,"\r\n\r\n\0",5);
+
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// could call strlen() and recount the length, or do a little basic math to be faster than the iterations inside strlen() to find a null.
+			*pnConvertedLen = prnrn - pOut + 12 + strPxyConnectTo._len - nAt; // 12 is len("host: ") + the "\r\n"'s, (strPxyConnectTo._len - nAt) is the actual host length
+			//  or we could do it the slow way....
+			// *pnConvertedLen = strlen(pOut); 
+			// if (strlen(pOut) != *pnConvertedLen)
+			// {
+			// 	// code here is never hit - because the math is right
+			// 	InfoLog (457,"\r\n\r\n ****************** Bad Math does not happen ******************************\r\n\r\n");
+			// }
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		}
+	}
+	return nRet;
+}
+
+
 
 
 /*
@@ -4587,11 +5612,11 @@ void DriverCallBack(const char *pzCmd, void *pCBArg)
 	}
 	else if (strOption.CompareNoCase("log") == 0)  // write to system log file
 	{
-		InfoLog(63,pcb->arg[0].CChar);
+		InfoLog(59,pcb->arg[0].CChar);
 	}
 }
 
-int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *pContent, int *pnKeepAlive, char *workBuffer, int *nTotalProxiedBytes, unsigned int nBytesRemaining)
+int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *pContent, unsigned int *pnKeepAlive, char *workBuffer, __int64 *nTotalProxiedBytes, unsigned int nBytesRemaining)
 {
 	// Design note: This function is designed to assume that the sockBuffer value(the first read off the TCP buffers on the HTTP port)  
 	// does NOT map to any plugin, it must avoid as much logic execution as possible until a plugin map has been matched
@@ -4666,7 +5691,6 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			{
 				(*pnKeepAlive)--;
 			}
-			td->m_pnKeepAlive = pnKeepAlive;
 
 
 			InterfaceInstance *pII = GetInterfaceInstance(pzLanguage);
@@ -4674,7 +5698,7 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			{
 				GString strError;
 				strError << pzLanguage << " is not configured correctly or is not a supported component type on this machine.";
-				InfoLog(64,strError);
+				InfoLog(60,strError);
 				*pnKeepAlive = 0;
 				return 0;
 			}
@@ -4739,7 +5763,6 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			prd.nProtocol = 1;
 			prd.tid = td->nThreadID;
 			prd.strUser = "Anonymous HTTP";
-			prd.pnKeepAlive = td->m_pnKeepAlive;
 			prd.nCompleteSize = nContentLen;
 			prd.nObtainedCount = nContentLen - nBytesRemaining;
 			prd.sDataFlags = 0; // N/A
@@ -4862,13 +5885,13 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 							GString strError;
 							
 							strError << pzComponent << "::" << pzInterface << "::" << pzMethod << " dropped connection posting:" << nContentLen << " bytes.";
-							InfoLog(64,strError);
+							InfoLog(61,strError);
 						}
 						else // this is an error in the HTML or the mapping between the plugin and the HTML is out of date
 						{
 							GString strInfo;
 							strInfo << "ERROR: [" << pRegArg << "]" << "not found for call:" << pzComponent << "::" << pzInterface << "::" << pzMethod;
-							InfoLog(66,strInfo);
+							InfoLog(62,strInfo);
 						}
 						*pnKeepAlive = 0; 
 						return 0;
@@ -4881,7 +5904,7 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			{
 				GString strInfo;
 				strInfo << "ERROR: Arg count must be 2 when using 'HTTPHeader/Content' but you have " << nReqArgCount << "---"  << pzComponent << "::" << pzInterface << "::" << pzMethod;
-				InfoLog(67,strInfo);
+				InfoLog(63,strInfo);
 			}
 
 		
@@ -4901,13 +5924,17 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 				return 1; // HTTP request handled, no results from user created handler.
 			}
 
-			// currently this is the only processing instruction available, in the future this will be a pipe separated list.
-			// todo: add processing instruction support "NoKeepAlive"
+			// currently this is the only processing instruction available, in the future this might be a pipe separated list.
+			// todo: add processing instruction support "NoKeepAlive", because by default they are all kept alive.
 			if (stristr(pzPIBuf,"HasHeaders") != 0)
 			{
 				if (nOutResultSize)
+				{
 					if (nonblocksend(td->sockfd,pzResults,nOutResultSize) == nOutResultSize)
+					{
 						*nTotalProxiedBytes += nOutResultSize;
+					}
+				}
 			}
 			else
 			{
@@ -4919,14 +5946,15 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 				{
 					memcpy(&sockBuffer[nHL],pzResults,nOutResultSize);
 					if (nonblocksend(td->sockfd,sockBuffer,nOutResultSize+nHL) == nOutResultSize+nHL)
+					{
 						*nTotalProxiedBytes += nOutResultSize+nHL;
+					}
 				}
 				else
 				{
 					if (nonblocksend(td->sockfd,sockBuffer,nHL) == nHL)
 					{
 						*nTotalProxiedBytes += nHL;
-						// todo: chunk up the send if > 4 meg - it may cause socket() errors on Windows.
 						if (nonblocksend(td->sockfd,pzResults,nOutResultSize) == nOutResultSize)
 						{
 							*nTotalProxiedBytes += nOutResultSize;
@@ -4974,7 +6002,6 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			{
 				(*pnKeepAlive)--;
 			}
-			td->m_pnKeepAlive = pnKeepAlive;  // todo: I think nobody uses m_pnKeepAlive in ThreadData, remove it if possible
 
 			
 			
@@ -4987,7 +6014,6 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			prd.nProtocol = 1;
 			prd.tid = td->nThreadID;
 			prd.strUser = "Anonymous HTTP";
-			prd.pnKeepAlive = td->m_pnKeepAlive;
 			prd.nCompleteSize = nBytes;
 			prd.nObtainedCount = nBytes;
 			prd.sDataFlags = 0; // N/A
@@ -5000,7 +6026,7 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			{
 				GString strError;
 				strError << pzLanguage << " is not configured correctly or is not a supported component type on this machine.";
-				InfoLog(68,strError);
+				InfoLog(64,strError);
 			}
 			pII->SetOption("callback",(void *)DriverCallBack);
 			pII->SetOption("callbackArg",&prd);
@@ -5109,8 +6135,7 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			int nOutResultSize = 0;
 			GString strRslt;
 			pII->SetOption("rsltGStr",&strRslt);
-			const char *pzResults = pII->InvokeEx( pzComponent, pzInterface, pzMethod, 
-													pDataStart,strArgSizes,&nOutResultSize);
+			const char *pzResults = pII->InvokeEx( pzComponent, pzInterface, pzMethod, pDataStart,strArgSizes,&nOutResultSize);
 			if (stristr(pzPIBuf,"DataSent") != 0)
 			{
 				// the plugin sent the data directly
@@ -5127,8 +6152,12 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 			if (stristr(pzPIBuf,"HasHeaders") != 0)
 			{
 				if (nOutResultSize)
+				{
 					if (nonblocksend(td->sockfd,pzResults,nOutResultSize) == nOutResultSize)
+					{
 						*nTotalProxiedBytes += nOutResultSize;
+					}
+				}
 			}
 			else
 			{
@@ -5140,14 +6169,15 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 				{
 					memcpy(&sockBuffer[nHL],pzResults,nOutResultSize);
 					if (nonblocksend(td->sockfd,sockBuffer,nOutResultSize+nHL) == nOutResultSize+nHL)
+					{
 						*nTotalProxiedBytes += nOutResultSize+nHL;
+					}
 				}
 				else
 				{
 					if (nonblocksend(td->sockfd,sockBuffer,nHL) == nHL)
 					{
 						*nTotalProxiedBytes += nHL;
-						// todo: chunk up the send if > 4 meg 
 						if (nonblocksend(td->sockfd,pzResults,nOutResultSize) == nOutResultSize)
 						{
 							*nTotalProxiedBytes += nOutResultSize;
@@ -5163,30 +6193,19 @@ int Plugin(ThreadData *td, char *sockBuffer, int nBytes, int nContentLen, char *
 
 
 
-
 void *ProxyHelperThread(void *arg)
 {
 	ThreadData *td = (ThreadData *)arg;
 
-//	if (g_TraceThread)
-//	{
-//		GString strThreadTrace;
-//		strThreadTrace << "++++Created new ProxyHelperThread    tid:" << td->nThreadID;
-//		InfoLog(111,strThreadTrace);
-//	}
-
-
 	CipherData *pcdToServer = 0;
 	CipherData *pcdToClient = 0;
 
-	int fd;
 	int nBufBytes;
 	int nPacketIndex;
 	int nPacketLen;
 	int nCloseCode;
 	int nReadWait;
 	int nIdleReads;
-	int nTotalTransmit = 0;
 	char *pPacket;
 	const int off = 0;
 	int nFirstThreadUse = 1;
@@ -5215,7 +6234,7 @@ void *ProxyHelperThread(void *arg)
 	their_addr.sin_family = AF_INET;
 	
 	// seed the random number generator once on each thread with a unique seed.
-	g_nRrandSeed += (777 * (g_nRrandSeed % 100)) ;
+	g_nRrandSeed += (777 * (g_nRrandSeed % 100));
 	srand( g_nRrandSeed );
 
 BACK_TO_THE_POOL:
@@ -5227,7 +6246,6 @@ BACK_TO_THE_POOL:
 	nCloseCode = 2100; // errors in 21nn range are Secondary Thread errors, started by the primary thread (range [11nn - 12nn] for this connection
 	nReadWait = g_nProxyReadWait;
 	nIdleReads = 0;
-	
 	
 	if (!nFirstThreadUse)
 	{
@@ -5246,10 +6264,11 @@ BACK_TO_THE_POOL:
 		td->nThreadIsBusy = 0;
 		gthread_cond_wait(&td->cond, &td->lock); 
 	}
+	
 	td->starttime = getTimeMS();
 	if (g_ServerIsShuttingDown)
 	{
-		PortableClose(td->sockfd,"Core8");
+		PortableClose( *(td->pnsockfd), "Core8" );
 
 		if (g_nLockThreadBuffers == 0 && cryptDest)
 		{
@@ -5277,7 +6296,7 @@ BACK_TO_THE_POOL:
 	{
 		GString strLog;
 		strLog.Format("H%d",(int)td->nThreadID);
-		InfoLog(69,strLog);
+		InfoLog(65,strLog);
 
 		goto BACK_TO_THE_POOL;
 	}
@@ -5296,9 +6315,8 @@ BACK_TO_THE_POOL:
 	}
 
 
-	// the 16 bit flag field indicating data attributes
+	// sAttribs is the 16 bit flag field indicating data attributes
 	int bReadHTTP;
-
 	unsigned short sAttribs = BuildAttributesHeader(td->pTSD->szConfigSectionName,td->pTSD->nProtocol, td->nAction, &bReadHTTP, 0);
 	int bIsTunnel = td->pTSD->bIsTunnel;
 
@@ -5353,6 +6371,7 @@ BACK_TO_THE_POOL:
 			*pSep = 0;
 			nProxyToPort = atoi(td->pzConnectRoute);
 			strProxyToServer = pSep + 1;
+			*pSep = '@';
 		}
 		else
 		{
@@ -5389,58 +6408,105 @@ BACK_TO_THE_POOL:
 			GetBalanceTo(pzBalance, strProxyToServer);
 		}
 	}
+	
+	int nConnectRetries = 0;
 
 ROLL_OVER_CONNECT:	
+	if (strProxyToServer.IsEmpty())
+	{
+		*td->pnProxyClosed = 1;
+		*(td->pnProxyfd) = -1;					
+		gthread_cond_signal( td->pcondHelper ); 
+		nCloseCode = 21011;
+		goto THREAD_EXIT;
+	}
+	
+	// DoConnect() returns the new socket handle.  Inside our ThreadData(td), we have a pointer to an integer inside another ThreadData on the clientthread, 
+	// so we dereference it and assign its value here.  Both threads use the same handle, rather than either one getting a copy of it - so any thread can close it and set it to -1
+	*(td->pnProxyfd) = DoConnect(strProxyToServer, nProxyToPort,td->nParentThreadID, td->nThreadID); // in ProxyThread
 
-
-	fd = DoConnect(strProxyToServer, nProxyToPort,td->nParentThreadID, td->nThreadID); // in ProxyThread
-	if (fd == -1)
+	if ( *(td->pnProxyfd) == -1)
 	{
 		// roll over to a backup server if configured
 		if (lstRollOver.Size())
 		{
 			if(g_TraceConnection)
 			{
-				InfoLog(70,"Rollover Connection");
+				InfoLog(66,"Rollover Connection");
 			}
 			strProxyToServer = lstRollOver.RemoveFirst();
 			goto ROLL_OVER_CONNECT;
 		}
+		else
+		{
+			if (nConnectRetries++ < 3) // this is necessary but maybe only 1 or two retries is necessary
+			{
+				if(g_TraceConnection)
+				{
+					GString strInfo;
+					strInfo.Format("*******RETRY #%d: Outbound[%d:%s]---(tid:%d<->%d)",(int)nConnectRetries, (int)nProxyToPort,strProxyToServer._str, (int)td->nParentThreadID, (int)td->nThreadID);
+					InfoLog(67,strInfo);
+				}
+				PortableSleep(0,250000);
+				goto ROLL_OVER_CONNECT;
+			}
+		}
 
 		*td->pnProxyClosed = 1;
-		nCloseCode = 2101;	
+		*(td->pnProxyfd) = -1;					
+		gthread_cond_signal( td->pcondHelper ); 
+		nCloseCode = 2101;
+
 		goto THREAD_EXIT;
 	}
+	*td->pnProxyClosed = 0;
 
-    // turn the OS kernel buffering off.
+    // turn the default OS kernel buffering off - because we handle it more efficiently ourself.
 	if (g_StopDoubleBuffer)
 	{
-		setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&off, sizeof(off));
+		setsockopt( *(td->pnProxyfd), SOL_SOCKET, SO_SNDBUF, (char *)&off, sizeof(off));
 		int one = 1;
-		setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *)&one, sizeof(one));
+		setsockopt( *(td->pnProxyfd), IPPROTO_TCP, TCP_NODELAY, (char *)&one, sizeof(one));
 	}
 	
+	// Notify the base thread(clientthread) that the connection is ready
+	gthread_cond_signal( td->pcondHelper ); 
 
-	*(td->pnProxyfd) = fd;					// Give the base thread(clientthread) this connection handle
-	gthread_cond_signal( td->pcondHelper ); // and notify it that the connection is ready
+
 
 	// ProxyHelperThread main loop - reading from [strProxyToServer]
-	while( !(*td->pnProxyClosed)  )
+	while( !(*td->pnProxyClosed) && *(td->pnProxyfd) != -1 )
 	{
 		// if what we are about to recv() is expected to be (bCipher || bZip || bSync)
 		int bPacketSync = ( bIsTunnel && sAttribs ) ? 1 : 0;
 		
-
-		if (bReadHTTP) // this can be removed - producing no change in server behavior
+		// prepare args for the call to ReadPacket()
+		if (bReadHTTP) // this can be removed - producing no change in server behavior because we can proxy HTTP data without regard to its HTTP format - we treat it as if we didnt know it was HTTP
 		{
-			bReadHTTP = 0;  // the base thread is reading HTTP, this thread can too but does not since it's faster to proxy data as it is available.
+			bReadHTTP = 0;  // the base thread (aka clientthread) is reading HTTP, this thread could too but does not since it's faster/more efficient to proxy data as it is available in the TCP buffers as opposed to all that HTTP parsing.
 			bPacketSync = 0; 
 		}
 		unsigned short sPktAttributes = 0;
 
-		int rslt = ReadPacket(fd,0,nReadWait,&nBufBytes,sockBuffer,&pPacket,&nPacketLen, &nPacketIndex,&sPktAttributes, sAttribs, bPacketSync, bReadHTTP);
-		if (*td->pnProxyClosed)
+		int rslt = 0;
+		if( td->pTSD->nProtocol == 11 ) // ReadPacket will work - this is faster
 		{
+			rslt = nonblockrecvAny ( *(td->pnProxyfd) , sockBuffer, MAX_DATA_CHUNK, 1 );
+			pPacket = sockBuffer;
+			nPacketLen = (rslt > 0) ? rslt : 0;
+		}
+		else
+		{
+			rslt = ReadPacket( *(td->pnProxyfd) ,0,nReadWait,&nBufBytes,sockBuffer,&pPacket,&nPacketLen, &nPacketIndex,&sPktAttributes, sAttribs, bPacketSync, bReadHTTP);
+		}
+		if (rslt > 0)
+		{
+			td->nTotalBytesRead += nPacketLen;
+		}
+		if ( *td->pnProxyClosed || (td->pTSD->nProtocol == 11 && !g_bHTTPProxyEnabled) )
+		{
+			// this thread was ended by clientthread() when *td->pnProxyClosed became true
+			// or by stopping "protocol 11' proxy.
 			nCloseCode = 2103; 
 			goto THREAD_EXIT;
 		}
@@ -5448,7 +6514,7 @@ ROLL_OVER_CONNECT:
 		{
 			if (nIdleReads++ > g_nProxyIdleAt)
 			{
-				nReadWait = g_nProxyIdleReadWait; // slow this thread down until more data shows up
+				nReadWait = g_nProxyIdleReadWait; // slow this thread down until more data shows up - this needs to be researched further for greater optimization 
 			}
 			// no data or only a partial packet available - nothing to do.
 			if (*td->plLastActivityTime)
@@ -5456,8 +6522,8 @@ ROLL_OVER_CONNECT:
 				if ( (time(0) - *td->plLastActivityTime ) > (unsigned long)td->pTSD->nProxyTimeout )
 				{
 					GString strInfo;
-					strInfo << "Protocol [" << GetProtocolName( td->pTSD->nProtocol ) << "] inactivity time out for:" << td->pzIP;
-					InfoLog(73,strInfo);
+					strInfo << "*******[" << GetProtocolName( td->pTSD->nProtocol ) << "] inactivity timeout for[" << strProxyToServer << "] tids:(" << td->nThreadID << " & " << td->nParentThreadID << ") fds[" << *(td->pnsockfd) << " & " << *(td->pnProxyfd) << "] Timeout Value:" << td->pTSD->nProxyTimeout << " seconds, see config file section [" << td->pTSD->szConfigSectionName << "]";
+					InfoLog(68,strInfo);
 
 					nCloseCode = 2104; 
 					goto THREAD_EXIT;
@@ -5467,9 +6533,23 @@ ROLL_OVER_CONNECT:
 			{
 				*td->plLastActivityTime = time(0);
 			}
+			if ( *(td->pnsockfd) == -1 )
+			{
+				// if the client TCP socket has been closed, we should quit reading from the server
+				nCloseCode = 2198; 
+				goto THREAD_EXIT;
+			}
+			if ( *td->pnProxyClosed )
+			{
+				// if the proxy is ending for any reason, we should quit reading from the server
+				nCloseCode = 2199; 
+				goto THREAD_EXIT;
+			}
+
 		}
 		else if (rslt == -1) // failure during wait (connection closed by server)
 		{ 
+			*td->pnProxyClosed = 1;
 			nCloseCode = 2105; 
 			goto THREAD_EXIT;
 		}
@@ -5488,21 +6568,14 @@ ROLL_OVER_CONNECT:
 				DataTrace(strLabel, pSendData, nSendDataLen);
 			}
 
-
-			if ( sAttribs ) // bCipher || bZip || bSync
+			// this says, if any of the packet attribute bits are on, bCipher || bZip || bSync
+			if ( sAttribs ) 
 			{
 				int newLength;
 				if (!bIsTunnel) // if we are about to encrypt/compress data from the application to send into the tunnel
 				{
 					cryptDest += 4; // move the pointer ahead 4 bytes where we will put the header
 				}
-
-				// log the raw send event
-				if (GetProfile().GetBoolean(td->pTSD->szConfigSectionName,"LogEnabled",false))
-				{
-					ProxyLog(td->pTSD->szConfigSectionName, td->nParentThreadID, pSendData, nSendDataLen, "raw>c");
-				}
-
 
 				// compress/crypt or decompress/decrypt depending on bIsTunnel
 				if ( PrepForClient(sAttribs,bIsTunnel,pcdToClient,pSendData,nSendDataLen,cryptDest,&newLength) )
@@ -5522,10 +6595,12 @@ ROLL_OVER_CONNECT:
 				}
 				else
 				{
+					*td->pnProxyClosed = 1;
 					nCloseCode = 2106; 
 					goto THREAD_EXIT;
 				}
 			}
+
 
 			if (*td->pnProxyClosed)
 			{
@@ -5533,18 +6608,137 @@ ROLL_OVER_CONNECT:
 				goto THREAD_EXIT;
 			}
 
-			// transmit to client
-			if (nonblocksend(td->sockfd,pSendData, nSendDataLen) != nSendDataLen)
+			// log what we will transmit to client
+			if (g_bTraceHTTPProxyReturn || g_bTraceHTTPProxyBinary)
 			{
+				pSendData[nSendDataLen] = 0;
+
+				GString strG("HTTP-PROXY-RETURN(send_to_fd:");
+				strG << *(td->pnsockfd) << " Action=[" << td->strAction << "] from tid:" << td->nThreadID  << " to tid:"<< td->nParentThreadID <<") Returning " << nSendDataLen << " bytes from fd:" << *(td->pnProxyfd) << " [" << nProxyToPort << "@" << strProxyToServer << "] per request[" << td->strAction << "] Data Sent[";
+				strG.Write(pSendData, (nSendDataLen > 512) ? 512 : nSendDataLen );
+				strG << "]";
+				strG.ReplaceChars("\r\n",'~');
+				if(g_bTraceHTTPProxyBinary)
+				{
+					strG << "\r\n";
+					strG.FormatBinary( (unsigned char *)pSendData, nSendDataLen, 1, "\t\t\t\t");
+				}
+				InfoLog(69,strG);
+			}
+
+			//
+			// in ProxyHelperThread, search for:       g_bTraceHTTPProxyFiles        to see the mirror implementation.
+			//
+			if ( g_bTraceHTTPProxyFiles ) 
+			{
+				GString strFileName(td->strAction);
+				if (strFileName._len > 255)
+				{
+					strFileName.SetLength(255);
+				}
+				// none of those are allowed in a file name
+				strFileName.ReplaceChars("\\/:*?\"<>|",'~');
+				strFileName.Prepend(strProxyToServer);
+				strFileName.Prepend("@");
+				strFileName.Prepend((__int64)nProxyToPort);
+				strFileName << ".IN.txt";
+				
+				GString strPath(g_strLogFile);				  // start with the logfile name and path
+				strPath.SetLength(strPath.ReverseFindOneOf("/\\")); // cut off the file name for either a windows or unix path
+				strPath << g_chSlash << "transactions" << g_chSlash;
+
+				// make the destination directory if it does not exist
+				#ifdef _WIN32
+					mkdir( strPath );
+				#else
+					mkdir( strPath ,777 );
+				#endif
+				
+				// concat the two strings
+				strPath << strFileName;
+
+				// attach a GString object over the send buffer
+				GString g(pSendData,nSendDataLen,nSendDataLen,0);
+
+				g.ToFileAppend(strPath);
+			}
+			
+			////////////////////////////////////////////////////////////////////////////
+			//
+			//
+			//							transmit to client
+			//
+			//
+			int nActualSent = nonblocksend( *(td->pnsockfd) ,pSendData, nSendDataLen);
+			//
+			//
+			////////////////////////////////////////////////////////////////////////////
+			if (nActualSent != nSendDataLen)
+			{
+				// the client has disconnected
+				if (g_bHTTPProxyLogExtra)
+				{
+					GString g;
+					pSendData[nSendDataLen] = 0;
+					g << "Client fd:" << *(td->pnsockfd) << " has disconnected. SOCK_ERR=" << SOCK_ERR << " The server fd:" << *(td->pnProxyfd) << " outbound to:[" << nProxyToPort << "@" <<  strProxyToServer << "] maybe can be cached,  It failed to send " << nSendDataLen << " bytes[" << pSendData << "]";
+					g.ReplaceChars("\r\n",'~');
+					InfoLog(21088,g);
+				}
+				
+				// if the client disconnected and this is an entire HTTP transaction with no Content-Length 
+				// OR with Content-Length and the entire content included, then we can cache this outbound connection rather than close it.
+				// First, see if the port is 80, and the data starts with HTTP/1
+				if (g_bEnableOutboundConnectCache && nProxyToPort == 80 && memcmp(pSendData, "HTTP/1.", 7) == 0 )
+				{
+					pSendData[nSendDataLen]	= 0;
+					char *prnrn = (char *)strstr(pSendData, "\r\n\r\n");
+					if (prnrn)
+					{
+						int nCL = 0;
+						char *pCL = stristr(pSendData,"Content-Length:");
+						if (pCL)
+						{
+							pCL += 15; // first byte of content length in the HTTP header
+							nCL = atoi(pCL);
+						}
+						if ( nSendDataLen == (prnrn - pSendData) + (4 + nCL) ) // 4 is the length of "\r\n\r\n"
+						{
+							// cache it
+
+							// the key is fully qualified with the port in this form "80@www.google.com"
+							// since 0 is a valid socket handle, add 1 to it before we cache it, then if we find a 0 it always means "no entry exists in cache"
+							GString strKey;	
+							strKey << nProxyToPort << "@" << strProxyToServer;
+							strKey.MakeLower();
+							gthread_mutex_lock(&g_csMtxConnectCache);
+							g_OutboundConnectCache.Insert(strKey, (void *)( *(td->pnProxyfd) + 1 ) );
+							gthread_mutex_unlock(&g_csMtxConnectCache);
+
+							// disconnect this socket handle from the ProxyHelperThread and return the thread to the pool
+							// search this file for:   777 signifies a "detach"
+							*td->pnProxyClosed = 777;
+							nCloseCode = 2121;
+							goto THREAD_EXIT;
+						}
+						else
+						{
+							// trash it - falls through to goto THREAD_EXIT
+
+						}
+					}
+				}
+
 				nCloseCode = 2108; 
 				goto THREAD_EXIT;
 			}
-			nTotalTransmit += nSendDataLen;
+			td->nTotalBytesProxied += nSendDataLen;
 			
-			// log the send event from helper thread
-			if (GetProfile().GetBoolean(td->pTSD->szConfigSectionName,"LogEnabled",false))
+			// log the send event from helper thread - sending to the "Client"
+			if ( td->pTSD->bIsLogging )
 			{
-				ProxyLog(td->pTSD->szConfigSectionName, td->nParentThreadID, pSendData, nSendDataLen, "tx->c");
+				GString str("Transmit to Client ");
+				str << td->pzClientIP << " [" << *(td->pnsockfd) << "] per request [" << td->strAction << "]";
+				ProxyLog(td->pTSD->strLogFile, td->nParentThreadID, pSendData, nSendDataLen, str);
 			}
 			if (g_DataTrace)
 			{
@@ -5553,36 +6747,56 @@ ROLL_OVER_CONNECT:
 				DataTrace(strLabel, pSendData, nSendDataLen);
 			}
 
+			nBufBytes = 0;
+			nSendDataLen = 0;
+			pSendData[0] = 0;
 		}
 	} 
 THREAD_EXIT:
+	char szAction[12];
+	strcpy(szAction,"Closed");
+	int nWasfd = *(td->pnProxyfd); // copy nWasfd for logging
 
-	if ( *td->pnProxyClosed != 777 ) // 777 signifies a "detach" so the connection must not be closed
+	// 777 signifies a "detach" so the connection must not be closed.   search this file for:   777 signifies a "detach"
+	if ( *td->pnProxyClosed != 777 ) 
 	{
-		if(g_TraceConnection && !g_ServerIsShuttingDown)
-		{
-			GString strTime;
-			int nElapsed = getTimeMS() - td->starttime;
-			if (nElapsed > 300000)
-				strTime << (nElapsed / 1000) / 60 << "min"; // minutes over 5
-			else if (nElapsed > 5000 && nElapsed < 300000)
-				strTime << nElapsed / 1000 << "sec"; // seconds between 5 seconds and 300 seconds
-			else
-				strTime << nElapsed << "ms"; // milliseconds less than 5000
-			
-			// note: on Windows - transactions that complete in the < 50 millisecond range on slower CPU's have been seen to report an elapsed time of 0.
-			// Use GPerformanceTimer in GPerformanceTimer.h if you want to count clock ticks per transaction.  
-			GString strInfo;
-			strInfo.Format("Closed Outbound [%d:%s] (tid:%d  %s) code[%d:%d]",(int)nProxyToPort,(const char *)strProxyToServer,td->nThreadID,strTime.Buf(),(int)nCloseCode,(int)SOCK_ERR);
-			InfoLog(74,strInfo);
-		}
-
 		// In many cases *td->pnProxyClosed was already set to '1' a few steps earlier, do not assume it was '0' at this point
 		*td->pnProxyClosed = 1; // 1 == Shut down in progress.
+		
+		// reset per connection
+		td->nTotalBytesProxied = 0; 
+		td->nTotalBytesRead = 0; 
+		td->nTotalBytesSent = 0; 
 
-		PortableClose(td->sockfd,"Core9");
-	
+		PortableClose( *(td->pnProxyfd) ,"Core9");
+		*(td->pnProxyfd) = -1; // since we closed it, make the handle invalid in our shared memory
 	}
+	else
+	{
+		strcpy(szAction,"Cached");
+	}
+
+	if(g_TraceConnection && !g_ServerIsShuttingDown)
+	{
+		GString strTime;
+		int nElapsed = getTimeMS() - td->starttime;
+		if (nElapsed > 300000)
+			strTime << (nElapsed / 1000) / 60 << "min"; // minutes over 5
+		else if (nElapsed > 5000 && nElapsed < 300000)
+			strTime << nElapsed / 1000 << "sec"; // seconds between 5 seconds and 300 seconds
+		else
+			strTime << nElapsed << "ms"; // milliseconds less than 5000
+		
+		// note: on Windows - transactions that complete in the < 50 millisecond range on slower CPU's have been seen to report an elapsed time of 0.
+		// Use GPerformanceTimer in GPerformanceTimer.h if you want to count clock ticks per transaction.  
+		GString strInfo;
+		strInfo.Format("%s Outbound [%d:%s] (on tid:%d fd:%d  %s) code[%d:%d] bytes sent to client=%I64d",szAction,(int)nProxyToPort,(const char *)strProxyToServer,(int)td->nThreadID,(int) nWasfd  ,strTime.Buf(),(int)nCloseCode,(int)SOCK_ERR,(__int64)td->nTotalBytesProxied);
+		strInfo << " (client fd:" << *(td->pnsockfd) << " tid:" << td->nParentThreadID  << ")  read from server=" <<  td->nTotalBytesRead;
+
+		InfoLog(70,strInfo);
+	}
+
+
 	*td->pbHelperThreadIsRunning = 0; // helper shutdown complete.
 
 	if (g_nLockThreadBuffers == 0 && cryptDest)
@@ -5610,10 +6824,6 @@ THREAD_EXIT:
 	}
 	return 0;
 }
-
-
-
-
 
 
 
@@ -5657,7 +6867,7 @@ int startListeners(int nAction, int nPort = -1)
 					if((pTSD->sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 					{
 						pTSD->nState = -1; 
-						InfoLog(90,"Can't open socket. Check permissions. ");
+						InfoLog(71,"Can't open socket. Check permissions. ");
 						return 0;
 					}
 					memset((char *) &serv_addr, 0, sizeof(serv_addr));
@@ -5670,13 +6880,13 @@ int startListeners(int nAction, int nPort = -1)
 						pTSD->nState = -2;
 						GString strErr;																// that big arrow makes this stick out in a log file
 						strErr.Format("Cannot use port[%d] (try [netstat -o] or [netstat -lp | grep %d]  ---------------------------->  N\\A[%d]",(int)pTSD->nPort, (int)pTSD->nPort,(int)pTSD->nPort);
-						InfoLog(91,strErr);
+						InfoLog(72,strErr);
 					}
 					else
 					{
 						GString strInfo;
 						strInfo.Format("Listening on port[%d]",(int)pTSD->nPort);
-						InfoLog(92,strInfo);
+						InfoLog(73,strInfo);
 						pTSD->nState = 1; // ready
 					}
 
@@ -5703,6 +6913,7 @@ int startListeners(int nAction, int nPort = -1)
 
 
 					gthread_create(&listen_thr,	NULL, listenThread, (void *)pTSD );
+					
 				}
 			}
 			if (nAction == 2 )
@@ -5716,14 +6927,11 @@ int startListeners(int nAction, int nPort = -1)
 	return nRet;
 }
 
-
-
 void showActiveThreads(GString *pG = 0);
 
 #ifdef ___XFER
 	#include "../../Libraries/Xfer/Core/XferLocalCommands.cpp"
 #endif
-
 #ifdef __CUSTOM_CORE__
 	#include "ServerCoreCustomGlobalInternals.cpp" 
 #endif
@@ -5741,8 +6949,84 @@ public:
 };
 
 
+// returns 1 through 7  for RFC 2616 verbs that DO NOT need HTTP Proxy translation
+// returns 8 through 15 for RFC 2616 verbs that need HTTP Proxy translation
+// otherwise returns 0 
+int isHTTPVerb(char *pSendData)
+{
+	// Note: this is all the verbs from RFC 2616		// is this uppercase HTTP check necessary?  ever?
+	if ( memcmp(pSendData,"GET http://",	11) == 0	|| memcmp(pSendData,"GET HTTP://",		11) == 0 )
+		return 8;
+	if ( memcmp(pSendData,"POST http://",	12) == 0	|| memcmp(pSendData,"POST HTTP://",		12) == 0 )
+		return 9;
+	if ( memcmp(pSendData,"HEAD http://",	12) == 0	|| memcmp(pSendData,"HEAD HTTP://",		12) == 0 )
+		return 10;
+	if ( memcmp(pSendData,"OPTIONS http://",15) == 0	|| memcmp(pSendData,"OPTIONS HTTP://",	15) == 0 )
+		return 11;
+	if ( memcmp(pSendData,"PUT http://",	11) == 0	|| memcmp(pSendData,"PUT HTTP://",		11) == 0 )
+		return 12;
+	if ( memcmp(pSendData,"DELETE http://",	14) == 0	|| memcmp(pSendData,"DELETE HTTP://",	14) == 0 )
+		return 13;
+	if ( memcmp(pSendData,"TRACE http://",	13) == 0	|| memcmp(pSendData,"TRACE HTTP://",	13) == 0 )
+		return 14;
+	if ( memcmp(pSendData,"CONNECT ", 8) == 0 )
+		return 15;
 
-// This thread services all connection types.
+	// this is all the verbs from RFC 2616 (again minus CONNECT)
+	if ( memcmp(pSendData,"GET ",	4) == 0 )
+		return 1;
+	if ( memcmp(pSendData,"POST ",	5) == 0 )
+		return 2;
+	if ( memcmp(pSendData,"HEAD ",	5) == 0 )
+		return 3;
+	if ( memcmp(pSendData,"OPTIONS ",8)== 0 )
+		return 4;
+	if ( memcmp(pSendData,"PUT ",	4) == 0 )
+		return 5;
+	if ( memcmp(pSendData,"DELETE ",7) == 0 )
+		return 6;
+	if ( memcmp(pSendData,"TRACE ",	6) == 0 )
+		return 7;
+
+
+	// Note: these are all the verbs from RFC 2518
+	// PROPFIND  PROPPATCH   MKCOL  COPY  MOVE  LOCK  UNLOCK
+
+	return 0;
+}
+
+
+
+
+
+// Labels in clientthread() are like 'functions', set the proper arguments then goto...
+//----------------------------------------------------------------------------------------------------
+// HTTP_PROXY_KEEP_ALIVE:
+//----------------------------------------------------------------------------------------------------
+// this assumes [nInitialRawSend] is != 0, it is the bytes in [sockBuffer] which contains the data
+// HTTP_PROXY_CONVERT:
+//----------------------------------------------------------------------------------------------------
+// this assumes TCD already has the server and port set in:
+//	memcpy(TCD.pzConnectRoute, ... ); // copy the null
+//	TCD.nConnectRouteSize = ? ;
+// this ALSO assumes any header/markup is already prepared in pInitialProxySend if nInitialRawSend is != 0			
+// HTTP_PROXY_RE_CONNECT:
+//----------------------------------------------------------------------------------------------------
+// this assumes any header/markup is already prepared in pInitialProxySend if nInitialRawSend is != 0
+// HTTP_PROXY_ALREADY_CONNECTED: 
+//----------------------------------------------------------------------------------------------------
+// goes to Branch 2 - reads HTTP headers, and generates an HTTP response
+// KEEP_ALIVE:
+//----------------------------------------------------------------------------------------------------
+// HANDLER_FINISH: // legacy - may goto KEEP_ALIVE
+//----------------------------------------------------------------------------------------------------
+// CLOSE_CONNECT:  // closes connection
+//----------------------------------------------------------------------------------------------------
+// SHUTTING_DOWN:  // internal used when the process is ending
+//----------------------------------------------------------------------------------------------------
+
+
+// clientThread() thread services all connection types.
 void *clientThread(void *arg)
 {
 	ThreadData *td = (ThreadData *)arg;
@@ -5754,12 +7038,10 @@ void *clientThread(void *arg)
 //		InfoLog(111,strThreadTrace);
 //	}
 
-
 	unsigned long lBytesRemaining;
 	char *pCommandParam;
 	const char *pSent = 0;
 	int nYielded = 0;
-	const char *pzHome = 0;
 	int bHelperThreadIsRunning = 0;
 	int nCloseCode = 1100; // default close code for Branch 1   error range 11nn(1st thread, 1nd branch)
 	int nInitialRawSend = 0;
@@ -5769,15 +7051,13 @@ void *clientThread(void *arg)
 
 		
 	int bisHead = 0;  // is the HTTP HEAD verb
-	int nKeepAlive = g_nMaxKeepAlives; // counts down to 0 with each kept alive transaction
+	unsigned int nKeepAlive = g_nMaxKeepAlives; // counts down to 0 with each kept alive transaction
 
 	MessagingArgs MA;
 	ThreadConnectionData TCD;
 
-	int nTotalProxiedBytes = 0;
 	
-	int nProxyfd = -1;
-	
+
 	// KillTidMemoryNote:
 	// -------------------------
 	// A reference to this threads memory is stored external to the thread.  ServerCore does not make other heap 
@@ -5793,7 +7073,6 @@ void *clientThread(void *arg)
 	char *cryptDest = 0;
 	if (g_nLockThreadBuffers) 
 	{
-
 		// make the allocation before the transaction begins, making the txn a little faster
 		int n = MAX_DATA_CHUNK;
 		cryptDest = new char[(n * 2) + 1024];	// note: only 1 allocation for both buffers
@@ -5827,8 +7106,10 @@ void *clientThread(void *arg)
 	int nPacketIndex;
 	int nPacketLen;
 	int nProxyMaxBytes;
-	int nProxyClosed = 1;
+
 	GString strCertifiedMsgResponse;
+	GString strNoProxyResponse;
+	bool bConnectionAuthorized = 0;
 
 	char *pPacket;
 	unsigned long lLastActivityTime;
@@ -5849,7 +7130,6 @@ MAIN_THREAD_BODY:
 		lBytesRemaining = 0;
 		pSent = 0;
 		nYielded = 0;
-		pzHome = 0;
 		nBufBytes = 0;
 		nPacketIndex = -1;
 		nPacketLen = 0;
@@ -5862,9 +7142,8 @@ MAIN_THREAD_BODY:
 		{
 			GString strLog;
 			strLog.Format("Thread %d Waiting",(int)td->nThreadID);
-			InfoLog(127,strLog);
+			InfoLog(100,strLog);
 		}
-
 
 		if (!nFirstThreadUse)
 		{
@@ -5909,7 +7188,7 @@ MAIN_THREAD_BODY:
 		{
 			GString strLog;
 			strLog.Format("W%d",(int)td->nThreadID);
-			InfoLog(128,strLog);
+			InfoLog(101,strLog);
 			goto MAIN_THREAD_BODY;
 		}
 
@@ -5919,7 +7198,7 @@ MAIN_THREAD_BODY:
 			cryptDest = new char[(n * 2) + 1024];
 			if (!cryptDest)
 			{
-				InfoLog(111,"********* Out of Memory *********");
+				InfoLog(102,"********* Out of Memory *********");
 			}
 			sockBuffer = &cryptDest[n + 512];
 
@@ -5932,30 +7211,36 @@ MAIN_THREAD_BODY:
 
 
 		// get the address of the connected client into strConnectedIPAddress;
-		// this address cannot be trusted for any type of access restrictions.
+		// the address as reported by the presumably unspoofed TCP/IP headers.
 		strConnectedIPAddress = td->pzClientIP;
 
 
 		if(g_TraceConnection)
 		{
 			GString strMessage;
-			strMessage.Format("Inbound [%d:%s] (fd:%d tid:%d type:%s)",(int)td->pTSD->nPort,(const char *)strConnectedIPAddress,(int)td->sockfd, (int)td->nThreadID,GetProtocolName( td->pTSD->nProtocol ));
-			InfoLog(129,strMessage);
+			strMessage.Format("Inbound [%d:%s] (fd:%d tid:%d type:%s)",
+				(int)td->pTSD->nPort,(const char *)strConnectedIPAddress,(int)td->sockfd, (int)td->nThreadID,GetProtocolName( td->pTSD->nProtocol ));
+			InfoLog(103,strMessage);
 		}
 		if (g_TraceThread)
 		{
 			GString strLog;
 			strLog.Format("Thread %d Working",(int)td->nThreadID);
-			InfoLog(130,strLog);
+			InfoLog(104,strLog);
 		}
 
-	    // turn the OS kernel buffering off
+
+
+		//
+	    // Turn the OS kernel buffering off - Search for "Turn off Nagle Algorithm"
+		//
 		if (g_StopDoubleBuffer)
 		{
 			setsockopt(td->sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&off, sizeof(off));
 			int one = 1;
 			setsockopt(td->sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&one, sizeof(one));
 		}
+
 
 
 
@@ -5972,40 +7257,56 @@ MAIN_THREAD_BODY:
 		}
 
 
-		//////////////////////////////////////////////////////////////////////////		
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//		
 		// Following this comment are the two main logic branches.
-		// Branch 1 - forwards the request/data to another location (switchboard, hop, or final destination)
-		// Branch 2 - reads HTTP headers, and generates an HTTP response 
+		// Branch 1 - forwards the request/data to another location (implements a proxy to a switchboard, the next hop, or to the final destination )
+		// Branch 2 - reads HTTP headers, and generates an HTTP response (implements an an HTTP Server, or custom HTTP like server)
 		//
-		//////////////////////////////////////////////////////////////////////////		
-		
-
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//  
+		//										test to see if this protocol needs Branch 1
+		// 
 		// if ( tunnel(in)/proxy(out)  or        raw(bounce)        or   HTTP conversion bounce		or    PrivateSurf
 		if (td->pTSD->nProtocol == 2  || td->pTSD->nProtocol == 3  ||   td->pTSD->nProtocol == 11   || td->pTSD->nProtocol == 9 || td->pTSD->nProtocol == 12)
-		{
+		{ // Branch 1 scope is not tabbed in
+			
 		//////////////////////////////////////////////////////////////////////////		
 		// Branch 1 - forwards the request/data to another location (switchboard, hop, or final destination)
 		//////////////////////////////////////////////////////////////////////////		
-		nProxyfd = -1;
-		nProxyClosed = 0; // it's not exactly open yet but it will be unless someone changes this flag to stop it
+		td->nProxyfd = -1;
+		td->nProxyClosed = 0;	// it's not exactly open yet but it will be unless someone changes this flag to stop it
+		td->pnsockfd = 0;		// on the clientthread() this is not used.
 
 		// Tie the threadData(td) of 'this' thread to the thread that will proxy on our behalf
 		TCD.pTSD = td->pTSD;
-		TCD.sockfd = td->sockfd;
-		TCD.pnProxyClosed = &nProxyClosed;
+		TCD.sockfd = -1; // in TCD this -1 value can be anything. ProxyHelperThread gets it but does not use it.
+		TCD.pnsockfd = &td->sockfd; // so in ProxyHelperThread td->pnsockfd points to the client socket handle
+		
+
+
+		TCD.pnProxyClosed = &td->nProxyClosed;
+		TCD.pnProxyfd =		&td->nProxyfd;
+		TCD.pnProxyFlags =	&td->nProxyFlags;
+
+		TCD.pbHelperThreadIsRunning = &bHelperThreadIsRunning;
+
 		TCD.pcondHelper = &td->condHelper;
 		TCD.nParentThreadID = td->nThreadID;
-		TCD.pnProxyfd = &nProxyfd;
 		TCD.plLastActivityTime = &lLastActivityTime;
-		TCD.pbHelperThreadIsRunning = &bHelperThreadIsRunning;
 		strcpy(TCD.pzPollSectionName, td->pzPollSectionName);
 
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// This Ciphered Tunnel Setup may be moved to an external #included hook file, until then the cipher structures are available to all protocols in Branch 1
+		//
+		// HOOK: Ciphered Tunnel Setup  
+		//
 		// the 16 bit flag field indicating data attributes
 		int bReadHTTP;
 		unsigned short sAttribs = BuildAttributesHeader(td->pTSD->szConfigSectionName, td->pTSD->nProtocol, TCD.nAction, &bReadHTTP, 1);
 		int bIsTunnel = td->pTSD->bIsTunnel;
-
 
 		const char *pKey128 = 0;
 		if (  sAttribs & ATTRIB_CRYPTED_2FISH  )
@@ -6023,65 +7324,718 @@ MAIN_THREAD_BODY:
 		}
 		CipherData cdToServer(pKey128,nDir);
 
-
-		// HOOK: Ciphered Tunnel Setup
-
-
 		// assign the "pcd" so that worker thread can obtain a pointer to this 
 		// key and use it rather than rebuilding the same key.  currently unused.
 		TCD.pTSD->pcd = &cdToServer;	
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		
+
 		
 		////////////////////////////////////////////////////////////////////////////
 		//
-		// Here we have a protocol initialized, and ready to go.
-		// The sAttribs flag has been set by BuildAttributesHeader()
-		// and cipher keys have been prepared with the correct password.
-		//
+		//  Here we have a protocol initialized, and ready to go.  The sAttribs flag has been set by BuildAttributesHeader() and cipher keys have been prepared with the correct password.
 		//
 		//  Hook - protocol preprocessor   
 		//
 		////////////////////////////////////////////////////////////////////////////
 
-
-
+		
+		
 		// HTTP Proxy Server
 		int bIsCONNECT = 0;
-		if ( td->pTSD->nProtocol == 11)
+		if ( td->pTSD->nProtocol == 11 )  
 		{
-			//unsigned short sPktAttributes = 0;
-			//unsigned short sUnusedAttribs = 0;
-			unsigned int nPktIndex = 0;
-			int rslt = ReadPacketHTTP(td->sockfd, &nInitialRawSend ,sockBuffer,&nPktIndex);
-			
-			if (rslt == 0)
-			{
-				// no data available
-				nCloseCode = 1102;
-				goto CLOSE_CONNECT; 
-			}
-			else if (rslt == -1) // failure during wait (connection closed by client)
-			{
-				nCloseCode = 1103; 
-				goto CLOSE_CONNECT; 
-			}
-			else // process this initial packet
-			{
-				pInitialProxySend = sockBuffer; // (nInitialRawSend was set by ReadPacketHTTP() )
 
-				GString strPxyConnectTo;
-				if ( ConvertHTTPProxy(pInitialProxySend,nInitialRawSend,cryptDest,strPxyConnectTo, nInitialRawSend, &bIsCONNECT) )
+
+			if (g_bHTTPProxyRestrictToSubnet)
+			{
+				bool bAllow = 0;
+				GStringIterator itAllowSubNets( g_pstrHTTPProxyRestrictList );
+				while ( itAllowSubNets() )
 				{
-					td->strAction = "HTTP Proxy to ";
-					td->strAction << strPxyConnectTo;
+					if ( strConnectedIPAddress.Find( itAllowSubNets++ ) == 0 ) // check multiple local subnets
+					{
+						bAllow = 1;
+						break;
+					}
+				}
+				if (!bAllow)
+				{
+					if ( g_bTraceHTTPProxy )
+					{
+						GString g("****Refused HTTP Proxy Service to:");
+						g << strConnectedIPAddress <<" because the [HTTPProxy] RestrictBeginMatch=" << g_pstrHTTPProxyRestrictList->Serialize(",")  << "   Attempted:" << nInitialRawSend;
+						InfoLog(10555,g);
+					}
+					nCloseCode = 11210; 
+					goto CLOSE_CONNECT; 
+				}
+			}
+
+			strNoProxyResponse =	   "HTTP/1.0 407 Proxy Authentication Required\r\n";
+			strNoProxyResponse		<< "Server: " << g_strHTTPProxyAgentName << "\r\n";
+			if (g_bNegotiateNTLMv2)
+			{
+				strNoProxyResponse  << "Proxy-Authenticate: Negotiate\r\n";
+			}
+			if (g_bNegotiateBasic)
+			{
+				strNoProxyResponse	<< "Proxy-Authenticate: Basic realm=\"" << g_strHTTPProxyAgentName << "\"\r\n";
+			}
+			strNoProxyResponse		<< "Connection: close\r\n"
+									<< "Proxy-Connection: close\r\n\r\n";
+
+			unsigned __int64 nChallenge;
+			nChallenge = 0;
+
+			long lDataWait;
+			lDataWait = time(0);
+
+HTTP_PROXY_KEEP_ALIVE:
+			td->nSequence++;
+
+		
+			//////////////////////////////////////////////////////////
+			// Begin Initial Read from the web browser or other client 
+			//////////////////////////////////////////////////////////
+			unsigned int nPktIndex;
+			nPktIndex = 0;
+
+			// recv() anything on the TCP buffers - Non Blocked I/O
+			// return 0 when the time limit expired.
+			// return -1 socket error
+			// return +number of bytes read
+KEEP_WAITING_FOR_DATA_FROM_SERVER:
+			nInitialRawSend = nonblockrecvAny (td->sockfd, sockBuffer, MAX_DATA_CHUNK, 1 ); 
+			if (nInitialRawSend == 0) 
+			{
+				if (time(0) - lDataWait > g_nAuthTimeoutSeconds)
+				{
+					if (g_bHTTPProxyLogExtra)
+					{
+						GString strError("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ Timed out waiting for client fd:");
+						strError << td->sockfd << "Last Connect:[" << td->pzConnectRoute << "] Change g_nAuthTimeoutSeconds=" << g_nAuthTimeoutSeconds;
+						InfoLog(976, strError);
+					}
+					// no data available within time expiration limit
+					nCloseCode = 1102;
+					goto CLOSE_CONNECT; 
+				}
+				else
+				{
+					// if the server closed the connection while we are waiting for data from the client
+					if ( td->nProxyClosed )
+					{
+						// Either keep the client connection alive.....
+						goto HTTP_PROXY_KEEP_ALIVE;
+						//  or not?
+						//nCloseCode = 1102;
+						//goto CLOSE_CONNECT; 
+
+					}
+					goto KEEP_WAITING_FOR_DATA_FROM_SERVER;
+				}
+			}
+			else if (nInitialRawSend < 1) 
+			{
+				// client closed connection 
+				nCloseCode = 1121;
+				goto CLOSE_CONNECT; 
+			}
+
+			///////////////////////////////////////////////////////////////////////////////
+			// Completed Initial Read from the web browser or client, or a subsequent read
+			//////////////////////////////////////////////////////////////////////////////
+			else // process this packet
+			{
+				lDataWait = time(0);
+				sockBuffer[nInitialRawSend] = 0;
+				td->nTotalBytesRead += nInitialRawSend;
+
+				pInitialProxySend = sockBuffer; // nInitialRawSend was set by ReadPacketHTTP()
+
+
+				bool bIsAuthorized;
+				bIsAuthorized = !g_bNeedHTTPProxyAuth;
+				if (!bIsAuthorized)
+				{
+					bIsAuthorized = bConnectionAuthorized; // see if we already authorized this connection
+				}
+				
+				if (!bIsAuthorized) 
+				{ // this conditional scope is intentioanlly not tabbed in
+		
+				// look for "Authorization: Negotiate"
+				char *pAuthStr;
+				pAuthStr = (g_bNegotiateNTLMv2) ? stristr(pInitialProxySend,"Authorization: Negotiate ") : 0; 
+				if (pAuthStr)
+				{
+					GString strAuthBlob;
+					strAuthBlob.SetFromUpTo(pAuthStr + 25,"\r\n");  // strlen of "Authorization: Negotiate " is 25
+					strAuthBlob.UUDecode();
+
+					TypeMessageSwitch *pMsg0 = (TypeMessageSwitch *)(void *)strAuthBlob._str;
+					if ( pMsg0->type == 1 )
+					{
+
+						Type1Message *pMsg1 = (Type1Message *)(void *)strAuthBlob._str;
+
+						if (pMsg1->type != 1 || pMsg1->domain_len > 100 || pMsg1->host_len > 100 || pMsg1->domain_off > 100 || pMsg1->domain_off > 100)
+						{
+							// invalid message
+							nCloseCode = 11333; 
+							goto CLOSE_CONNECT; 
+
+						}
+						// Here is the domain,and host sent in Type1Message from the client
+						GString strDomain1( strAuthBlob._str + pMsg1->domain_off, pMsg1->domain_len );
+						GString strHost1  ( strAuthBlob._str + pMsg1->host_off,   pMsg1->host_len   );
+
+						//
+						// 10:11:35[123] HTTPProxy recv'd Type1Message (authentication message) from:  fd:21280  bytes:59 Domain:WORKGROUP Host:THEBOSS-PC pInitialProxySend=[GET http://www.bing.com/ HTTP/1.1~~Accept: text/html, application/xhtml+xml, */*~~Accept-Language: en-US~~User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko~~Accept-Encoding: gzip, deflate~~Host: www.bing.com~~DNT: 1~~Proxy-Connection: Keep-Alive~~Cookie: SRCHUSR=AUTOREDIR=0&GEOVAR=&DOB=20140420; _IDP=MW=1398900583; PPLState=1; SRCHUID=V=2&GUID=3C5D2A57D3C34E90A7250D99B33B30B5~~Proxy-Authorization: Negotiate TlRMTVNTUAABAAAAl7II4gkACQAyAAAACgAKACgAAAAGAbEdAAAAD1RIRUJPU1MtUENXT1JLR1JPVVA=~~~~]	
+						//
+						//if ( g_bTraceHTTPProxy )
+						//{
+						//	GString g("HTTPProxy recv'd Type1Message (authentication message) from:");
+						//	g << "  fd:" << td->sockfd << "  bytes:" << strAuthBlob._len << " Domain:" << strDomain1 << " Host:" << strHost1 << " pInitialProxySend=[" << pInitialProxySend << "]";
+						//	g.ReplaceChars("\r\n",'~');
+						//	InfoLog(123,g);
+						//}
+
+
+						GString strMessage2Challenge(256);
+						////////////////////////////////////////////////////////////////////////////////////////////////
+						// This server challenges the client with 8-bytes random number that we create here.
+						//												
+						nChallenge = (unsigned __int64)(unsigned __int64 *)(void *)&g_nClientthreadsInUse;  // guess the memory address of that variable to start with..
+						nChallenge += rand() * rand() * rand() * g_RandomNumbers[rand() % 8] * g_RandomNumbers[rand() % 8] * g_RandomNumbers[rand() % 8];
+						unsigned char *pnChallenge = (unsigned char *)(void *)&nChallenge;
+						for(int idx = 0; idx < 8; idx++)
+							if ( *( pnChallenge + idx ) == 0 )
+								*( pnChallenge + idx ) = rand(); // no zero bytes
+						////////////////////////////////////////////////////////////////////////////////////////////////
+
+							
+						////////////////////////////////////////////////////////////////////////////////////////////////
+						// Now push the 8 byte challenge into memory that another thead can access because in some cases
+						// the Type3 message that the client returns is handled by another clientthread(), therefore if the
+						// key was kept here on this stack there would be no way to access it, so we push to global memory.
+						gthread_mutex_lock(&g_csMtxChallengeList);
+						for(int i = 0; i<ARRAY_OF_OUTSTANDING_CHALLENGES; i++)
+						{
+							if (g_arrChallenges[i] == 0)
+							{
+								g_arrChallenges[i] = nChallenge;
+								break;
+							}
+						}
+						gthread_mutex_unlock(&g_csMtxChallengeList);
+						////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+						// The target name -- the name of the authentication target. This is sent in response to the client requesting the 
+						//  target (via the [RequestTarget] flag in the Type 1 message). This can contain a domain, server, or a network share. 
+						//  The target type is indicated via the [NTLM_TargetTypeServer] (otherwise NTLM_TargetTypeDomain or NTLM_TargetTypeShare) 
+						//  flag in the Type2Message. The target name is Unicode, as indicated by the presence of the NTLM_Unicode flag in the Type2Message.
+						GString strTarget;
+	//					strTarget = g_strThisHostName;
+						strTarget = strHost1;
+
+						const wchar_t *pzTargetWide = strTarget.Unicode();
+
+						// -------------------------------------------------------------------------------------------------
+												// pzArg4 = 0 or FQDN Host Name
+												// pzArg3 = 0 or DNS Domain Name
+												// pzArg2 = 0 or NetBIOS Server Name
+												// pzArg1 = 0 or NetBIOS Domain Name
+
+																		// *pzArg1,		*pzArg2,	 *pzArg3,	pzArg4
+						// Type2Message authMsg2(nChallenge, pzTargetWide, pzTargetWide,pzTargetWide,pzTargetWide,pzTargetWide);
+						   Type2Message authMsg2(nChallenge, pzTargetWide, pzTargetWide,pzTargetWide		,0			,0);
+						// Type2Message authMsg2(nChallenge, pzTargetWide, 0,			 0				    ,0			,0);
+						// -------------------------------------------------------------------------------------------------
+						//	write the binary of authMsg2 the into the GString
+						strMessage2Challenge.Write(&authMsg2.protocol[0], authMsg2.datablock_off + authMsg2.datablock_len );
+
+						strMessage2Challenge.UUEncode();
+
+
+
+
+						GString strType2("HTTP/1.1 407 Unauthorized\r\n");
+						strType2 << "Proxy-Authenticate: Negotiate " << strMessage2Challenge << "\r\n";
+						strType2 << "Content-Length: 0\r\n";					
+//						strType2 << "Connection: Keep-Alive\r\n";				//<-isnt it implied?  perhaps this is not necessary.
+//						strType2 << "Proxy-Connection: Keep-Alive\r\n";			//<-isnt it implied?  perhaps this is not necessary.
+						strType2 << "\r\n";
+						
+
+						int nRslt = nonblocksend(td->sockfd,strType2._str,strType2._len);
+						if (nRslt != strType2._len)
+						{
+							if ( g_bTraceHTTPProxy )
+							{
+								
+								GString g("*****Client aborted - failed to send the challenge:");
+								g << "  fd:" << td->sockfd;
+								InfoLog(10556,g);
+							}
+
+							nCloseCode = 11334; 
+							goto CLOSE_CONNECT; 
+							
+						}
+
+						goto HTTP_PROXY_KEEP_ALIVE; 
+
+					} // end of NTLM Type 1 handler
+					
+					else if ( pMsg0->type == 3 )
+					{
+						Type3Message *p3 = (Type3Message *)(void *)strAuthBlob._str;
+						if (p3->type !=3 || p3->dom_len > 100 || p3->user_len > 100 || p3->host_len > 100 || p3->dom_off > 400 || p3->user_off > 400 || p3->host_off > 400 || p3->lm_resp_len > 400 || p3->nt_resp_len > 400 || p3->lm_resp_off > 400 || p3->nt_resp_off > 400)
+						{
+							// error
+							if ( g_bTraceHTTPProxy )
+							{
+								GString g("NTLM Protocol Error. Expecting Type:3,  Got Type:");
+								g << p3->type << " fd:" << td->sockfd << " [" << sockBuffer << "]";
+								g.ReplaceChars("\r\n",'~');
+								InfoLog(1055,g);
+							}
+							nCloseCode = 11336; 
+							goto CLOSE_CONNECT; 
+						}
+
+						GString strDomain3; // strDomain3 came in the 3rd message in Unicode, strDomain1 in the first in ASCII
+						// GString strHost3;	// strHost3 is not needed
+						GString strUser;
+						strDomain3.FromUnicode(		(const wchar_t *)((char *)(void *)p3 + p3->dom_off),	p3->dom_len  / 2 );
+						// strHost3.FromUnicode(	(const wchar_t *)((char *)(void *)p3 + p3->host_off),	p3->host_len / 2 );
+						strUser.FromUnicode(		(const wchar_t *)((char *)(void *)p3 + p3->user_off),	p3->user_len / 2 );
+
+						GString binNTResponse   (	strAuthBlob._str + p3->nt_resp_off,						p3->nt_resp_len ); // length = 260
+						TypeNTLMv2 *pNTLMv2 = (TypeNTLMv2 *)(void *)binNTResponse._str;
+						// GString strTargetv2; // not used. same as strDomain and strDomain3 except that strTargetv2 is lower case 
+						// strTargetv2.FromUnicode(  (const wchar_t *)((char *)(void *)&pNTLMv2->datablock[0]), pNTLMv2->name1Len / 2);
+						
+
+
+
+						// There are 116444736000000000 100ns intervals between 1601 and 1970.  For more info search this file for: Timestamp A 64-bit
+						__int64 NowTimestamp = ((unsigned __int64)time(0) * 10000000) + 116444736000000000;
+						if (pNTLMv2->timestamp - NowTimestamp > 10000000 )
+						{
+							__int64 iDiff = pNTLMv2->timestamp - NowTimestamp;
+
+							// Know This: A Windows CE device may not have a real-time clock, therefore NTLMv2 from those devices has no timestamp.							
+							if ( g_bEnforceNTLMv2Timestamp )
+							{
+								if ( g_bTraceHTTPProxy )
+								{
+									GString g("*****************************Timestamp out of range from :[");
+									g << strConnectedIPAddress << " on fd:" << td->sockfd << " iDiff=" << iDiff << " [" << pInitialProxySend << "]";
+									g.ReplaceChars("\r\n",'~');
+									InfoLog(10556,g);
+								}
+
+								nCloseCode = 1984; 
+								goto CLOSE_CONNECT; 
+							}
+						}
+
+
+
+					
+						strUser.Prepend("User:"); // make a GProfile lookup Entry for the following layout
+						const char *pzPassLookup = GetProfile().GetStringOrDefault("Xfer",strUser,"");		
+						strUser.Replace("User:","Auth:",1); // make the new entry lookup key
+						const char *pzAuth = GetProfile().GetStringOrDefault("Xfer",strUser,"");		
+						if (pzPassLookup[0] == 0 || pzAuth[0] == 0)
+						{
+							// unknown user name
+							if ( g_bTraceHTTPProxy )
+							{
+								GString g("*****************************Unknown User Name Attempted:[");
+								g << strUser.StartingAt(strUser.Find(':')+1) <<  "]  from:" << strConnectedIPAddress << " on fd:" << td->sockfd << "[" << pInitialProxySend << "]";
+								g.ReplaceChars("\r\n",'~');
+								InfoLog(10556,g);
+							}
+							// send the 407
+							nonblocksend(td->sockfd,strNoProxyResponse,(int)strNoProxyResponse.Length());
+
+							goto HTTP_PROXY_KEEP_ALIVE; 
+							// or close the connection like this:
+							// nCloseCode = 11336; 
+							// goto CLOSE_CONNECT; 
+						
+						}
+						strUser.Remove(0,5); // removes "Auth:"
+
+
+
+						// create the md4 hash that will become part of the data that is md5 hashed in the HMAC
+						GString GPass(pzPassLookup);
+						MD4_CTX passcontext;
+						unsigned char passdigestMD4[16];
+						MD4_Init(&passcontext);
+						MD4_Update(&passcontext, GPass.Unicode(), GPass.Length()*2 );
+						MD4_Final(passdigestMD4, &passcontext);
+
+						
+						GString strUserAndDomain(strUser);
+						strUserAndDomain << strDomain3;
+						strUserAndDomain.MakeUpper();
+
+
+						for(int i = 0; i<ARRAY_OF_OUTSTANDING_CHALLENGES; i++)
+						{
+							// this is a lockless read from a thread on global memory (the write is locked)
+							nChallenge = g_arrChallenges[i];
+							if (nChallenge == 0)
+							{
+								continue;
+							}
+
+
+							unsigned char HMACDigest[16];
+							unsigned char *pnChallenge = (unsigned char *)(void *)&nChallenge;
+							hmac_v2X(passdigestMD4, (unsigned char *)strUserAndDomain.Unicode(), strUserAndDomain._len * 2, pnChallenge, (unsigned char *)(binNTResponse._str + 16) , binNTResponse._len - 16, HMACDigest );
+							__int64 nFoundAtIndex = binNTResponse.FindBinary(&HMACDigest[0], 16, 0);
+							if (nFoundAtIndex == 0)
+							{
+								// bingo. we hashed the same value that was sent to us, therefore this client passed the authentication process
+								bIsAuthorized = 1;
+
+								gthread_mutex_lock(&g_csMtxChallengeList);
+								for(int i = 0; i<ARRAY_OF_OUTSTANDING_CHALLENGES; i++)
+								{
+									if (g_arrChallenges[i] == nChallenge)
+									{
+										g_arrChallenges[i] = 0; // this challenge is no longer outstanding
+										break;
+									}
+								}
+								gthread_mutex_unlock(&g_csMtxChallengeList);
+								break;
+							}
+						}
+						if (!bIsAuthorized)
+						{
+							if ( g_bTraceHTTPProxy )
+							{
+								GString g("XXXXXXX :  Proxy Issued a 407 due to password mismatch for [");
+								g << strUser.StartingAt(strUser.Find(':')+1) <<  "]  from:" << strConnectedIPAddress << "on fd:" << td->sockfd;
+								InfoLog(10556,g);
+							}
+
+							// send the 407
+							nonblocksend(td->sockfd,strNoProxyResponse,(int)strNoProxyResponse.Length());
+
+							goto HTTP_PROXY_KEEP_ALIVE;
+							// or
+							//nCloseCode = 11336; 
+							//goto CLOSE_CONNECT; 
+						}
+
+						if ( g_bTraceHTTPProxy )
+						{
+							GString g("+++++++ HTTPProxy authenticated :");
+							g << strUser.StartingAt(strUser.Find(':')+1) <<  "  from:" << strConnectedIPAddress << "  using NTLMv2 on fd:" << td->sockfd;
+							InfoLog(10556,g);
+						}
+
+						bConnectionAuthorized = 1;
+
+					} // end of NTLM Type 3 handler
+
+				} // end of "Authorization: Negotiate" handler
+
+
+
+				pAuthStr = (g_bNegotiateBasic) ? stristr(pInitialProxySend,"Proxy-Authorization: Basic ") : 0;
+				if (pAuthStr)
+				{
+					GString strBasicAuthUser;
+					GString strBasicAuthDecoded;
+					strBasicAuthUser.SetFromUpTo(pAuthStr + 27,"\r\n"); // 27 is strlen("Proxy-Authorization: Basic ")
+					strBasicAuthUser.UUDecode();
+					if ( strBasicAuthUser.Find(":") == -1 )
+					{
+						// error bad auth format
+						nCloseCode = 11032; 
+						goto CLOSE_CONNECT; 
+					}
+					GString strPassword ( &strBasicAuthUser._str[strBasicAuthUser.Find(":")+1] ) ;
+					strBasicAuthUser.SetLength(strBasicAuthUser.Find(":")); // now strBasicAuthUser contains only the user name
+					strBasicAuthUser.Prepend("User:"); // make a GProfile lookup Entry for the following layout
+
+					//  GProfile storage for user/password/permissions
+					/////////////////////////////////////////
+					//	[Xfer]													<--the section name that holds the users
+					//	User:bob=aaa
+					//	Auth:bob=*												<--bob's password is aaa and he's superuser so he has all permissions like me
+					//	User:joe=password
+					//	Auth:joe=FRLXcZf|nothing matters past the pipe			<--joe has a list of 1 byte permissions and 'c' exists so he can HTTP Proxy
+					const char *pzPassLookup = GetProfile().GetStringOrDefault("Xfer",strBasicAuthUser,"");		
+					if ( strPassword.Compare( pzPassLookup ) == 0 )
+					{
+						// the password matches, now see if the user has permission for this action
+						strBasicAuthUser.Replace("User:","Auth:",1); // make the new entry looklup key
+						const char *pzAuth = GetProfile().GetStringOrDefault("Xfer",strBasicAuthUser,"");		
+						bIsAuthorized = (pzAuth[0] == '*'); // look for superuser access
+						if ( !bIsAuthorized ) 
+						{
+							// if character 'c' is found before a '|', then set bIsAuthorized = true
+							char *pPipe = (char *)strpbrk(pzAuth, "|");
+							if (pPipe)
+							{
+								*pPipe = 0;
+							}
+							char *pFoundAuth = (char *)strpbrk(pzAuth, "c"); 
+							bIsAuthorized = (pFoundAuth) ? 1 : 0; 
+						}
+					}
+					if ( g_bTraceHTTPProxy )
+					{
+						if (bIsAuthorized)
+						{
+							GString g("+++++++ HTTPProxy authenticated :");
+							g << strBasicAuthUser.StartingAt(strBasicAuthUser.Find(':')+1) <<  "  from:" << strConnectedIPAddress << "  using Basic authentication on fd:" << td->sockfd;
+							InfoLog(10556,g);
+						}
+						else
+						{
+							GString g("------- HTTPProxy refused :");
+							g << strBasicAuthUser.StartingAt(strBasicAuthUser.Find(':')+1) <<  "  from:" << strConnectedIPAddress << "  for a Wrong Password or No Permission on fd:" << td->sockfd;
+							InfoLog(10556,g);
+						}
+					}
+				} // end of Proxy-Authorization: Basic
+				} // if (!bIsAuthorized)
+				
+				
+				if (!bIsAuthorized)
+				{
+					// send the 407
+					int nSent = nonblocksend(td->sockfd,strNoProxyResponse,(int)strNoProxyResponse.Length());
+					if (nSent != strNoProxyResponse.Length())
+					{
+						if ( g_bTraceHTTPProxy )
+						{
+							pInitialProxySend[nInitialRawSend] = 0;
+							GString strG("####### HTTP-PROXY failed to send 407 to ");
+							strG << "client fd:" << td->sockfd << " from tid:" << td->nThreadID  << " SOCK_ERR = " << SOCK_ERR << ") command[" <<  pInitialProxySend << "]";
+							strG.ReplaceChars("\r\n",'~');
+							InfoLog(1055,strG);
+						}
+					}
+					else
+					{
+						td->nTotalBytesSent += nSent;
+					}
+
+					if ( g_bTraceHTTPProxy )
+					{
+						pInitialProxySend[nInitialRawSend] = 0;
+						GString strG("??????? HTTP-PROXY Issued a 407 Password Request to ");
+						strG << "client fd:" << td->sockfd << " from tid:" << td->nThreadID  << ") allowing[";
+						if (g_bNegotiateNTLMv2)
+						{
+							strG << "NTLMv2  ";
+						}
+						if (g_bNegotiateBasic)
+						{
+							strG<< "Basic";
+						}
+						strG << "] command[";
+						strG.Write(pInitialProxySend, (nInitialRawSend > 512) ? 512 : nInitialRawSend );
+						strG << "]";
+						strG.ReplaceChars("\r\n",'~');
+						InfoLog(1055,strG);
+					}
+
+					/// cannot goto HTTP_PROXY_KEEP_ALIVE here...... 
+
+					nCloseCode = 1407;
+					goto CLOSE_CONNECT;
+				}
+
+HTTP_PROXY_CONVERT:
+				cryptDest[0] = 0;				 // purely for debugging asthetics
+				sockBuffer[nInitialRawSend] = 0; // purely for debugging asthetics
+
+				GString strPxyConnectTo2;
+
+
+				// sockbuffer contains the pre-converted HTTP in-tact after calling ConvertHTTPProxy() we will overrwite nInitialRawSend with the length of the converted HTTP in crypDest
+				int nisVerb = isHTTPVerb(sockBuffer);
+
+
+				if ( ConvertHTTPProxy(sockBuffer,nInitialRawSend,cryptDest,strPxyConnectTo2, &nInitialRawSend, &bIsCONNECT) )
+				{
+					// strPxyConnectTo2 is in the form "443@www.google.com" or "80@www.google.com"
+					td->strAction.Empty();
+					//td->strAction = cryptDest;
+					if (nisVerb)
+					{
+						td->strAction.SetFromUpTo(cryptDest,"HTTP/");
+					}
+					td->nSequence++;
+
+					if (g_bHTTPProxyLogExtra)
+					{
+						cryptDest[nInitialRawSend] = 0;
+						GString gPostConvert;
+						gPostConvert << "ConvertHTTPProxy verb type:" << nisVerb << "  from fd:" << td->sockfd << " to [" << strPxyConnectTo2 << "] last connected out [" << td->pzConnectRoute << "] bytes=" << nInitialRawSend << " starts with [";
+						gPostConvert.Write(cryptDest,64);
+						gPostConvert << "]";
+						gPostConvert.ReplaceChars("\r\n",'~');
+						InfoLog(55555,gPostConvert);
+					}
+					pInitialProxySend = cryptDest;
+
+
+
+					if ( strPxyConnectTo2.Compare(td->pzConnectRoute) == 0 && !td->nProxyClosed && td->nProxyfd != -1 )
+					{
+						// we skip the outbound connect - we are already connected
+						if (g_bHTTPProxyLogExtra)
+						{
+							GString strMsg("HTTP_PROXY_ALREADY_CONNECTED AAA for fd:");
+							strMsg << td->sockfd << " to[" << td->pzConnectRoute << "]";
+							InfoLog(987,strMsg);
+							bIsAuthorized = 1;
+						}
+
+						goto HTTP_PROXY_ALREADY_CONNECTED;
+					}
+					else
+					{
+						if ( g_bEnableOutboundConnectCache )
+						{
+							// save the open connection to [td->pzConnectRoute] 
+							if( td->nProxyfd != -1 && !td->nProxyClosed )
+							{
+							    // the key is fully qualified with the port in this form "80@www.google.com"
+								// since 0 is a valid socket handle, add 1 to it before we cache it, then if we find a 0 it always means "no entry exists in cache"
+								gthread_mutex_lock(&g_csMtxConnectCache);
+								g_OutboundConnectCache.Insert(td->pzConnectRoute, (void *)(td->nProxyfd+1));
+								gthread_mutex_unlock(&g_csMtxConnectCache);
+
+								// disconnect this socket handle from the ProxyHelperThread and return the thread to the pool
+								// search this file for:   777 signifies a "detach"
+								td->nProxyClosed = 777;
+							}
+						}
+						else
+						{
+							// closes the outbound connection and returns the ProxyHelperThread to the pool
+							PortableClose(td->nProxyfd,"NoCache1");
+							td->nProxyClosed = 1;
+							td->nProxyfd = -1;
+						}
+
+						// td->pzConnectRoute is empty on the first use, otherwise it is overwritten
+						strncpy( td->pzConnectRoute, strPxyConnectTo2, sizeof(td->pzConnectRoute) - 1 );
+						td->pzConnectRoute[sizeof(td->pzConnectRoute) - 1] = 0;
+					}
+
+
+
+					int nBlockConnect = 0;
+					// make [td->pzConnectRoute] lower case
+					for (int i = 0; i < sizeof(td->pzConnectRoute); i++)
+					{
+						if (td->pzConnectRoute[i] == 0)
+							break;
+						td->pzConnectRoute[i] = tolower(td->pzConnectRoute[i]);
+					}
+
+
+
+					// [td->pzConnectRoute] is in the form 443@www.google.com or 80@www.google.com
+					char *pSep = (char *)strpbrk(td->pzConnectRoute,"@");
+					pSep++; // move pointer ahead one byte past the "@"
+
+
+					// strBlockTest the string to ",www.google.com" as the key to search for in the blocked or allowed array.
+					GString strBlockTest;
+					strBlockTest << "," << pSep; // search for ",blocked.com"
+
+
+					if (g_bBlockHTTPProxyAds || g_strHTTPProxyBlocked._len)
+					{
+						if ( g_strHTTPProxyNotBlocked.Find(strBlockTest) != -1 )
+						{
+							nBlockConnect = 0;
+						}
+						else
+						{
+							if (g_bBlockHTTPProxyAds) 
+							{
+								if ( strstr(g_strHTTPProxyCacheBlocked._str, strBlockTest._str ) )
+								{
+									nBlockConnect = 3;
+								}
+								else if ( strstr(g_pAds, strBlockTest._str )  )
+								{
+									g_strHTTPProxyCacheBlocked << strBlockTest;  // perhaps this will be in a GHash someday
+									nBlockConnect = 1;
+								}
+							}
+						}
+					}
+					if ( g_strHTTPProxyBlocked.Find( strBlockTest ) != -1 )
+					{
+						g_strHTTPProxyCacheBlocked << strBlockTest;
+						nBlockConnect = 2;
+					}
+					
+
+					if (nBlockConnect)
+					{
+						if (g_bTraceHTTPProxy)
+						{
+							GString strG("Blocked Connect to[");
+							strG << td->pzConnectRoute << "] code:" << nBlockConnect << " fd:" << td->sockfd << " [" << td->strAction << "] HTTP:" << pInitialProxySend;
+							strG.ReplaceChars("\r\n",'~');
+							InfoLog(777,strG);
+						}
+
+
+						GString strConnectResponse;
+						strConnectResponse = "HTTP/1.1 402 Payment Required\r\n";  // Karma was called due.
+						strConnectResponse << "Content-Length: 0\r\n";
+					//  strConnectResponse << "Proxy-agent: " << g_strHTTPProxyAgentName << "\r\n";
+						strConnectResponse << "Connection: keep-alive\r\n";
+						strConnectResponse << "Proxy-Connection: keep-alive\r\n\r\n";
+						nonblocksend(td->sockfd,strConnectResponse,(int)strConnectResponse._len);
+
+						
+						td->strAction.Empty();
+						pInitialProxySend = 0; // not necessary   
+						goto HTTP_PROXY_KEEP_ALIVE;
+					}
+
+					// td->strAction will be either a "CONNECT n.n.n.n" or a file name or URL to GET
+					td->strAction.SetFromUpTo(pInitialProxySend,"HTTP/");
 
 					pInitialProxySend = cryptDest;
-					td->pTSD->nProxyTimeout = 60;
-					strcpy(TCD.pzConnectRoute,(const char *)strPxyConnectTo);
-					TCD.nConnectRouteSize = strlen(TCD.pzConnectRoute) + 1;
+					td->pTSD->nProxyTimeout = g_nHTTPProxyTimeout;
+					memcpy(TCD.pzConnectRoute,td->pzConnectRoute,strlen(td->pzConnectRoute) + 1); // copy the null
+					TCD.nConnectRouteSize = strlen(td->pzConnectRoute) + 1;
+					TCD.strAction = td->strAction;
 
 				}
 				else
 				{
+					GString strErr;
+					strErr << "\r\n\r\n*************************************** ConvertHTTPProxy Failed on fd:" << td->sockfd << " [" << sockBuffer << "]\r\n\r\n";
+					InfoLog(777,strErr);
+
 					nCloseCode = 1104; 
 					goto CLOSE_CONNECT; 
 				}
@@ -6102,10 +8056,19 @@ MAIN_THREAD_BODY:
 		//
 		//////////////////////////////////////////////////////////////////////////////////////////////////
 		IOBlocking(td->sockfd, 1);   // Set non-blocking IO incase some pre-handler forgot to set it back  
-		nTotalProxiedBytes = 0;
-		int bHasAwakenHelper = 0;
+
+
+
+//		if (!IsOpenSocket(TCD.sockfd))
+//		{
+//			// break in the debugger
+//		}
+		int bHasAwakenHelper; 
+		bHasAwakenHelper = 0; // It will be true if we jump to HTTP_PROXY_ALREADY_CONNECTED
+
 		do
 		{
+HTTP_PROXY_RE_CONNECT:
 			////////////////////////////////////////////////////////////////////////////////////////////////
 			// on the first pass through the loop start the ProxyHelperThread, make the remote connection
 			// and send any initial protocol data that has been prepared in pInitialProxySend when nInitialRawSend bytes has been set to the length of pInitialProxySend.
@@ -6123,41 +8086,242 @@ MAIN_THREAD_BODY:
 				AttachToClientThread(&TCD,g_PoolProxyHelperThread,g_ProxyPoolSize,&g_nProxyPoolRoundRobin);
 				bHasAwakenHelper = 1;
 
-				nProxyClosed = 0;
-				// hang here until the forwardTo connection has been established 
 				gtimespec ts;
+				long lConnectWait;
+				lConnectWait = time(0);
+
+
+				// hang here until the forwardTo connection has been established.....
 				ts.tv_sec=time(0) + td->pTSD->nProxyTimeout; 
 				ts.tv_nsec=0;
-				int nWaitRslt = gthread_cond_timedwait(&td->condHelper, &td->lockHelper, &ts);
-				if (nWaitRslt == ETIMEDOUT)  // if we timed out 
+				int nWaitRslt;
+				
+				nWaitRslt = gthread_cond_timedwait(&td->condHelper, &td->lockHelper, &ts);
+				if ( nWaitRslt == ETIMEDOUT )  // if we timed out 
 				{
-					GString strLog;
-					strLog.Format("Timeout [%d] seconds   ip[%s], port[%d]",(int)td->pTSD->nProxyTimeout, td->pzClientIP, (int)td->pTSD->nPort);
-					InfoLog(131,strLog);
-					nCloseCode = 1109;
-					break;
-				}
-				if (nProxyClosed)
-				{
-					// the [balanced|roll-over] connection could not be established 
-					nCloseCode = 1110; // no alternate specified
-					break;
-				}
-				if (bIsCONNECT && td->pTSD->nProtocol == 11)
-				{
+					if (g_bTraceHTTPProxy)
+					{
+						GString strLog("*******504 Gateway Timeout on tid:");
+						strLog  << td->nThreadID << " (fd:" << td->sockfd << ") awaiting connect to[" << td->pTSD->nPort << ":" << TCD.pzConnectRoute << "  Your configurable timeout value is set to:" << td->pTSD->nProxyTimeout << " in Config file section [" << td->pTSD->szConfigSectionName << "]";
+						InfoLog(106,strLog);
+					}
+
+					// 504 Gateway Timeout
 					GString strConnectResponse;
-					strConnectResponse = "HTTP/1.1 200 Connection established\r\nProxy-agent: FiveLoaves\r\n\r\n";
-					nonblocksend(td->sockfd,strConnectResponse,(int)strConnectResponse.Length());
+					strConnectResponse = "HTTP/1.1 504 Gateway Timeout\r\n";
+					strConnectResponse << "Proxy-agent: " << g_strHTTPProxyAgentName << "\r\n";
+					strConnectResponse << "Connection: close\r\n";
+					strConnectResponse << "Proxy-Connection: keep-alive\r\n\r\n";
+					nonblocksend(td->sockfd,strConnectResponse,(int)strConnectResponse._len);
+					goto HTTP_PROXY_KEEP_ALIVE;
+
+					//nCloseCode = 1109;
+					//break;
 				}
 
-				// except this assumes any header/markup is already prepared in pInitialProxySend
+				if (bIsCONNECT && td->pTSD->nProtocol == 11)
+				{
+					if ( td->nProxyClosed )
+					{
+						if (g_bTraceHTTPProxy)
+						{
+							GString strLog("*******502 Bad Gateway on tid:");
+							strLog  << td->nThreadID << " (fd:" << td->sockfd << ") awaiting connect to[" << td->pTSD->nPort << ":" << TCD.pzConnectRoute << "  Your configurable timeout value is set to:" << td->pTSD->nProxyTimeout << " in Config file section [" << td->pTSD->szConfigSectionName << "]";
+							InfoLog(106,strLog);
+						}
+						// 502 Bad Gateway
+						GString strConnectResponse;
+						strConnectResponse = "HTTP/1.1 502 Bad Gateway\r\n";
+						strConnectResponse << "Proxy-agent: " << g_strHTTPProxyAgentName << "\r\n";
+						strConnectResponse << "Connection: close\r\n";
+						strConnectResponse << "Proxy-Connection: keep-alive\r\n\r\n";
+						nonblocksend(td->sockfd,strConnectResponse,(int)strConnectResponse._len);
+						goto HTTP_PROXY_KEEP_ALIVE;
+					}
+					else
+					{
+						GString strConnectResponse;
+						strConnectResponse = "HTTP/1.1 200 Connection established\r\n";
+						strConnectResponse << "Proxy-agent: " << g_strHTTPProxyAgentName << "\r\n\r\n";
+						nonblocksend(td->sockfd,strConnectResponse,(int)strConnectResponse._len);
+						
+						// fall through - this HTTP 200 is followed by the remote HTTP Servers response
+					}
+				}
+
+				if ( td->nProxyClosed )
+				{
+					// cose this connection since our outbound could not be opened
+					nCloseCode = 1589; 
+					break;
+				}
+
+HTTP_PROXY_ALREADY_CONNECTED:
+
+
+				// this assumes any header/markup is already prepared in pInitialProxySend if nInitialRawSend is != 0
 				if (nInitialRawSend)
 				{
-					//	send the first packet of proxy
-					if (nonblocksend(nProxyfd,pInitialProxySend,nInitialRawSend) != nInitialRawSend)
+					pInitialProxySend[nInitialRawSend] = 0; // for debugging/logging beautification of the data we null terminate one byte past the data we will send.
+					
+					GString strPrivateURL;
+
+					if( g_bBlockGoogleTracking && strstr(td->pzConnectRoute,"google.") != 0 && memcmp(pInitialProxySend,"GET /url?",9) == 0 ) 
 					{
-						nCloseCode = 1111; 
-						break;
+						// hey oogle, The G, is here in the XMLFoundation.
+						char *pURL = strstr(pInitialProxySend,"&url=");
+						if (pURL)
+						{
+							pURL += 5; // 5 is strlen("&url=")
+							strPrivateURL.SetFromUpTo(pURL,"&");
+							strPrivateURL.UnEscapeHexed();
+						}
+					}
+
+
+					if (strPrivateURL._len && g_bBlockGoogleTracking )
+					{
+						
+						// this HTTP request was enroute to a remote server, but we answer on that servers behalf in this domain
+						GString strConnectResponse;
+						strConnectResponse = "HTTP/1.1 301 Moved Permanently\r\n";
+						strConnectResponse << "Location: " << strPrivateURL << "\r\n";
+						strConnectResponse << "Connection: keep-alive\r\n";
+						strConnectResponse << "Proxy-Connection: keep-alive\r\n\r\n";
+						if ( nonblocksend(td->sockfd,strConnectResponse,(int)strConnectResponse._len) != strConnectResponse._len)
+						{
+							// if we failed to send, the client closed the connection
+							nCloseCode = 1599; 
+							break;
+						}
+						else
+						{
+							if (g_bTraceHTTPProxy)
+							{
+								GString g;
+								g << "Blocked URL tracking on fd:" << td->sockfd << " to[" << td->pzConnectRoute << "] for [" << strPrivateURL << "]";
+								InfoLog(777,g); 
+							}
+							goto HTTP_PROXY_KEEP_ALIVE; 
+						}
+					}
+
+
+
+					//	send the first packet of proxy
+					int nResult = 0;
+					if( !td->nProxyClosed )  // the other thread can cause td->nProxyClosed to become true at any time
+					{
+						if ( g_bTraceHTTPProxy || g_bTraceHTTPProxyBinary)
+						{
+							GString strG("HTTP-PROXY-OUT(from fd:");
+							if ( memcmp(pInitialProxySend,td->strAction._str,(td->strAction._len >  32) ? 32 :  td->strAction._len) == 0 )
+								strG << td->sockfd << " from tid:" << td->nThreadID  << " to fd:" << td->nProxyfd << " [" << td->pzConnectRoute <<"]) bytes:" << nInitialRawSend << " [";
+							else
+								strG << td->sockfd << " Action[" << td->strAction << "] from tid:" << td->nThreadID  << " to fd:" << td->nProxyfd << " [" << td->pzConnectRoute <<"]) bytes:" << nInitialRawSend << " [";
+							strG.Write(pInitialProxySend, (nInitialRawSend > 512) ? 512 : nInitialRawSend );
+							strG << "]";
+							strG.ReplaceChars("\r\n",'~');
+							if(g_bTraceHTTPProxyBinary)
+							{
+								strG << "\r\n";
+								strG.FormatBinary( (unsigned char *)pInitialProxySend, nInitialRawSend, 1, "\t\t\t\t");
+							}
+							InfoLog(105,strG);
+						}
+
+
+
+						if ( g_bTraceHTTPProxyFiles )
+						{
+							GString strFileName(td->strAction);
+							if (strFileName._len > 255)
+							{
+								strFileName.SetLength(255);
+							}
+							// none of those are allowed in a file name
+							strFileName.ReplaceChars("\\/:*?\"<>|",'~');
+							strFileName.Prepend(td->pzConnectRoute);
+							strFileName << ".OUT.txt";
+							
+							GString strPath(g_strLogFile);				  // start with the logfile name and path
+							strPath.SetLength(strPath.ReverseFindOneOf("/\\")); // cut off the file name for either a windows or unix path
+							strPath << g_chSlash << "transactions" << g_chSlash;
+
+							// make the destination directory if it does not exist
+							#ifdef _WIN32
+								mkdir( strPath );
+							#else
+								mkdir( strPath ,777 );
+							#endif
+							
+							// concat the two strings
+							strPath << strFileName;
+
+							// attach a GString object over the send buffer
+							GString g(pInitialProxySend,nInitialRawSend,nInitialRawSend,0);
+							g.ToFileAppend(strPath);
+						}
+
+						nResult = nonblocksend(td->nProxyfd,pInitialProxySend,nInitialRawSend);
+						pInitialProxySend[0]=0;
+					}
+					
+
+					//    if 'proxy was closed' ||		'it needs to become closed'
+					if (    td->nProxyClosed	||		nResult != nInitialRawSend )
+					{
+						// returns 1 through 7  for RFC 2616 verbs that DO NOT need HTTP Proxy translation
+						// returns 8 through 15 for RFC 2616 verbs that need HTTP Proxy translation
+						// 0 this is the tail-part of a transaction that has been cancelled by the server
+						int nisVerb = ( atoi(td->pzConnectRoute) == 443 ) ?  0 : isHTTPVerb(pInitialProxySend);
+
+						if (g_bHTTPProxyLogExtra)
+						{
+							GString g;
+							if (nisVerb)
+								g << "(proxyoutclosed) HTTP client keep-alive goingto HTTP_PROXY_RE_CONNECT   nResult=" << nResult << " nisVerb=" << nisVerb;
+							else
+								g << "(proxyoutclosed) SSL or POST Content data from client. closing with nCloseCode=1111   ";
+							g << " fd:" << td->sockfd << " failed to send to nProxyfd:" << td->nProxyfd <<" [" << td->pzConnectRoute << "] td->nProxyClosed=" << td->nProxyClosed << " bytes:" << nInitialRawSend << " nResult=" << nResult << " Data on hand[" << pInitialProxySend << "]";
+							g.ReplaceChars("\r\n",'~');
+							InfoLog(4567,g);
+						}
+
+						// if we got in here because it failed to send (otherwise it was already closed)
+						if ( nResult != nInitialRawSend )
+						{
+							// this causes ProxyHelperThread to free/close the socket and return to the pool
+							td->nProxyClosed = 1;
+						}
+
+
+						if ( nisVerb )
+						{
+							// reconnect.....
+							bHasAwakenHelper = 0;
+
+							if (g_bHTTPProxyLogExtra)
+							{
+								GString g;
+								g << "\r\n\r\n\t\tRECONNECT fd:" << td->sockfd << " to[" << TCD.pzConnectRoute << "] == [" << td->pzConnectRoute << "] nisVerb=" << nisVerb;
+								InfoLog(34576,g);
+							}
+
+
+							// lock the mutex so the thread awaits until the next connect is complete.
+							gthread_mutex_lock(&td->lockHelper);
+
+							goto HTTP_PROXY_RE_CONNECT;
+						}
+						else
+						{
+							// or we close this connection since our outbound was closed and it was an SSL session
+							////////////////////////////////////////////////////////////////////
+							nCloseCode = 1111;  // match with SSL InfoLog comment above
+							////////////////////////////////////////////////////////////////////
+							break;
+						}
 					}
 					else if (g_DataTrace)
 					{
@@ -6165,7 +8329,7 @@ MAIN_THREAD_BODY:
 						strLabel.Format("tid%d tx to s",(int)td->nThreadID);
 						DataTrace(strLabel, pInitialProxySend, nInitialRawSend);
 					}
-					nTotalProxiedBytes += nInitialRawSend;
+					td->nTotalBytesProxied += nInitialRawSend;
 					nInitialRawSend = 0;
 				}
 			}
@@ -6175,11 +8339,6 @@ MAIN_THREAD_BODY:
 			////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
-
 			// recv from: (bIsTunnel) ? client application : client tunnel
 			// essentially---> int bPacketSync = ( (!bIsTunnel) && (bCipher || bZip || bSync) ) ? 1 : 0;
 			int bPacketSync = ( (!bIsTunnel) && sAttribs ) ? 1 : 0;
@@ -6187,32 +8346,99 @@ MAIN_THREAD_BODY:
 
 
 // HOOK: Special protocol processing
+/*
 
 
-
-
-
-			if (nProxyClosed) // If our worker thread has been stopped
+			// If our worker thread has been stopped
+			if (td->nProxyClosed) 
 			{
-				nCloseCode = 1113; // end this thread too
-				break;
+				if (nPxyConnectToPort == 80)
+				{
+					if (g_bHTTPProxyLogExtra)
+					{
+						GString strG;
+						strG << "FYI: fd:" << td->sockfd << " being kept-alive. Failed to send to proxy fd:" << td->nProxyfd << "  [" << td->pzConnectRoute << "] td->nProxyClosed=" << td->nProxyClosed << "  SOCK_ERR=" << SOCK_ERR;
+						InfoLog(777,strG);
+					}
+					goto HTTP_PROXY_KEEP_ALIVE;
+				}
+				else
+				{
+					// or we close this connection since our outbound was closed and it was an SSL session
+					nCloseCode = 1113; 
+					break;
+				}
 			}
-
-			// for httpProxy when on very slow host or network
+*/
+		
 			if (td->pTSD->nProtocol == 11)
 			{
-				PortableSleep(1,0);
-				if (bIsCONNECT)
-					bReadHTTP = 0;
+				bReadHTTP = 0;
+				if (!g_bHTTPProxyEnabled)
+				{
+					nCloseCode = 1150; 
+					break;
+				}
 			}
+
 
 			int rslt = ReadPacket(td->sockfd,1,0,&nBufBytes,sockBuffer,&pPacket,&nPacketLen, &nPacketIndex,&sPktAttributes,sAttribs,bPacketSync,bReadHTTP);
-
-			if (nProxyClosed) // If our worker thread has been stopped
+			
+			// If our worker thread has been stopped, the remote side must have ended that side of the proxy
+			if ( td->nProxyClosed )
 			{
-				nCloseCode = 1113; // end this thread too
-				break;
+				if ( atoi(td->pzConnectRoute) != 443 )
+				{
+					if (rslt > 0)
+					{
+						int nVerb = isHTTPVerb(sockBuffer);
+						if (nVerb == 0)
+						{
+							// we close this connection it looks like more POST data, but our server closed the connection
+							nCloseCode = 6548; 
+							break; // end this thread too
+						}
+						else 
+						{
+							if (g_bHTTPProxyLogExtra)
+							{
+								GString g("(WorkerProxy ended) client is being kept-alive NOT CLOSED. goingto HTTP_PROXY_CONVERT. fd:");
+								g << td->sockfd << " proxy fd:" << td->nProxyfd << "  [" << td->pzConnectRoute << "]  SOCK_ERR=" << (int)SOCK_ERR << " nVerb=" << nVerb << " bReadHTTP=" << bReadHTTP << " nPacketLen=" << nPacketLen << " nPacketIndex=" << nPacketIndex << " nBufBytes=" << nBufBytes;
+								InfoLog(7771,g);
+							}
+
+							nInitialRawSend = nBufBytes;
+							goto HTTP_PROXY_CONVERT;
+						}
+					}
+
+
+					if (g_bHTTPProxyLogExtra)
+					{
+						// in some cases we might want to close here
+
+						GString g("(WorkerProxy ended) client is being kept-alive NOT CLOSED. goingto HTTP_PROXY_KEEP_ALIVE. fd:");
+						g << td->sockfd << " proxy fd:" << td->nProxyfd << "  [" << td->pzConnectRoute << "]  SOCK_ERR=" << (int)SOCK_ERR << " bReadHTTP=" << bReadHTTP << " nPacketLen=" << nPacketLen << " nPacketIndex=" << nPacketIndex << " nBufBytes=" << nBufBytes;
+						InfoLog(7771,g);
+					}
+
+					// If our worker thread has been stopped we still use this open connection to proxy the next request
+					// This might be a problem, our worker proxy ended, and the client may not know, 
+					// now we will go read more data from that client.  It could be the next HTTP txn, or more data for the connection that already closed.
+					goto HTTP_PROXY_KEEP_ALIVE;
+
+					//otherwise...
+					//nCloseCode = 99999; 
+					//break;
+				}
+				else // this must be SSL, and the remote side is closed so quit reading from the client
+				{
+					// we close this connection since our outbound was closed and it was an SSL session
+					nCloseCode = 1151; 
+					break; // end this thread too
+				}
 			}
+
 
 			if (rslt == 0)
 			{
@@ -6233,13 +8459,22 @@ MAIN_THREAD_BODY:
 			}
 			else if (rslt == -1) // failure during wait (connection closed by client)
 			{
+				// SOCK_ERR == 0
+				if (g_bHTTPProxyLogExtra)
+				{
+					GString gZ("*******(connection closed by client) fd:");
+					gZ << td->sockfd << " SOCK_ERR=" << (int)SOCK_ERR << " sAttribs=" << sAttribs << " bPacketSync=" << bPacketSync << " bReadHTTP=" << bReadHTTP << " nPacketLen=" << nPacketLen << " nPacketIndex=" << nPacketIndex << " nBufBytes=" << nBufBytes;
+					InfoLog(777,gZ); 
+				}
 				nCloseCode = 1115; 
 				break;
 			}
 			else // process this packet
 			{
+				td->nTotalBytesRead += nPacketLen;
 				// keep alive on clientthread
 				lLastActivityTime = time(0);
+
 
 				char *pSendData = pPacket;
 				int nSendDataLen = nPacketLen;
@@ -6250,11 +8485,24 @@ MAIN_THREAD_BODY:
 					DataTrace(strLabel, pSendData, nSendDataLen);
 				}
 
-
-				if (GetProfile().GetBoolean(td->pTSD->szConfigSectionName,"LogEnabled",false))
+				// Sending to the "Server" from the clientthread
+				if ( td->pTSD->bIsLogging ) 
 				{
-					ProxyLog(td->pTSD->szConfigSectionName, td->nParentThreadID, pSendData, nSendDataLen, "raw>s");
+					GString str("Transmit to Server ");
+					str << TCD.pzConnectRoute << " fd[" << td->nProxyfd << "]";
+					ProxyLog(td->pTSD->strLogFile, td->nParentThreadID, pSendData, nSendDataLen, str);
 				}
+				if (g_bHTTPProxyLogExtra)
+				{
+					GString strClientRead;
+					strClientRead << "New HTTP request OR more data from fd:" << td->sockfd << " last connected out [" << td->pzConnectRoute << "] bytes=" << nPacketLen << " starts with[";
+					strClientRead.Write(pSendData,64);
+					strClientRead << "]";
+					strClientRead.ReplaceChars("\r\n",'~');
+
+					InfoLog(951,strClientRead);
+				}
+
 
 				// if we need to apply data attributes(Cipher || Zip || Sync)
 				if ( sAttribs )
@@ -6303,59 +8551,36 @@ MAIN_THREAD_BODY:
 				// if HTTP proxy
 				if ( td->pTSD->nProtocol == 11)
 				{
-
-					if ( td->pTSD->nProtocol == 11 && bIsCONNECT )
+					int nVerbKind = isHTTPVerb(pSendData);
+				
+					if ( nVerbKind > 7 )
 					{
-						// pSendData and nSendDataLen will be passed in the raw
-						nSendDataLen = nSendDataLen;
+						pSendData[nSendDataLen] = 0; // purely for debugging asthetics
+						sockBuffer = pSendData;
+						nInitialRawSend = nSendDataLen; 
+
+						if (g_bHTTPProxyLogExtra)
+						{
+							GString g("FYI:  fd:");
+							g << td->sockfd << "  goingto HTTP_PROXY_CONVERT nVerbKind=" << nVerbKind << " [" << td->pzConnectRoute << "] current nProxyfd:" << td->nProxyfd;
+							InfoLog(4561,g);
+						}
+
+						goto HTTP_PROXY_CONVERT;
 					}
-					else
+					else // this is SSL or a following packet of a POST with Content-Length to the established connection
 					{
-						GString strPxyConnectTo(TCD.pzConnectRoute);
+						pInitialProxySend = pSendData;
+						nInitialRawSend = nSendDataLen; 
+						bIsCONNECT = 0;
 
-						if ( ConvertHTTPProxy(pSendData,nSendDataLen,cryptDest,strPxyConnectTo,nSendDataLen, &bIsCONNECT) )
+						if (g_bHTTPProxyLogExtra)
 						{
-							pSendData = cryptDest;
-							nBufBytes = 0;
-							nPacketLen = 0;
-							if (strPxyConnectTo.CompareNoCase(TCD.pzConnectRoute) != 0)
-							{
-								// we want to connect to strPxyConnectTo but we have a cached connection to TCD.pzConnectRoute
-
-								// hangup the ProxyHelperThread
-								nProxyClosed = 1;
-								while (nProxyClosed == 1) // it will be 2 when it's back in the pool
-								{
-									PortableSleep(0,250000);
-								}
-								strcpy(TCD.pzConnectRoute,(const char *)strPxyConnectTo);
-								TCD.nConnectRouteSize = strlen(TCD.pzConnectRoute) + 1;
-
-
-							    // awaken our new helper thread and have it connect to the remote side of this hop or the switchboard
-								AttachToClientThread(&TCD,g_PoolProxyHelperThread,g_ProxyPoolSize,&g_nProxyPoolRoundRobin/*,ProxyHelperThread*/);
-
-								// hang here until the forwardTo connection has been established 
-								gtimespec ts;
-								ts.tv_sec=time(0) + td->pTSD->nProxyTimeout; 
-								ts.tv_nsec=0;
-								int nWaitRslt = gthread_cond_timedwait(&td->condHelper, &td->lockHelper, &ts);
-								if (nWaitRslt == ETIMEDOUT)  // if we timed out 
-								{
-									GString strLog;
-									strLog.Format("Timeout [%d] seconds   ip[%s], port[%d]",(int)td->pTSD->nProxyTimeout, td->pzClientIP, (int)td->pTSD->nPort);
-									InfoLog(131,strLog);
-									nCloseCode = 1109;
-									break;
-								}
-								nProxyClosed = 0;
-							}
+							GString g("FYI:  fd:");
+							g << td->sockfd << "  goingto HTTP_PROXY_ALREADY_CONNECTED BBB nVerbKind=" << nVerbKind  << " current nProxyfd=" << td->nProxyfd;
+							InfoLog(4562,g);
 						}
-						else
-						{
-							nCloseCode = 1117; 
-							break;
-						}
+						goto HTTP_PROXY_ALREADY_CONNECTED;
 					}
 				}
 
@@ -6371,25 +8596,30 @@ MAIN_THREAD_BODY:
 //					// if the proxy is about to send the last chunk
 //					if (nTotalProxiedBytes + nSendDataLen >= nProxyMaxBytes)  
 //					{
-//						nProxyClosed = 777; // detach the nProxyfd and end the ProxyHelperThread
-//						while (nProxyClosed != 2) // it will be 2 when it's back in the pool
+//						td->nProxyClosed = 777; // detach the td->nProxyfd and end the ProxyHelperThread
+//						while (td->nProxyClosed != 2) // it will be 2 when it's back in the pool
 //						{
 //							gsched_yield();
 //						}
 //					}
 //				}
 
-				if (nonblocksend(nProxyfd,pSendData, nSendDataLen) != nSendDataLen)
+
+
+				if (nonblocksend(td->nProxyfd,pSendData, nSendDataLen) != nSendDataLen)
 				{
 					nCloseCode = 1120; 
 					break;
 				}
-				nTotalProxiedBytes += nSendDataLen; 
+				td->nTotalBytesProxied += nSendDataLen;
+
 				
-				// log the send event
-				if (GetProfile().GetBoolean(td->pTSD->szConfigSectionName,"LogEnabled",false))
+				// log the send event, sending to the "server" from the clientthread
+				if ( td->pTSD->bIsLogging )
 				{
-					ProxyLog(td->pTSD->szConfigSectionName, td->nParentThreadID, pSendData, nSendDataLen, "tx->s");
+					GString str("Transmit to Server:");
+					str << TCD.pzConnectRoute << " fd[" << td->nProxyfd << "] per request [" << td->strAction << "]";
+					ProxyLog(td->pTSD->strLogFile, td->nParentThreadID, pSendData, nSendDataLen, str );
 				}
 				if (g_DataTrace)
 				{
@@ -6404,21 +8634,22 @@ MAIN_THREAD_BODY:
 //				{
 //					g_SwitchBoard.WaitForResponse(td->sockfd, strCertifiedMsgResponse);
 //
-//					td->sockfd = nProxyfd; // swap fd's - keep this one alive
+//					td->sockfd = td->nProxyfd; // swap fd's - keep this one alive
 //					
 //					// put the thread back in the pool but DON'T CLOSE HIS FD, move it to this thread
 //					goto KEEP_ALIVE;
 //				}
 
 			}
-		}while( !nProxyClosed );
+
+		}while( !td->nProxyClosed );
 
 
 		// this is where it would fall through to anyhow.  the goto is for readability.
 		goto CLOSE_CONNECT; 
 
 		
-		}// end of Branch 1						
+		}// End of Branch 1	scope
 		else if (td->pTSD->nProtocol == 1  ||	// HTTP Server			
 				 td->pTSD->nProtocol == 4  ||	// TXML
 				 td->pTSD->nProtocol == 5 )// ||	// Both TXML and HTTP
@@ -6434,6 +8665,9 @@ MAIN_THREAD_BODY:
 		nCloseCode = 1200; // default close code for Branch 2   error range 12nn(1st thread, 2nd branch)
 		// Set non-blocking IO 
 		IOBlocking(td->sockfd, 1);
+
+
+
 KEEP_ALIVE:
 		td->nSequence++;
 		nHeaderLength = 0;
@@ -6462,6 +8696,7 @@ KEEP_ALIVE:
 			nCloseCode = (!rslt) ?  1203 : 1204;
 			goto CLOSE_CONNECT;
 		}
+		td->nTotalBytesRead += nBytes;
 
 		//
 		// These are useful values for the ServerCoreCustomHTTP.cpp hook
@@ -6476,19 +8711,19 @@ KEEP_ALIVE:
 			if (sockBuffer[nBytes-4] == '\r')
 			{
 				sockBuffer[nBytes-4] = 0;	
-				InfoLog(196,sockBuffer);
+				InfoLog(109,sockBuffer);
 				sockBuffer[nBytes-4] = '\r';	
 			}
 			else
 			{
-				InfoLog(197,sockBuffer);
+				InfoLog(110,sockBuffer);
 			}
 		}
 		if(g_TraceConnection && nKeepAlive != g_nMaxKeepAlives)
 		{
 			GString strInfo;
 			strInfo.Format("Inbound [%d:%s] (fd:%d tid:%d seq:%d type:%s)",(int)td->pTSD->nPort,(const char *)strConnectedIPAddress,(int)td->sockfd,(int)td->nThreadID,(int)td->nSequence,GetProtocolName( td->pTSD->nProtocol ));
-			InfoLog(136,strInfo);
+			InfoLog(111,strInfo);
 		}
 
 
@@ -6530,12 +8765,13 @@ KEEP_ALIVE:
 				 if (nMoreHeader > 0)
 				 {
 					nBytes += nMoreHeader;
+					td->nTotalBytesRead += nMoreHeader;
 				 }
 				 else
 				 {
 					GString str;
 					str.Format("Read of more header failed %d\n",(int)SOCK_ERR);
-					InfoLog(137,str);
+					InfoLog(112,str);
 					pContent1 = 0;
 				 }
 			}
@@ -6587,7 +8823,7 @@ KEEP_ALIVE:
 				{
 					GString strMessage;
 					strMessage << "["  << pMA->strMessagingReceiver << "] Not awaiting message.";
-					InfoLog(1,strMessage);
+					InfoLog(113,strMessage);
 					goto CLOSE_CONNECT;
 				}
 				
@@ -6686,17 +8922,19 @@ KEEP_ALIVE:
 					{
 						GString strMessage("failed to read in POST1:");
 						strMessage << nGot << ":" << SOCK_ERR;
-						InfoLog(1,strMessage);
+						InfoLog(114,strMessage);
 						goto CLOSE_CONNECT;
 					}
+					td->nTotalBytesRead += nGot;
 					nPostedPassthrough += nGot;
 				}
 				if (nonblocksend(fdServer,sockBuffer,nPostedPassthrough) != nPostedPassthrough)
 				{
 					GString strMessage("Failed to send message to server");
-					InfoLog(1,strMessage);
+					InfoLog(115,strMessage);
 					goto CLOSE_CONNECT;
 				}
+//				td->nTotalBytesProxied += nPostedPassthrough;
 
 
 				// now send anything that is remaining
@@ -6708,13 +8946,14 @@ KEEP_ALIVE:
 					if (nGot < 1)
 					{
 						GString strMessage("failed to read in POST2");
-						InfoLog(1,strMessage);
+						InfoLog(116,strMessage);
 						goto CLOSE_CONNECT;
 					}
+					td->nTotalBytesRead += nGot;
 					if (nonblocksend(fdServer,sockBuffer,nGot) != nGot)
 					{
 						GString strMessage("Failed to send message to server");
-						InfoLog(1,strMessage);
+						InfoLog(117,strMessage);
 						goto CLOSE_CONNECT;
 					}
 					nPostedPassthrough += nGot;
@@ -6752,7 +8991,8 @@ KEEP_ALIVE:
 			{
 				// todo: pass nCloseCode - set in 1000 range
 				td->strAction = "Plugin";
-				if (Plugin(td, sockBuffer, nBytes, nContentLen, pContent, &nKeepAlive, cryptDest, &nTotalProxiedBytes, nPktIndex))
+				if (Plugin(td, sockBuffer, nBytes, nContentLen, pContent, &nKeepAlive, cryptDest, &td->nTotalBytesProxied, nPktIndex))
+
 				{
 					goto HANDLER_FINISH;
 				}
@@ -6769,14 +9009,14 @@ KEEP_ALIVE:
 				// asked for BigWave.html, so log the info and allow the file handler a chance to service the request.
 				GString strMsg("Plugin Message:");
 				strMsg << rErr.GetDescription();
-				InfoLog(138,strMsg);
+				InfoLog(118,strMsg);
 			}
 			catch(...)
 			{
 				GString strMsg("Fatal error in plugin. Debug dump follows:");
 				strMsg << sockBuffer;
 				strMsg << "\r\n\r\n";
-				InfoLog(139,strMsg);
+				InfoLog(119,strMsg);
 				nCloseCode = 1000;
 				goto HANDLER_FINISH;
 			}
@@ -6932,12 +9172,12 @@ KEEP_ALIVE:
 			if (!p) 
 			{
 				// If we're configured to look for HTTP GET's on this port go-on
-				if (td->pTSD->nProtocol == 1 ||	td->pTSD->nProtocol == 5)
+				if ( td->pTSD->nProtocol == 1 ||	td->pTSD->nProtocol == 5 )
 				{
-					pzHome = GetProfile().GetString("HTTP","Home",false);
+					//pzHome = GetProfile().GetString("HTTP","Home",false);
 
 					// get the file (from memory or disk), assemble the HTTP response, and send it back.
-					nKeepAlive = ReturnFile(td, pzHome, &sockBuffer[4] ,nBytes - 4,strConnectedIPAddress, nKeepAlive, bisHead, sockBuffer, cryptDest, &nTotalProxiedBytes);
+					nKeepAlive = ReturnFile(td, &sockBuffer[4] ,nBytes - 4,strConnectedIPAddress, nKeepAlive, bisHead, sockBuffer, cryptDest, &td->nTotalBytesProxied);
 					goto HANDLER_FINISH;
 				}
 			}
@@ -6967,12 +9207,14 @@ KEEP_ALIVE:
 			nKeepAlive = 0;
 			GString str;
 			str.Format("Posted %u bytes, ignored - no POST handler registered for [%s].\n",(int)nContentLen,(const char *)strPostedTo);
-			InfoLog(140,str);
+			InfoLog(120,str);
 		}
+
+
 HANDLER_FINISH:
 	
 		// there has to be some reasonable limit to prevent denial of service attack
-		if (nKeepAlive > 0 && nKeepAlive != g_nMaxKeepAlives)
+		if (nKeepAlive > 0 && nKeepAlive != g_nMaxKeepAlives)   
 		{
 			goto KEEP_ALIVE;
 		}
@@ -6993,20 +9235,27 @@ HANDLER_FINISH:
 	{
 		GString strLog;
 		strLog.Format("XML_CATCH=%s\n",ex.GetDescription());
-		InfoLog(141,strLog);
+		InfoLog(121,strLog);
 
 		PROPIGATE_SERVER_EXCEPTION;
 	}
 #endif // _XMLF_JIT_
 
 CLOSE_CONNECT:  // this goto tag was previously named SOCKET_ERR_ABORT - it was renamed because it does not necessarily indicate error
-	nProxyClosed = 1; // shared memory flag if a worker thread was started - stop it.
+
+	td->nProxyClosed = 1; // shared memory flag if a worker thread was started - stop it.
+
+
+//	nCloseCode = 1110; // no alternate specified
+//	nCloseCode = 1113; // end this thread too
+//	nCloseCode = 1151; 
 
 
 	if (td->sockfd != -1)
 		PortableClose(td->sockfd,"Core12");
 
-	
+	// once the connection is closed it must be re-authorized
+	bConnectionAuthorized = 0;
 	// ----------------------------------------------------------------------------------------------------------
 	// The connection is closed and the client has the response(or it's in transit).  We are "off the clock" now
 	// ----------------------------------------------------------------------------------------------------------
@@ -7014,7 +9263,7 @@ CLOSE_CONNECT:  // this goto tag was previously named SOCKET_ERR_ABORT - it was 
 	{
 		GString strLog;
 		strLog.Format("Thread %d  Service time ~:%d ms",(int)td->nThreadID, (int)getTimeMS() - td->starttime);
-		InfoLog(142,strLog);
+		InfoLog(122,strLog);
 	}
 	if(g_TraceConnection)
 	{
@@ -7028,10 +9277,14 @@ CLOSE_CONNECT:  // this goto tag was previously named SOCKET_ERR_ABORT - it was 
 			strTime << (getTimeMS() - td->starttime) << "ms"; // milliseconds less than 5000
 
 		GString strMessage;
-		strMessage.Format("Closed Inbound [%d:%s] (fd:%d tid:%d  %s) code:[%d:%d]",
-			(int)td->pTSD->nPort,(const char *)strConnectedIPAddress, (int)td->sockfd, (int)td->nThreadID, strTime.Buf(), (int)nCloseCode, (int)SOCK_ERR);
-		InfoLog(143,strMessage);
+		strMessage.Format("Closed Inbound [%d:%s] (fd:%d tid:%d  %s  seq=%d) code:[%d:%d] nProxyfd:%d  bytes out=%I64d",
+			(int)td->pTSD->nPort,(const char *)strConnectedIPAddress, (int)td->sockfd, (int)td->nThreadID, strTime.Buf(), (int)td->nSequence, (int)nCloseCode, (int)SOCK_ERR, td->nProxyfd,(__int64)td->nTotalBytesProxied );
+		strMessage << " bytes to client=" <<  td->nTotalBytesSent <<  "  bytes from client=" << td->nTotalBytesRead;
+
+		InfoLog(123,strMessage);
 	}
+	td->nTotalBytesRead = 0;
+	td->nTotalBytesProxied = 0;
 
 SHUTTING_DOWN:
 
@@ -7068,7 +9321,7 @@ SHUTTING_DOWN:
 		{
 			// This is a development safety net.  
 			// Under no known conditions can this code be reached.
-			InfoLog(144,"Thread Hung.  You need to stop then restart this application to correct this problem");
+			InfoLog(124,"Thread Hung.  You need to stop then restart this application to correct this problem");
 			
 			// Threads should not kill other threads.  Fix the problem.
 		}
@@ -7200,7 +9453,6 @@ int MessageRouteInfo(int fd,char *pzConnectRoute,char *pzIP,int *nAction, int *n
 	{
 		// tunnel (client-->proxy), raw VNC into tunnel crypted and sent to proxy
 		__int64 nipLen = 0;
-//		const char *ip = lstDeliveryIPs.PeekFirst(&nipLen);
 		if (nipLen > 1023)
 			return 0; // invalid protocol
 		strcpy(pzIP,lstDeliveryIPs.PeekFirst());
@@ -7256,7 +9508,9 @@ void BuildConnectionPostData(int tid, GString &strDestination, const char *pzCon
 	GString strProxtDestPort;
 	int nProxyDestPort = GetProfile().GetInt(pzCfgSection,"Port",false);
 	if (nProxyDestPort > 0)
+	{
 		strProxtDestPort << ":" << nProxyDestPort;
+	}
 
 
 	GString strProxyFirewall;
@@ -7266,7 +9520,9 @@ void BuildConnectionPostData(int tid, GString &strDestination, const char *pzCon
 		strHost = pzProxyFirewall;
 	}
 	else
+	{
 		strProxyFirewall = GetProfile().GetString(pzCfgSection,"ProxyTo",false);
+	}
 
 
 
@@ -7652,7 +9908,28 @@ int POSTMessage(int sockfd, MessageSendArgs	*args, GString &strData)
 	GString strIPHost;
 	char pzHostName[512];
 	gethostname(pzHostName,512); //uname() on some systems
+	
+	int nDNSResolutionRetries;
+	nDNSResolutionRetries = 0;
+DNSResolutionRETRY:
 	struct hostent *pHELocal = (struct hostent *)gethostbyname((const char *)pzHostName);
+	if (!pHELocal)
+	{
+		if (nDNSResolutionRetries++ < 5)
+		{
+			PortableSleep(0,250000 * nDNSResolutionRetries);
+			goto DNSResolutionRETRY;
+		}
+		// Info:Failed to resolve[%s].
+		if(g_TraceConnection)
+		{
+			args->strErrorDescription.Format("*******FAILED to resolve DNS for[%s]", pzHostName);
+			InfoLog(300,args->strErrorDescription);
+			args->nResult = 100;
+			return 0; 
+		}
+	}
+
 	struct sockaddr_in my_addr; 
 	memcpy((char *)&(my_addr.sin_addr), pHELocal->h_addr,pHELocal->h_length); 
 	memset(&(my_addr.sin_zero),0, 8);// zero the rest of the (unused) struct
@@ -7750,7 +10027,7 @@ int POSTMessage(int sockfd, MessageSendArgs	*args, GString &strData)
 				{
 					if (fread(pFileSendBuffer,sizeof(char),nChunkSize,fp) != (unsigned int)nChunkSize)
 					{
-						InfoLog(146,"Failed to read from source send file\n");
+						InfoLog(301,"Failed to read from source send file\n");
 						break; 
 					}
 				}
@@ -7818,7 +10095,7 @@ int MessagingPlugin(DriverCallBackArg *prd, const char *pzData, int nLength, cha
 
 	if (!pzLanguage || !pzComponent || !pzInterface || !pzMethod)
 	{
-		InfoLog(64,"Messaging Plugin Handler is misconfigured.  Should be... Language::Component::Interface::Method");
+		InfoLog(302,"Messaging Plugin Handler is misconfigured.  Should be... Language::Component::Interface::Method");
 		return 0;
 	}
 
@@ -7827,7 +10104,7 @@ int MessagingPlugin(DriverCallBackArg *prd, const char *pzData, int nLength, cha
 	{
 		GString strError;
 		strError << pzLanguage << " is not configured correctly or is not a supported component type on this machine.";
-		InfoLog(64,strError);
+		InfoLog(303,strError);
 		return 0;
 	}
 
@@ -7870,7 +10147,7 @@ int MessagingPlugin(DriverCallBackArg *prd, const char *pzData, int nLength, cha
 	}
 	catch( GException &rErr )
 	{
-		InfoLog(161,rErr.GetDescription());
+		InfoLog(304,rErr.GetDescription());
 	}
 	return 0;
 }
@@ -7994,7 +10271,7 @@ int ParseMessagingResponse(int fd, int bSenderPlaceFile, const char *pzOutFile, 
 		{
 			GString strLog;
 			strLog.Format("failed to open file [%s] to receive message\n",(const char *)strOutFile);
-			InfoLog(149,strLog);
+			InfoLog(305,strLog);
 			return 0; // error
 		}
 	}
@@ -8037,7 +10314,7 @@ int ParseMessagingResponse(int fd, int bSenderPlaceFile, const char *pzOutFile, 
 			{
 				GString strLog;
 				strLog.Format("error reading message %d:%d\n",(int)nBytes,(int)SOCK_ERR);
-				InfoLog(151,strLog);
+				InfoLog(306,strLog);
 				return 0;
 			}
 		}
@@ -8066,12 +10343,12 @@ int ParseMessagingResponse(int fd, int bSenderPlaceFile, const char *pzOutFile, 
 		{
 			GString strMsg("MessagingPlugin Message:");
 			strMsg << rErr.GetDescription();
-			InfoLog(138,strMsg);
+			InfoLog(307,strMsg);
 		}
 		catch(...)
 		{
 			GString strMsg("Fatal error in MessagingPlugin.");
-			InfoLog(139,strMsg);
+			InfoLog(308,strMsg);
 		}
 
 
@@ -8144,7 +10421,7 @@ int ParseMessagingResponse(int fd, int bSenderPlaceFile, const char *pzOutFile, 
 		{
 			GString strLog;
 			strLog.Format("error reading message %d:%d\n",(int)nBytes,(int)SOCK_ERR);
-			InfoLog(151,strLog);
+			InfoLog(309,strLog);
 			break;
 		}
 		
@@ -8172,13 +10449,37 @@ void *MessageSend(void *argin)
 	GString strIPHost;
 	char pzHostName[512];
 	gethostname(pzHostName,512); //uname() on some systems
+
+	int nDNSResolutionRetries;
+	nDNSResolutionRetries = 0;
+DNSResolutionRETRY:
 	struct hostent *pHELocal = (struct hostent *)gethostbyname((const char *)pzHostName);
+	if (!pHELocal)
+	{
+		if (nDNSResolutionRetries++ < 5)
+		{
+			PortableSleep(0,250000 * nDNSResolutionRetries);
+			goto DNSResolutionRETRY;
+		}
+		// Info:Failed to resolve[%s].
+		if(g_TraceConnection)
+		{
+			args->strErrorDescription.Format("*******FAILED to resolve DNS for[%s]", pzHostName);
+			InfoLog(310,args->strErrorDescription);
+			args->nResult = 15;
+			return 0; 
+		}
+	}
+
+
+
+
+
 	struct sockaddr_in my_addr; 
 	memcpy((char *)&(my_addr.sin_addr), pHELocal->h_addr,pHELocal->h_length); 
 	memset(&(my_addr.sin_zero),0, 8);// zero the rest of the (unused) struct
 	strIPHost = inet_ntoa(my_addr.sin_addr);
 
-//	FILE *fp = 0;
 	GString strConnected;
 	GString strData;
 
@@ -8268,7 +10569,7 @@ LOOP_IT:
 		{
 			GString str;
 			str.Format("Failed to read in data following header[%d]\n",(int)SOCK_ERR);
-			InfoLog(145,str);
+			InfoLog(311,str);
 
 			nBytes = -1;
 		}
@@ -8472,7 +10773,7 @@ POLL_POOL:
 		if ( nonblocksend(fd, (const char *)strConnectionName, (int)strConnectionName.Length()) == -1 )
 		{ 
 			pTCD->nLastPollConnectStatus = -1;
-			InfoLog(147,"nonblocksend() failed on Poll Thread");
+			InfoLog(312,"nonblocksend() failed on Poll Thread");
 			goto CLOSE_POLL;
 		}
 
@@ -8527,7 +10828,7 @@ POLL_POOL:
 				//
 				GString strErr("Poll Connect to [");
 				strErr << pTCD->pTSD->szProxyToServer << "] failed [" << strStatus << "]";
-				InfoLog(148,strErr);
+				InfoLog(313,strErr);
 				
 				pTCD->nLastPollConnectStatus = atoi(strStatus);
 				goto CLOSE_POLL;
@@ -8548,7 +10849,7 @@ POLL_POOL:
 				pTCD->pzClientIP[0] = '~';
 				strcpy(&pTCD->pzClientIP[1],pTCD->pTSD->szProxyToServer);
 				strcpy(pTCD->pzIP,strReplyTo.Buf());
-				pTCD->sockfd = fd;
+				pTCD->pnsockfd = &fd;
 
 				AttachToClientThread(pTCD,g_PoolClientThread,g_ThreadPoolSize,&g_nThreadPoolRoundRobin);
 
@@ -8641,13 +10942,13 @@ POLL_POOL:
 
 
 					// read the response to the post, and do nothing with it.
-					nonblockrecvHTTP(fd, Buf, 8000, &pContentData, &nContentLen, 0, 120, 1);
+					nonblockrecvHTTP(fd, Buf, 8000, &pContentData, &nContentLen, 0, 300, 1);
 				}
 				else
 				{
 					GString strLog;
 					strLog.Format("Protocol [%d] in PollExternalConnect must be 3 or 6",(int)pTCD->pTSD->nProtocol);
-					InfoLog(153,strLog);
+					InfoLog(314,strLog);
 					goto CLOSE_POLL;
 				}
 				
@@ -8764,7 +11065,7 @@ void *SystemTrace(void *arg)
 				int n = ListOpenSockets(strOpenHandles);
 				if (n)
 				{
-					InfoLog(888,strOpenHandles);
+					InfoLog(315,strOpenHandles);
 				}
 			}
 		}
@@ -8794,10 +11095,6 @@ void *SwitchBoardPoll(void *arg)
 			break;
 		}
 	}
-
-//GString strThreadTrace;
-//strThreadTrace << "---------nTotalPollEntryCount--------:" << nTotalPollEntryCount;
-//InfoLog(111,strThreadTrace);
 
 
 	// see if [Messaging] is enabled
@@ -8831,7 +11128,7 @@ void *SwitchBoardPoll(void *arg)
 		nActivePollCount++;
 
 		TCD[i].pTSD = new ThreadStartupData;
-		TCD[i].pTSD->nProxyTimeout = 120;
+		TCD[i].pTSD->nProxyTimeout = 300;
 		
 		// 1 HTTP, 2 Proxy/Tunnel, 3 Xfer, 4 TXML, 5 TXML&HTTP, 6 Remote-WS, 7 Reserved
 		TCD[i].pTSD->nProtocol = GetProfile().GetInt(TCD[i].pzPollSectionName,"Protocol",false);;
@@ -8879,7 +11176,7 @@ void *SwitchBoardPoll(void *arg)
 
 			strcpy(TCD[nLoop].pzPollSectionName,(const char *)pMPD->strSectionName);
 			TCD[nLoop].pTSD = new ThreadStartupData;
-			TCD[nLoop].pTSD->nProxyTimeout = 120;
+			TCD[nLoop].pTSD->nProxyTimeout = 300;
 			
 			// 1 HTTP, 2 Proxy/Tunnel, 3 Xfer, 4 TXML, 5 TXML&HTTP, 6 Remote-WS, 7 Reserved
 			TCD[nLoop].pTSD->nProtocol = 8;
@@ -8914,15 +11211,9 @@ void *SwitchBoardPoll(void *arg)
 	// loop through thread startup structures, TCD[i], there is one for each [PollExternalConnectN] section.
 	// Within each TCD in the array, there is a list of TCD's corresponding to each connection in the Queue
 	// for this [PollExternalConnectN] section by walking TCD[i].pNext->pNext->pNext
-//	time_t lTimeOnError = 0;
 
-//	int bLongDelay = 0;
 	for(i=0; i<nTotalPollEntryCount;i++) 
 	{
-
-//GString strThreadTrace;
-//strThreadTrace << "---------looping--------:" << i;
-//InfoLog(111,strThreadTrace);
 
 		if (TCD[i].sockfd == -7) // if this is not enabled, skip this one
 			continue;
@@ -8974,7 +11265,7 @@ void *listenThread(void *arg)
 
 	GString strConnectedIPAddress;
 	g_listenThreadsRunning++;
-	g_strListeningOnPorts << "[" << TCD.pTSD->nPort << "]";
+	g_strListeningOnPorts << TCD.pTSD->nPort << "\r\n";
 
 	int clilen;
 	struct sockaddr_in cli_addr;
@@ -9031,7 +11322,7 @@ RETRY_FOR_LINUX:
 			{
 				GString strTrace("Accepted Socket:");
 				strTrace << TCD.sockfd  << "   on port:" << TCD.pTSD->nPort;
-				InfoLog(888,strTrace);
+				InfoLog(316,strTrace);
 			}
 
 			// get the address of the connected client
@@ -9059,7 +11350,7 @@ RETRY_FOR_LINUX:
 					PortableClose(TCD.sockfd,"Core22");
 					GString strMessage;
 					strMessage << "Refused ip [" << strConnectedIPAddress << "] found in global reject list";
-					InfoLog(111, strMessage);
+					InfoLog(317, strMessage);
 					continue;
 				}
 			}
@@ -9074,7 +11365,7 @@ RETRY_FOR_LINUX:
 					PortableClose(TCD.sockfd,"Core23");
 					GString strMessage;
 					strMessage << "Refused ip [" << strConnectedIPAddress << "] NOT found in global permission list";
-					InfoLog(111, strMessage);
+					InfoLog(318, strMessage);
 					continue;
 				}
 			}
@@ -9084,7 +11375,6 @@ RETRY_FOR_LINUX:
 			if (TCD.pTSD->nProtocol == 10)
 			{
 				TCD.pTSD->nRefused++;
-
 				PortableClose(TCD.sockfd,"Core24");
 
 				// likely a bogus IP, or the IP of a probing machine.
@@ -9094,6 +11384,15 @@ RETRY_FOR_LINUX:
 				AddRefuseService(strConnectedIPAddress,g_nBlockedPortPenalty,strErr);
 				continue;
 			}
+			
+			// here the Proxy Server is being dynamically disabled, we still have the lock on the port and can dynamically reenable at any time
+			if (TCD.pTSD->nProtocol == 11 && !g_bHTTPProxyEnabled)
+			{
+				TCD.pTSD->nRefused++;
+				PortableClose(TCD.sockfd,"Core24.5");
+				continue;
+			}
+
 
 
 			// if the FrequencyTimeLimit option is enabled and 
@@ -9117,8 +11416,8 @@ RETRY_FOR_LINUX:
 				TCD.pTSD->nTooMany++;
 
 				GString strLog;
-				strLog.Format("***Machine at[%s] attempted more than %d connections.",(const char *)strConnectedIPAddress,(int)g_nMaxConnections);
-				InfoLog(155,strLog);
+				strLog.Format("*******Machine at[%s] attempted more than %d connections, Current value:%d",(const char *)strConnectedIPAddress,(int)g_nMaxConnections, (int)ConnectionCounter(strConnectedIPAddress,1) );
+				InfoLog(319,strLog);
 
 				// we could send a "HTTP/1.1 5xx \n\n" like IIS or just quit 
 				// wasting cycles on this guy by ending the connection right now.
@@ -9150,7 +11449,7 @@ RETRY_FOR_LINUX:
 			{
 				GString strLog;
 				strLog.Format("%d",(int)TCD.pTSD->nPort);
-				InfoLog(156,strLog);
+				InfoLog(320,strLog);
 				lLastPing = time(0);
 			}
 		}
@@ -9164,7 +11463,7 @@ LISTEN_THREAD_EXIT:
 
 
 	GString strRemove;
-	strRemove << "[" << TCD.pTSD->nPort << "]";
+	strRemove << TCD.pTSD->nPort << "\r\n";
 	int nIndex = (int)g_strListeningOnPorts.Find(strRemove);
 	g_strListeningOnPorts.Remove(nIndex,strRemove.Length());
 
@@ -9172,7 +11471,7 @@ LISTEN_THREAD_EXIT:
 
 	GString strLog;
 	strLog.Format("Stopped port %d",(int)TCD.pTSD->nPort);
-	InfoLog(157,strLog);
+	InfoLog(321,strLog);
 
 	PortableClose(TCD.pTSD->sockfd,"Core28");
 
@@ -9227,7 +11526,24 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 	// [Trace]
 	if (strSection.CompareNoCase("Trace") == 0)
 	{
-		if (strEntry.CompareNoCase("ConnectTrace") == 0)
+
+		if (strEntry.CompareNoCase("HTTPProxyTrace") == 0)
+		{
+			g_bTraceHTTPProxy = GetProfile().GetBoolean("Trace","HTTPProxyTrace",false);
+		}
+		else if (strEntry.CompareNoCase("HTTPProxyReturnTrace") == 0)
+		{
+			g_bTraceHTTPProxyReturn = GetProfile().GetBoolean("Trace","HTTPProxyReturnTrace",false);
+		}
+		else if (strEntry.CompareNoCase("HTTPProxyTraceBinary") == 0)
+		{
+			g_bTraceHTTPProxyBinary = GetProfile().GetBoolean("Trace","HTTPProxyTraceBinary",false);
+		}
+		else if (strEntry.CompareNoCase("HTTPProxyTraceExtra") == 0)
+		{
+			g_bHTTPProxyLogExtra = GetProfile().GetBoolean("Trace","HTTPProxyTraceExtra",false);
+		}
+		else if (strEntry.CompareNoCase("ConnectTrace") == 0)
 		{
 			g_TraceConnection = GetProfile().GetBoolean("Trace","ConnectTrace",false);
 #ifdef ___XFER
@@ -9250,10 +11566,6 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 		{
 			g_TraceSocketHandles = GetProfile().GetBoolOrDefault("Trace","SocketHandles",0);
 		}
-		else if (strEntry.CompareNoCase("TransferSizes") == 0)
-		{
-			g_TraceTransferSizes = GetProfile().GetBoolOrDefault("Trace","TransferSizes",0);
-		}
 		else if (strEntry.CompareNoCase("DataTraceFile") == 0)
 		{
 			if (strlen(pzNewValue))
@@ -9264,6 +11576,11 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 		else if (strEntry.CompareNoCase("PreLog") == 0)
 		{
 			g_strPreLog = GetProfile().GetStringOrDefault(	"Trace","PreLog","" );
+		}
+		else if (strEntry.CompareNoCase("Enable") == 0)
+		{
+			// note the ! to flip the variable name logic
+			g_NoLog = !(GetProfile().GetBoolOrDefault(	"Trace","Enable", 1 ));
 		}
 
 #ifdef ___XFER
@@ -9284,9 +11601,13 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 	else if (strSection.CompareNoCase("HTTP") == 0)
 	{
 		// [HTTP]
-		if (strEntry.CompareNoCase("KeepAliveMax") == 0)
+		if (strEntry.CompareNoCase("Home") == 0)
 		{
-			g_nMaxKeepAlives = GetProfile().GetIntOrDefault("HTTP","KeepAliveMax",150);
+			g_strHTTPHomeDirectory = pzNewValue; 
+		}
+		else if (strEntry.CompareNoCase("KeepAliveMax") == 0)
+		{
+			g_nMaxKeepAlives = GetProfile().GetIntOrDefault(pzSection,pzEntry,150);
 		}
 		else if (strEntry.CompareNoCase("HitLog") == 0)
 		{
@@ -9294,16 +11615,114 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 		}
 		else if (strEntry.CompareNoCase("UseKeepAlives") == 0)
 		{
-			g_bUseHTTPKeepAlives = GetProfile().GetBoolOrDefault("HTTP","UseKeepAlives",1);
+			g_bUseHTTPKeepAlives = GetProfile().GetBoolOrDefault(pzSection,pzEntry,1);
 		}
 		else if (strEntry.CompareNoCase("KeepAliveTimeOut") == 0)
 		{
-			g_nKeepAliveTimeout = GetProfile().GetIntOrDefault("HTTP","KeepAliveTimeOut",300); 
+			g_nKeepAliveTimeout = GetProfile().GetIntOrDefault(pzSection,pzEntry,300); 
+		}
+	}
+
+	// end of [HTTP] - beginning of [HTTPProxy]
+	else if (strSection.CompareNoCase("HTTPProxy") == 0)
+	{
+		// [HTTPProxy]
+		if (strEntry.CompareNoCase("HTTPProxyAgent") == 0)
+		{
+			g_strHTTPProxyAgentName = pzNewValue; 
+		}
+		else if (strEntry.CompareNoCase("Enabled") == 0)
+		{
+			g_bHTTPProxyEnabled = GetProfile().GetBoolean(pzSection,pzEntry,false); // converts "yes" "ON" and "true"
+		}
+		else if (strEntry.CompareNoCase("RequireAuth") == 0)
+		{
+			g_bNeedHTTPProxyAuth = GetProfile().GetBoolean(pzSection,pzEntry,false); // converts "yes" "ON" and "true"
+		}
+		else if (strEntry.CompareNoCase("BlockGoogle") == 0)
+		{
+			g_bBlockGoogleTracking = GetProfile().GetBoolean(pzSection,pzEntry,false); // converts "yes" "ON" and "true"
+		}
+		else if (strEntry.CompareNoCase("BlockAds") == 0)
+		{
+			g_bBlockHTTPProxyAds = GetProfile().GetBoolean(pzSection,pzEntry,false); // converts "yes" "ON" and "true"
+		}
+		else if (strEntry.CompareNoCase("LogHTTPTxnFiles") == 0)
+		{
+			g_bTraceHTTPProxyFiles = GetProfile().GetBoolOrDefault(pzSection,pzEntry,0);
+		}
+		
+		else if (strEntry.CompareNoCase("Only443or80") == 0)
+		{
+			g_bOnly443or80 = GetProfile().GetBoolOrDefault(pzSection,pzEntry,1);
+		}
+		else if (strEntry.CompareNoCase("NegotiateBasic") == 0)
+		{
+			g_bNegotiateBasic = GetProfile().GetBoolOrDefault(pzSection,pzEntry,1);
+		}
+		else if (strEntry.CompareNoCase("BlockHTTPProxyAds") == 0)
+		{
+			g_bBlockHTTPProxyAds = GetProfile().GetBoolOrDefault(pzSection,pzEntry,1);
+		}
+		else if (strEntry.CompareNoCase("NegotiateNTLMv2") == 0)
+		{
+			g_bNegotiateNTLMv2 = GetProfile().GetBoolOrDefault(pzSection,pzEntry,1);
+		}
+		else if (strEntry.CompareNoCase("EnableOutboundConnectCache") == 0)
+		{
+			g_bEnableOutboundConnectCache = GetProfile().GetBoolOrDefault(pzSection,pzEntry,0);
+		}
+		
+		else if (strEntry.CompareNoCase("BlockedDomains") == 0)
+		{
+			g_strHTTPProxyBlocked = pzNewValue;
+		}
+		else if (strEntry.CompareNoCase("RestrictIPs") == 0)
+		{
+			g_bHTTPProxyRestrictToSubnet = GetProfile().GetBoolean(pzSection,pzEntry,false); // converts "yes" "ON" and "true"
+		}
+		else if (strEntry.CompareNoCase("RestrictBeginMatch") == 0)
+		{
+			if(g_pstrHTTPProxyRestrictList)
+				delete g_pstrHTTPProxyRestrictList;
+			g_pstrHTTPProxyRestrictList = new GStringList("," , pzNewValue);
+		}
+		else if (strEntry.CompareNoCase("Timeout") == 0)
+		{
+			g_nHTTPProxyTimeout = atoi(pzNewValue); 
+		}
+		else if (strEntry.CompareNoCase("LogEnabled") == 0)
+		{
+			ThreadStartupData *pTSD = &g_TSD;
+			while(pTSD)
+			{
+				if (pTSD->nProtocol != 11)
+				{
+					pTSD = pTSD->Next();
+					continue;
+				}
+				pTSD->bIsLogging =  GetProfile().GetBoolean(pzSection,pzEntry,false); // converts "yes" "ON" and "true"
+				break;
+			}
+		}
+		else if (strEntry.CompareNoCase("LogFileName") == 0)
+		{
+			ThreadStartupData *pTSD = &g_TSD;
+			while(pTSD)
+			{
+				if (pTSD->nProtocol != 11)
+				{
+					pTSD = pTSD->Next();
+					continue;
+				}
+				pTSD->strLogFile =  pzNewValue;
+				break;
+			}
 		}
 
-
 	}
-	// end of [HTTP] - beginning of [System]
+
+	// end of [HTTPProxy] - beginning of [System]
 	else if (strSection.CompareNoCase("System") == 0)
 	{
 		// [System]
@@ -9395,6 +11814,7 @@ int GProfileMonitor(const char *pzSection, const char *pzEntry, const char *pzNe
 }
 
 
+
 void AssignSystemProfileValues()
 {
 	// set the global values	
@@ -9405,19 +11825,67 @@ void AssignSystemProfileValues()
 	g_HTTPHeaderTrace = GetProfile().GetBoolOrDefault(	"Trace","HTTPHeaderTrace",0);
 	g_TraceHTTPFiles = GetProfile().GetBoolOrDefault(	"Trace","HTTPFilesTrace",0);
 	g_DataTrace =	GetProfile().ValueLength(			"Trace","DataTraceFile");
-	g_TraceTransferSizes = GetProfile().GetBoolOrDefault("Trace","TransferSizes",0);
+	g_bTraceHTTPProxy = GetProfile().GetBoolOrDefault(	"Trace","HTTPProxyTrace",0);
+	g_bTraceHTTPProxyReturn = GetProfile().GetBoolOrDefault("Trace","HTTPProxyReturnTrace",0);
+	g_bTraceHTTPProxyBinary = GetProfile().GetBoolOrDefault("Trace","HTTPProxyTraceBinary",0);
+	g_bHTTPProxyLogExtra = GetProfile().GetBoolOrDefault("Trace","HTTPProxyTraceExtra",0);
 
-	g_nMaxKeepAlives = GetProfile().GetIntOrDefault(	"HTTP","KeepAliveMax",150);
-	g_strHTTPHitLog = GetProfile().GetStringOrDefault(	"HTTP","HitLog","");
-	g_bUseHTTPKeepAlives = GetProfile().GetBoolOrDefault("HTTP","UseKeepAlives",1);
-	g_nKeepAliveTimeout = GetProfile().GetIntOrDefault("HTTP","KeepAliveTimeOut",300); 
+
+	g_NoLog = !(GetProfile().GetBoolOrDefault(			"Trace","Enable", 1 ));
+
+	g_strHTTPHomeDirectory = GetProfile().GetStringOrDefault(	"HTTP","Home","");
+	g_nMaxKeepAlives = GetProfile().GetIntOrDefault(			"HTTP","KeepAliveMax",150);
+	g_strHTTPHitLog = GetProfile().GetStringOrDefault(			"HTTP","HitLog","");
+	g_bUseHTTPKeepAlives = GetProfile().GetBoolOrDefault(		"HTTP","UseKeepAlives",1);
+	g_nKeepAliveTimeout = GetProfile().GetIntOrDefault(			"HTTP","KeepAliveTimeOut",300); 
+
+	g_bTraceHTTPProxyFiles = GetProfile().GetBoolOrDefault(		"HTTPProxy","LogHTTPTxnFiles",0);
+	g_bNeedHTTPProxyAuth = GetProfile().GetBoolOrDefault(		"HTTPProxy","RequireAuth",0); 
+	g_bBlockGoogleTracking = GetProfile().GetBoolOrDefault(		"HTTPProxy","BlockGoogle",1);
+	g_bBlockHTTPProxyAds = GetProfile().GetBoolOrDefault(		"HTTPProxy","BlockAds",1);    
+	g_nHTTPProxyTimeout = GetProfile().GetIntOrDefault(			"HTTPProxy","Timeout",300); 
+	g_strHTTPProxyAgentName = GetProfile().GetStringOrDefault(	"HTTPProxy","HTTPProxyAgent","5Loaves" );
+	g_bHTTPProxyEnabled = GetProfile().GetBoolOrDefault(		"HTTPProxy","Enable",0); 
+	g_strHTTPProxyBlocked = GetProfile().GetStringOrDefault(	"HTTPProxy","BlockedDomains","" );
+	g_bHTTPProxyRestrictToSubnet = GetProfile().GetBoolOrDefault("HTTPProxy","RestrictIPs",1);
+
+
+	g_bOnly443or80  = GetProfile().GetBoolOrDefault(			"HTTPProxy","Only443or80", 1);
+	g_bNegotiateBasic = GetProfile().GetBoolOrDefault(			"HTTPProxy","NegotiateBasic", 0);
+	g_bBlockHTTPProxyAds = GetProfile().GetBoolOrDefault(		"HTTPProxy","BlockHTTPProxyAds", 1);
+	g_bNegotiateNTLMv2 = GetProfile().GetBoolOrDefault(			"HTTPProxy","NegotiateNTLMv2", 1);
+	g_bEnableOutboundConnectCache = GetProfile().GetBoolOrDefault("HTTPProxy","EnableOutboundConnectCache", 0);
+
+	
+	GString strTempHTTPProxyRestrictMatch = GetProfile().GetStringOrDefault("HTTPProxy","RestrictBeginMatch","" );
+	if(strTempHTTPProxyRestrictMatch.IsEmpty())
+	{
+		GString str(g_strThisIPAddress);
+		int n2ndDot = str.FindNth('.',2,0);
+		if (n2ndDot > 0)
+		{
+			str.SetLength(n2ndDot+1);
+			strTempHTTPProxyRestrictMatch = str;
+
+			// if LAN/WAN is on a 10. we will get that address in g_strThisIPAddress, 
+			// we likely still need a 192.168.* for Virtual machines and devices for our OTHER other local subnet
+			strTempHTTPProxyRestrictMatch << ";192.168";
+
+		}
+	}
+
+	if(g_pstrHTTPProxyRestrictList)
+		delete g_pstrHTTPProxyRestrictList;
+	g_pstrHTTPProxyRestrictList = new GStringList(";" , strTempHTTPProxyRestrictMatch);
+
+
 
 	g_nBlockedPortPenalty = GetProfile().GetIntOrDefault("System","BlockedPortPenalty",777);;
 	g_nLockThreadBuffers = GetProfile().GetBoolOrDefault ("System","LockThreadBuffers",1 );
 	g_bDisableLog = GetProfile().GetBoolOrDefault(		"System","DisableLog",0);
 	g_strLogFile = GetProfile().GetStringOrDefault(		"System","LogFile","");
 	g_LogCache = GetProfile().GetBoolOrDefault(			"System","LogCache",1);
-	g_nMaxConnections = GetProfile().GetIntOrDefault(	"System","MaxOpenConnectionsPerIP",10000);
+	g_nMaxConnections = GetProfile().GetIntOrDefault(	"System","MaxOpenConnectionsPerIP",500);
 
 
 #ifdef ___XFER
@@ -9425,8 +11893,8 @@ void AssignSystemProfileValues()
 	g_TraceXferBin = GetProfile().GetBoolOrDefault(		"Trace","XferTraceBinary",0);
 	g_TraceXferConnection = g_TraceConnection;
 	g_bEnableXferSwitchBoard = GetProfile().GetBoolOrDefault("Xfer","EnableSwitchBoard",0);
-	g_nServerQWaitTime = GetProfile().GetIntOrDefault("Xfer","SwitchBoardWaitForServer",240);;
-	g_nClientQWaitTime = GetProfile().GetIntOrDefault("Xfer","SwitchBoardWaitForClient",120);;
+	g_nServerQWaitTime = GetProfile().GetIntOrDefault("Xfer","SwitchBoardWaitForServer",240);
+	g_nClientQWaitTime = GetProfile().GetIntOrDefault("Xfer","SwitchBoardWaitForClient",120);
 	g_nMaxQ = GetProfile().GetIntOrDefault("Xfer","SwitchBoardMaxQ",5);
 	g_strProxyAuthSysName = GetProfile().GetStringOrDefault("Xfer","ProxyAuthSystemName","sys");
 	g_bRequireSysID = GetProfile().GetBoolOrDefault("Xfer","RequireSysId",0);
@@ -9436,15 +11904,15 @@ void AssignSystemProfileValues()
 	g_bEnableMessagingSwitchboard = GetProfile().GetBoolean("SwitchBoardServer","Enable",false);
 
 	g_LogStdOut = GetProfile().GetBoolean("Trace","LogStdOut",false);
-	g_ThreadPoolSize = GetProfile().GetInt("System","Pool",false);
-	if (GetProfile().GetBoolOrDefault("HTTP","Enable",0) && !g_ThreadPoolSize)
-		g_ThreadPoolSize = 10;
-	g_ProxyPoolSize = GetProfile().GetInt("System","ProxyPool",false);
+	
+
+	g_ThreadPoolSize = GetProfile().GetIntOrDefault("System","Pool", PRIMARY_POOL_SIZE );
+	g_ProxyPoolSize = GetProfile().GetIntOrDefault("System","ProxyPool", PROXY_POOL_SIZE );
 
 	g_nTimeLimit = GetProfile().GetInt("System","FrequencyTimeLimit",false);
 }
 
-int g_HasRegisteredMonitorValues = 0;
+int g_HasRegisteredMonitorValues = 0; 
 void RegisterRealTimeProfileMonitorValues()
 {
 	if (g_HasRegisteredMonitorValues)
@@ -9463,19 +11931,42 @@ void RegisterRealTimeProfileMonitorValues()
 	//	int g_nProxyReadWait
 	//	int g_nProxyIdleReadWait
 	//  int g_nMaxHTTPHeaderSize;
-	GetProfile().RegisterChangeNotification("Trace", "ConnectTrace",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "ThreadTrace",		GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "HTTPHeaderTrace",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "HTTPFilesTrace",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "DataTraceFile",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "SocketHandles",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "XferTrace",		GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "XferTraceBinary",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "TransferSizes",	GProfileMonitor);
-	GetProfile().RegisterChangeNotification("Trace", "PreLog",			GProfileMonitor);
 
 
+	GetProfile().RegisterChangeNotification("Trace", "HTTPProxyTrace",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPProxyReturnTrace",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPProxyTraceBinary",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPProxyTraceExtra",		GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "ConnectTrace",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "ThreadTrace",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPHeaderTrace",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "HTTPFilesTrace",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "DataTraceFile",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "SocketHandles",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "XferTrace",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "XferTraceBinary",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "PreLog",					GProfileMonitor);
+	GetProfile().RegisterChangeNotification("Trace", "Enable",					GProfileMonitor);
 
+	GetProfile().RegisterChangeNotification("HTTPProxy", "Enable",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "HTTPProxyAgent",		GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "RequireAuth",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "BlockGoogle",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "BlockedDomains",		GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "Timeout",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "LogEnabled",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "LogFileName",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "RestrictIPs",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "RestrictBeginMatch",	GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "LogHTTPTxnFiles",		GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "Only443or80",					GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "NegotiateBasic",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "BlockHTTPProxyAds",			GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "NegotiateNTLMv2",				GProfileMonitor);
+	GetProfile().RegisterChangeNotification("HTTPProxy", "EnableOutboundConnectCache",	GProfileMonitor);
+	
+	
+	GetProfile().RegisterChangeNotification("HTTP",  "Home",					GProfileMonitor);
 	GetProfile().RegisterChangeNotification("HTTP",  "KeepAliveMax",			GProfileMonitor);
 	GetProfile().RegisterChangeNotification("HTTP",  "HitLog",					GProfileMonitor);
 	GetProfile().RegisterChangeNotification("HTTP",  "UseKeepAlives",			GProfileMonitor);
@@ -9515,6 +12006,8 @@ int server_start(const char *pzStartupMessage = 0)
 	g_ServerIsShuttingDown = 0;
 	g_SwitchBoard.Startup();
 	memset(HashOfActiveConnections,0,ACTIVE_CONN_HASH_SIZE ); // reset connection counts if this is a restart.
+	g_TotalConnections = 0;
+	g_ActiveConnections = 0;
 
 	// turn off stdout buffering so we never need to flush();
 	#ifndef WINCE
@@ -9524,9 +12017,15 @@ int server_start(const char *pzStartupMessage = 0)
 		_gthread_processInitialize();
 	#endif
 
+	gthread_t listen_thr;
+	gthread_create(&listen_thr,	NULL, loggingThread, 0 );
+
+
+	InfoLog(777,"Log File Notes: tid = 'Thread ID'    seq = HTTP Sequence or times the connection was 'Keep-Alive' fd='File Descriptor' which is a socket() handle.  fd's in the 200 range are a ProxyHelperThread() and fd's < 100 are a clientthread()");
+
 	GString strStartup("Server starting at:");
 	strStartup << g_strThisIPAddress;
-	InfoLog(158,strStartup);
+	InfoLog(322,strStartup);
 
 	char pzTime[128];
 	struct tm *newtime;
@@ -9534,7 +12033,7 @@ int server_start(const char *pzStartupMessage = 0)
 	time(&ltime);
 	newtime = gmtime(&ltime);
 	strftime(pzTime, 128, "Date: %a, %d %b %Y %H:%M:%S GMT\r\n", newtime);
-	InfoLog(159,pzTime);
+	InfoLog(323,pzTime);
 
 	g_SwitchBoard.SetInfoLog( InfoLog );
 
@@ -9565,13 +12064,17 @@ try
 #endif
 
 	gthread_mutex_init(&g_csMtxConnCache, NULL);
-	gthread_mutex_init(&PoolExpansionLock,0);
+	gthread_mutex_init(&PoolExpansionLock,NULL);
+	gthread_mutex_init(&g_csMtxChallengeList, NULL);
+	gthread_mutex_init(&g_csMtxConnectCache,NULL);
+	memset(g_arrChallenges,0,sizeof(g_arrChallenges));
+
 
 	g_LogStdOut = 1; // Startup info always goes to std out and the file
 
 	if (pzStartupMessage)
 	{
-		InfoLog(160,pzStartupMessage);
+		InfoLog(324,pzStartupMessage);
 	}
 
 	if ( GetProfile().GetBoolean("System","UltraHighSecure",false) )
@@ -9678,6 +12181,10 @@ try
 			pTSD->nPort = 8080;
 		pTSD->nProtocol = 11;
 		strcpy(pTSD->szConfigSectionName,"HTTPProxy");
+		pTSD->nInstanceLimit = 0; 
+		pTSD->nProxyTimeout = GetProfile().GetIntOrDefault("HTTPProxy","Timeout",300);
+		pTSD->strLogFile =  GetProfile().GetStringOrDefault("HTTPProxy","LogFile","");
+		pTSD->bIsLogging =  GetProfile().GetBoolOrDefault("HTTPProxy","LogEnabled",0);
 	}
 
 // HOOK:protocol init
@@ -9747,6 +12254,8 @@ try
 					pTSD->nProxyToPort = GetProfile().GetInt(strNextSection,"RemotePort"); 
 					pTSD->nInstanceLimit = GetProfile().GetInt(strNextSection,"InstanceLimit",false); 
 					pTSD->nProxyTimeout = GetProfile().GetInt(strNextSection,"Timeout");
+					pTSD->strLogFile =  GetProfile().GetStringOrDefault(strNextSection,"LogFile","");
+					pTSD->bIsLogging =  GetProfile().GetBoolOrDefault(strNextSection,"LogEnabled",0);
 					pTSD->bIsTunnel = (nTunnelOrProxy) ? 0 : 1;
 
 					// so the thread can go get more info from this section later
@@ -9759,7 +12268,7 @@ try
 					// skip this one, it's not correctly setup in the config file.
 					GString strLog;
 					strLog.Format("Port[%s] not started.  Configuration error[%s]",pzLocalPort,rErr.GetDescription());
-					InfoLog(161,strLog)
+					InfoLog(325,strLog)
 						;
 					bAdvanceTSD = 0;
 				}
@@ -9773,7 +12282,7 @@ try
 	}
 	if (nEnabledCount && !g_ProxyPoolSize)
 	{
-		g_ProxyPoolSize = 10;
+		g_ProxyPoolSize = 100;
 	}
 
 	// bind to a socket on each port that this server handles
@@ -9783,13 +12292,14 @@ try
 
 	// create the worker threads 
 	CreateThreadPool(&g_PoolClientThread, g_ThreadPoolSize,clientThread);
+	g_ThreadIDCount = 2000;
 	CreateThreadPool(&g_PoolProxyHelperThread, g_ProxyPoolSize,ProxyHelperThread);
 
 
 	// create a listener thread for each port we handle
 	startListeners(2);
 
-	InfoLog(162,"All bound ports are now being serviced");
+	InfoLog(326,"All bound ports are now being serviced");
 
 
 
@@ -9807,7 +12317,7 @@ try
 catch( GException &rErr )
 {
 	printf( rErr.GetDescription() );
-	InfoLog(1, rErr.GetDescription());
+	InfoLog(327, rErr.GetDescription());
 }
 catch( ... )
 {
@@ -9929,7 +12439,7 @@ void viewPorts(GString *pG = 0)
 	g_LogStdOut = 1; 
 	g_NoLog = 0; 
 
-	InfoLog(163,strPort);
+	InfoLog(328,strPort);
 	if (pG)
 		*pG << strPort;
 
@@ -9964,13 +12474,13 @@ void pingPools()
 	g_LogStdOut = 1; 
 	g_NoLog = 0;
 
-	InfoLog(164,"Main Pool:");
+	InfoLog(329,"Main Pool:");
 	PingPool(g_PoolClientThread,g_ThreadPoolSize);
-	InfoLog(165,"Proxy Pool:");
+	InfoLog(330,"Proxy Pool:");
 	PingPool(g_PoolProxyHelperThread,g_ProxyPoolSize);
 
 	g_PingListenThread = 1;
-	InfoLog(166,"Listening on ports:");
+	InfoLog(331,"Listening on ports:");
 	PortableSleep(3,0);
 	g_PingListenThread = 0;
 
@@ -9981,16 +12491,10 @@ void pingPools()
 
 
 
-
+// Note this is how the Xfer GUI gets the data to display current thread stats in the Console.
+// It reports stats from all threads and all protocols.
 void showActiveThreads(GString *pG/* = 0*/)
 {
-//	if (pG)
-//	{
-//		GString Msg;
-//		Msg << g_nClientthreadsInUse << "," << g_ThreadUsageMax << "," << g_TotalHits << "," <<  g_TotalTooBusy;
-//		*pG << Msg;
-//	}
-	
 	
 	int nPrevLogSetting = g_LogStdOut;
 	int nPrevLogSetting2 = g_NoLog;
@@ -10004,12 +12508,14 @@ void showActiveThreads(GString *pG/* = 0*/)
 
 			if (td->nThreadIsBusy)
 			{
-				// tid,protocol,action,outPort,inPort,IP,time,"Action"\r\n
+				// tid,protocol,bytes,action,outPort,inPort,IP,time,"Action"\r\n
+				GString strAction(td->strAction);
+				strAction.Replace(',','~');
 				GString Msg;
-				Msg << td->nThreadID << "," << td->pTSD->nProtocol
+				Msg << td->nThreadID << "," << td->pTSD->nProtocol << "," << td->nTotalBytesProxied
 					<< "," << td->nAction << "," << td->pTSD->nProxyToPort
 					<< "," << td->pTSD->nPort << "," << td->pzClientIP
-					<< "," << (getTimeMS() - td->starttime) / 1000 << "," << td->nSequence << "," << td->strAction;
+					<< "," << (getTimeMS() - td->starttime) / 1000 << "," << td->nSequence << "," << strAction << "," << td->pzConnectRoute;
 
 				if (pG)
 				{
@@ -10019,7 +12525,7 @@ void showActiveThreads(GString *pG/* = 0*/)
 				}
 				else
 				{
-					InfoLog(167,Msg);
+					InfoLog(332,Msg);
 				}
 			}
 		}
@@ -10034,17 +12540,17 @@ void showActiveThreads(GString *pG/* = 0*/)
 // This routine was designed to verify algorithms after a new operating system port.
 void server_build_check()
 {
-	InfoLog(168,"Starting build check");
+	InfoLog(333,"Starting build check");
 
 	// view data sizes
 	GString str;
 	str.Format("Size of--- Short:%d   Integer:%d    Long:%d   VeryLong: %d",sizeof(short),sizeof(int),sizeof(long),sizeof(__int64));
-	InfoLog(169,str);
+	InfoLog(334,str);
 
 	// view more data sizes
 	GString str2;
 	str2.Format("Size of--- BYTE:%d   DWORD:%d    char:%d   VeryLong: %d",sizeof(BYTE),sizeof(DWORD),sizeof(char),sizeof(__int64));
-	InfoLog(169,str2);
+	InfoLog(335,str2);
 	
 
 	// view byte order (1-0-0-0 is Intel,  0-0-0-1 is most others)
@@ -10064,7 +12570,7 @@ void server_build_check()
 		str += (int)pi[nByteOrderIndex];
 		str += "-";
 	}
-	InfoLog(170,str);
+	InfoLog(336,str);
 
 
 
@@ -10092,13 +12598,13 @@ void server_build_check()
 		strLog.Format("%d-",(int)(unsigned char)pDigest[i]);
 		strMsgHash << strLog;
 	}
-	InfoLog(171,strMsgHash);
+	InfoLog(337,strMsgHash);
 
 
 	///////////////////////////////// TwoFish Encrypt/Decrypt  ///////////////////////////////////////
 	CipherData en("This is the pass-key",DIR_ENCRYPT);
 	CipherData de("This is the pass-key",DIR_DECRYPT);
-	InfoLog(172,"Init Cipher Keys");
+	InfoLog(338,"Init Cipher Keys");
 	int nBitsCrypted;
 	try
 	{												// uncrypted in				// crypted out
@@ -10110,47 +12616,47 @@ void server_build_check()
 			strLog.Format("%d-",(int)(unsigned char)pWorkBuffer[i]);
 			strMsgCipher << strLog;
 		}
-		InfoLog(174,strMsgCipher);
+		InfoLog(339,strMsgCipher);
 	}
 	catch(...)
 	{
-		InfoLog(175,"blockEncrypt failed.");
+		InfoLog(340,"blockEncrypt failed.");
 		return;
 	}
 	if (nBitsCrypted != 32*8)
 	{
-		InfoLog(176,"blockEncrypt failed point 2.");
+		InfoLog(341,"blockEncrypt failed point 2.");
 		return;
 	}
 	try
 	{
-		InfoLog(177,"Testing Decrypt");
+		InfoLog(342,"Testing Decrypt");
 		memset(pData1,0,256);							// crypted in					 // uncrypted out	
 		nBitsCrypted = de.blockDecrypt((unsigned char *)pWorkBuffer,32*8,(unsigned char *)pData1);
 		
 		if (memcmp(pData1,pDataMatch,256) == 0)
 		{
-			InfoLog(178,"Decrypted OK.");
+			InfoLog(343,"Decrypted OK.");
 		}
 		else
 		{
-			InfoLog(179,"Decrypted Failed!");
+			InfoLog(344,"Decrypted Failed!");
 		}
 	}
 	catch(...) 
 	{
-		InfoLog(180,"Decrypt Failed, point 1");
+		InfoLog(345,"Decrypt Failed, point 1");
 		return;
 	}
 	if (nBitsCrypted != 32*8)
 	{
-		InfoLog(181,"Decrypt Failed, point 2");
+		InfoLog(346,"Decrypt Failed, point 2");
 		return;
 	}
 
 	
 	/////////////////////////////// Zip/UnZip ////////////////////////////////////////////////////////
-	InfoLog(182,"Testing Compress");
+	InfoLog(347,"Testing Compress");
 	int nZippedLength = 256;
 	int cRet;
 	if (1)
@@ -10176,18 +12682,18 @@ void server_build_check()
 	{
 		GString strLog;
 		strLog.Format("Compress failed. code[%d]",(int)cRet);
-		InfoLog(183,strLog);
+		InfoLog(348,strLog);
 		return;
 	}
 	else
 	{
 		GString strLog;
 		strLog.Format("Compressed 256 bytes into %d bytes OK.",(int)nZippedLength);
-		InfoLog(184,strLog);
+		InfoLog(349,strLog);
 	}
 
 
-	InfoLog(185,"Testing Decompress");
+	InfoLog(350,"Testing Decompress");
 	int nUnZippedLength = 256;
 	memset(pDataMatch,0,256);
 	if (1)
@@ -10212,10 +12718,10 @@ void server_build_check()
 	// see if the decompressed data matches the source data
 	if (memcmp(pDataMatch,pData1,256) == 0)
 	{
-		InfoLog(187,"Decompress OK.");
+		InfoLog(351,"Decompress OK.");
 	}else
 	{
-		InfoLog(188,"Decompress Failed!");
+		InfoLog(352,"Decompress Failed!");
 		return;
 	}
 
@@ -10223,7 +12729,7 @@ void server_build_check()
 
 	/////////////////////////////////// UU En/DeCode /////////////////////////////////////////////
 	// uuencode into a GString
-	InfoLog(189,"Testing UUEncode");
+	InfoLog(353,"Testing UUEncode");
 	BUFFER b;
 	BufferInit(&b);
 	uuencode((unsigned char *)pData1, 256, &b);
@@ -10232,26 +12738,26 @@ void server_build_check()
 	
 	GString strLog;
 	strLog.Format("UUEncoded=%s",(const char *)strEncoded);
-	InfoLog(190,strLog);
+	InfoLog(354,strLog);
 
 
-	InfoLog(191,"Testing UUDecode");
+	InfoLog(355,"Testing UUDecode");
 	BUFFER b2;
 	BufferInit(&b2);
 	unsigned int nDecoded;
 	uudecode((char *)(const char *)strEncoded, &b2, &nDecoded, false);
 	if (memcmp(b2.pBuf,pData1,256) == 0 )
 	{
-		InfoLog(192,"UUDecoded OK");
+		InfoLog(356,"UUDecoded OK");
 	}
 	else
 	{
-		InfoLog(193,"UUDecode Failed!");
+		InfoLog(357,"UUDecode Failed!");
 		return;
 	}
 	BufferTerminate(&b2);
 
-	InfoLog(194,"Done Checking Build.");
+	InfoLog(358,"Done Checking Build.");
 }
 
 void server_stop()
@@ -10260,15 +12766,12 @@ void server_stop()
 	InfoLogFlush();
 	g_ServerIsShuttingDown = 1;
 	g_SwitchBoard.ShutDown();
-	
-#ifdef _WIN32
-	Sleep(300);
-#else
-	PortableSleep(3,0);
-#endif
+
+	// This gives everything running time to respond to a pending shutdown. the number may be much lower in many cases.
+	PortableSleep(g_nServerShutdownWait,0);
 
 	// drain the pools
-	InfoLog(195,"Destroying thread pools");
+	InfoLog(359,"Destroying thread pools");
 	DestroyThreadPool(g_PoolProxyHelperThread,g_ProxyPoolSize);
 	DestroyThreadPool(g_PoolClientThread,g_ThreadPoolSize);
 	g_ProxyPoolSize = 0;
@@ -10283,6 +12786,9 @@ void server_stop()
 #endif
 
 	gthread_mutex_destroy(&g_csMtxConnCache);
+	gthread_mutex_destroy(&PoolExpansionLock);
+	gthread_mutex_destroy(&g_csMtxChallengeList);
+	gthread_mutex_destroy(&g_csMtxConnectCache);
 
 #ifdef _WIN32
 	Sleep(2000);
@@ -10292,7 +12798,7 @@ void server_stop()
 #endif
 
 
-	InfoLog(195,"ShutDown Complete");
+	InfoLog(360,"ShutDown Complete");
 	InfoLogFlush();
 
 #ifdef _WIN32

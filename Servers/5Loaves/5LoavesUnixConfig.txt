@@ -12,8 +12,42 @@ Path=/home/ubt/Desktop/XMLFoundation/Examples/C++/HTTP.Xfer.Messaging-PluginExam
 
 
 [System]
-Pool=20 
-ProxyPool=0 
+Pool=250
+ProxyPool=250
+LogFile=5LoavesLogFile.txt
+
+
+[Trace]
+Enabled=1
+ConnectTrace=1
+HTTPFilesTrace=1
+XferTrace=1
+SocketHandles=0
+HTTPProxyTrace=1
+HTTPProxyTraceExtra=1
+HTTPProxyReturnTrace=0
+HTTPProxyTraceBinary=0
+
+
+[HTTPProxy]
+Enable=1
+Port=10888
+HTTPProxyAgent=InternetVia5Loaves
+RequireAuth=1
+Timeout=300
+BlockedDomains=
+RestrictIPs=1
+Only443or80=1
+NegotiateBasic=1
+BlockHTTPProxyAds=1
+EnableOutboundConnectCache=0
+NegotiateNTLMv2=1
+LogHTTPTxnFiles=0
+BlockGoogle=1
+RestrictBeginMatch=10.0.;192.168.
+LogEnabled=0
+LogFileName=HTTPProxyLog.txt
+
 
 [HTTP]
 Port=8088

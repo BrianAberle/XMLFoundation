@@ -21,6 +21,7 @@ static char SOURCE_FILE[] = __FILE__;
 #include "GZip.h"		// for Compress() / DeCompress()
 #include "TwoFish.h"	// for Cipher() / DeCipher()
 #include "GProfile.h"	// for Cipher() / DeCipher()
+#include "Base64.h"		// for UUEncode() / UUDecode()
 
 #include <string.h> // for: memcpy(), strlen(), strcmp(), memmove(), strchr(), 
 					//      strstr(), strncmp()
@@ -2343,7 +2344,7 @@ void GString::PadLeft(__int64 nCnt, char ch /* = ' ' */)
 		Prepend(nCnt - _len, ch);
 }
 
-void GString::Prepend(__int64 nCnt, char ch /* = ' ' */)
+void GString::Prepend(__int64 nCnt, char ch )
 {
 	while (nCnt + _len + 1 >= _max)
 		resize();
@@ -2522,7 +2523,7 @@ char * stristr(const char * str1, const char * str2)
 	char *s1, *s2;
 
 	if ( !*str2 )
-		return((char *)str1);
+		return (char *)str1;
 
 	while (*cp)
 	{
@@ -2533,7 +2534,7 @@ char * stristr(const char * str1, const char * str2)
 			s1++, s2++;
 
 		if (!*s2)
-			return(cp);
+			return cp;
 
 		cp++;
 	}
@@ -2593,6 +2594,32 @@ void GString::ReplaceChars(const char *pzCharSet, char chReplaceWith)
 	}
 }
 
+
+__int64 GString::FindBinary(void *pBinary, int nToFindLen, __int64 nStart)
+{
+	__int64 nIndex = -1;
+
+	char *pzToFind = (char *)pBinary;
+
+	while(_len - nStart > 0)
+	{
+		const char *lpsz = (const char *)memchr(_str + nStart, pzToFind[0], _len - nStart );
+		if (lpsz == 0)
+			break;
+		nStart = (int)(lpsz - _str);
+		
+		if (nStart + nToFindLen > _len)
+			break;
+
+		if ( memcmp(&_str[nStart],pzToFind,nToFindLen) == 0)
+		{
+			nIndex = nStart;
+			break; // found it
+		}
+		nStart++;
+	}
+	return nIndex;
+}
 
 __int64 GString::FindBinary(GString &strToFind, __int64 nStart/* = 0*/)
 {
@@ -3191,7 +3218,7 @@ void GString::FormatBinary(const GString &strBinary, int bIncludeAscii/*=1*/)
 	FormatBinary((unsigned char *)(const char *)strBinary, strBinary.Length(), bIncludeAscii);
 }
 
-void GString::FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAscii/*=1*/)
+void GString::FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAscii, const char *pzLinePrefix)
 {
 	if (!pData || nBytes < 1)
 		return;
@@ -3206,6 +3233,11 @@ void GString::FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAsc
 	GString strHexByte;
 	GString strASCIIBytes;
 	__int64 nByteIndex = 0;
+
+	if ( pzLinePrefix )
+	{
+		(*this)  += pzLinePrefix;
+	}
 	while(nBytes > 0)
 	{
 		strHexByte.Format("%02X ",(int)(unsigned char)pData[nByteIndex]);
@@ -3233,6 +3265,14 @@ void GString::FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAsc
 #else
 				(*this)  += "\n";
 #endif
+
+				
+				if ( pzLinePrefix && nBytes > 0)
+				{
+					(*this)  += pzLinePrefix;
+				}
+
+
 			}
 		}
 
@@ -3395,7 +3435,7 @@ try
 		{
 			switch (*lpsz)
 			{
-			case 'I': // look for I64
+			case 'I': // look for "%I64"   
 				if (strncmp(lpsz, "I64", 3) == 0)
 				{
 					va_arg(argList, __int64);
@@ -4041,30 +4081,33 @@ void GString::UnEscapeURL()
 
 }
 
+__int64 GString ::Int() const
+{
+	return Xatoi64( _str );
+}
 void GString ::Inc(__int64 nAmount/* = 1*/)
 {
-	__int64 n = Xatoi64(StrVal());
+	__int64 n = Xatoi64( _str );
 	n += nAmount;
 	*this = n;
 }
 
 void GString ::Dec(__int64 nAmount/* = 1*/)
 {
-	__int64 n = Xatoi64(StrVal());
+	__int64 n = Xatoi64( _str );
 	n -= nAmount;
 	*this = n;
 }
 void GString ::Inc(const char *pzAmount)
 {
-	__int64 n = Xatoi64(StrVal());
+	__int64 n = Xatoi64( _str );
 	__int64 n2 = Xatoi64(pzAmount);
 	n += n2;
 	*this = n;
 }
-
 void GString ::Dec(const char *pzAmount)
 {
-	__int64 n = Xatoi64(StrVal());
+	__int64 n = Xatoi64( _str );
 	__int64 n2 = Xatoi64(pzAmount);
 	n -= n2;
 	*this = n;
@@ -4239,6 +4282,30 @@ unsigned __int64 GString::GetPacked64(__int64 index)
 }
 
 
+const char *GString::UUEncode()
+{
+	BUFFER b;
+	BufferInit(&b);
+	uuencode((unsigned char *)_str, _len, &b); 
+	WriteOn(b.pBuf, b.cLen);
+	BufferTerminate(&b);
+
+	return _str;
+}
+
+const char *GString::UUDecode()
+{
+	BUFFER b;
+	BufferInit(&b);
+	unsigned int nDecoded;
+	uudecode(_str, &b, &nDecoded, false);
+	WriteOn(b.pBuf,nDecoded);
+	BufferTerminate(&b);
+
+	return _str;
+}
+
+
 
 bool GString::Cipher( GString &strKey, GString *pSrc )
 {
@@ -4381,110 +4448,137 @@ bool GString::Compress( )
 
 
 
-// note: iconv() is not just for Linux.  The code will likely serve all non-Windows platforms such as IOS, Unix and others that use this interface 
-// over ICU (International Components for Unicode) - opensourced by IBM
 
-#ifdef _LINUX
+// Soon...
+//
+// The iconv source needs to be inside the XMLFoundation because
+//
+// Android does not have it available as part of the OS
+// iOS does have it but as an external library so every application that links XMLFoundation must also link iconv.  That complicates every single makefile that uses XMLFoundation,
+// Windows has its native solution that GString does use and could use interchangeably with iconv if it were part of XMLFoundation
+//
+// Linux does not require any additional linking when using iconv, so in that one case the symbols inside XMLFoundation will be redundant and made to not conflict.
+//
+// So at the moment, both Android and iOS convert the ASCII to WideByte without translation.
+//
+// note: the currently unsued iconv source code is in the XMLFoundation/Libraries folder
+//
+#if defined (_LINUX) 
+#ifndef _ANDROID  // iconv() has been ported to Android, it's just not part of Android and has not been needed yet by apps driving XMLFoundation
 
-// basic iconv() usage example (missing the save/restore of *dst)
-// http ://stackoverflow.com/questions/9608395/how-to-use-iconv-for-utf8-conversion?rq=1
-
-#include <iconv.h>
-#include <errno.h>
-char *convert(const char *from_charset, const char *to_charset, const char *input)
-{
-	size_t inleft, outleft, converted = 0;
-	char *output, *outbuf, *tmp;
-	const char *inbuf;
-	size_t outlen;
-	iconv_t cd;
-
-	if ((cd = iconv_open(to_charset, from_charset)) == (iconv_t)-1)
-		return NULL;
-
-	inleft = strlen(input);
-	inbuf = input;
-
-	// we'll start off allocating an output buffer which is the same size as our input buffer. 
-	outlen = inleft;
-
-	// we allocate 4 bytes more than what we need for nul-termination... 
-	if (!(output = (char *)malloc(outlen + 4))) 
+	// basic iconv() usage example (missing the save/restore of *dst)
+	// http ://stackoverflow.com/questions/9608395/how-to-use-iconv-for-utf8-conversion?rq=1
+	#include <iconv.h>
+	#include <errno.h>
+	char *convert(const char *from_charset, const char *to_charset, const char *input)
 	{
+		size_t inleft, outleft, converted = 0;
+		char *output, *outbuf, *tmp;
+		const char *inbuf;
+		size_t outlen;
+		iconv_t cd;
+
+		if ((cd = iconv_open(to_charset, from_charset)) == (iconv_t)-1)
+			return NULL;
+
+		inleft = strlen(input);
+		inbuf = input;
+
+		// we'll start off allocating an output buffer which is the same size as our input buffer. 
+		outlen = inleft;
+
+		// we allocate 4 bytes more than what we need for nul-termination... 
+		if (!(output = (char *)malloc(outlen + 4))) 
+		{
+			iconv_close(cd);
+			return NULL;
+		}
+
+		do 
+		{
+			errno = 0;
+			outbuf = output + converted;
+			outleft = outlen - converted;
+
+			converted = iconv(cd, (char **)&inbuf, &inleft, &outbuf, &outleft);
+			if (converted != (size_t)-1 || errno == EINVAL) 
+			{
+				// EINVAL  An  incomplete  multibyte sequence has been encoun­-tered in the input.  We'll just truncate it and ignore it.
+				break;
+			}
+
+			if (errno != E2BIG) 
+			{
+				// EILSEQ An invalid multibyte sequence has been  encountered in the input.  Bad input.
+				iconv_close(cd);
+				free(output);
+				return NULL;
+			}
+
+			
+			// E2BIG   There is not sufficient room at *outbuf.  We just need to grow our outbuffer and try again.
+			outlen += inleft * 2 + 8;
+
+			if (!(tmp = (char *)realloc(output, outlen + 4))) 
+			{
+				iconv_close(cd);
+				free(output);
+				return NULL;
+			}
+
+			output = tmp;
+			outbuf = output + converted;
+		} while (1);
+
+		// flush the iconv conversion 
+		iconv(cd, NULL, NULL, &outbuf, &outleft);
 		iconv_close(cd);
-		return NULL;
+
+		// Note: not all charsets can be nul-terminated with a single nul byte. UCS2, for example, needs 2 nul bytes and UCS4
+		// needs 4. I hope that 4 nul bytes is enough to terminate all multibyte charsets? 
+
+		// nul-terminate the string
+		memset(outbuf, 0, 4);
+
+		return output;
 	}
-
-	do 
-	{
-		errno = 0;
-		outbuf = output + converted;
-		outleft = outlen - converted;
-
-		converted = iconv(cd, (char **)&inbuf, &inleft, &outbuf, &outleft);
-		if (converted != (size_t)-1 || errno == EINVAL) 
-		{
-			// EINVAL  An  incomplete  multibyte sequence has been encoun­-tered in the input.  We'll just truncate it and ignore it.
-			break;
-		}
-
-		if (errno != E2BIG) 
-		{
-			// EILSEQ An invalid multibyte sequence has been  encountered in the input.  Bad input.
-			iconv_close(cd);
-			free(output);
-			return NULL;
-		}
-
-		
-		// E2BIG   There is not sufficient room at *outbuf.  We just need to grow our outbuffer and try again.
-		outlen += inleft * 2 + 8;
-
-		if (!(tmp = (char *)realloc(output, outlen + 4))) 
-		{
-			iconv_close(cd);
-			free(output);
-			return NULL;
-		}
-
-		output = tmp;
-		outbuf = output + converted;
-	} while (1);
-
-	// flush the iconv conversion 
-	iconv(cd, NULL, NULL, &outbuf, &outleft);
-	iconv_close(cd);
-
-	// Note: not all charsets can be nul-terminated with a single nul byte. UCS2, for example, needs 2 nul bytes and UCS4
-	// needs 4. I hope that 4 nul bytes is enough to terminate all multibyte charsets? 
-
-	// nul-terminate the string
-	memset(outbuf, 0, 4);
-
-	return output;
-}
-
+ #endif
 #endif
 
 
-
-void GString::FromUnicode(const wchar_t *wSrc)
+void GString::FromUnicode(const wchar_t *wSrc, __int64 nTerminateCount)
 {
 #ifdef _WIN32
 	const wchar_t *s = wSrc;
-	while (*s) s++;
-	int nLen = s - wSrc;
+	__int64 nLen = 0;
+	if (nTerminateCount == -1) // null terminated
+	{
+		while (*s) s++;
+		nLen = s - wSrc;
+	}
+	else
+	{
+		nLen = nTerminateCount;
+	}
 
 	int nBytes = WideCharToMultiByte(CP_ACP, 0, wSrc, nLen, NULL, NULL, NULL, NULL);
 	SetPreAlloc(nBytes + 1);
 	WideCharToMultiByte(CP_ACP, 0, wSrc, nLen, _str, nBytes, NULL, NULL);
 	SetLength(nBytes);
 #else
-	char *p = convert("ISO-8859-1", "UTF8", (const char *)wSrc);
-	int nLen = strlen(p);
-	SetPreAlloc(nLen+1);
-	memcpy(_str,p,nLen+1);
-	SetLength( nLen );
+	#if defined(_ANDROID) || defined (_IOS)
+		// iconv() has been ported to Android, it's just not part of Android and has not been needed yet by apps driving XMLFoundation
+		int nLen = wcslen(wSrc);
+		SetPreAlloc(nLen+1);
+		for (__int64 i = 0; i < nLen + 1; i++)
+			_str[i] = _pWideStr[i];
+	#else
+		char *p = convert("ISO-8859-1", "UTF8", (const char *)wSrc);
+		int nLen = strlen(p);
+		SetPreAlloc(nLen+1);
+		memcpy(_str,p,nLen+1);
+		SetLength( nLen );
+	#endif
 #endif
 }
 
@@ -4497,18 +4591,25 @@ wchar_t *GString::Unicode()
 	}
 
 #ifdef _WIN32
-	// Covert _str to Unicode
-	int len = MultiByteToWideChar(CP_ACP, 0, _str, _len + 1, NULL, 0);
-	(wchar_t *)_pWideStr = (wchar_t *)malloc(sizeof(wchar_t) * len);
-	MultiByteToWideChar(CP_ACP, 0, _str, -1, (LPWSTR)_pWideStr, len); // note: len = _len + 1;
+
+    // Covert _str to Unicode
+    int len = MultiByteToWideChar(CP_ACP, 0, _str, _len, NULL, 0) ;
+    int nAllocLen = (sizeof(unsigned short) * len);
+	(wchar_t *)_pWideStr = (wchar_t *)malloc(nAllocLen + 2); // likewise here the typecast on the lvalue is necessary to cast off the constness of _pWideStr and violate the const of this method
+	memset(_pWideStr,0,nAllocLen+2);
+	MultiByteToWideChar(CP_ACP, 0, _str, _len, (LPWSTR)_pWideStr, nAllocLen);
+
 
 #else
-//	_pWideStr = (wchar_t *)malloc(sizeof(wchar_t) * _len + 1);
-//	for (__int64 i = 0; i < _len + 1; i++)
-//		_pWideStr[i] = _str[i];
-
-	return (wchar_t *)convert("UTF8","ISO-8859-1", _str);
-
+	#if defined(_ANDROID) || defined(_IOS)
+		if (_pWideStr)
+			free(_pWideStr);
+		_pWideStr = (wchar_t *)malloc(sizeof(wchar_t) * _len + 1);
+		for (__int64 i = 0; i < _len + 1; i++)
+			_pWideStr[i] = _str[i];
+	#else
+		return (wchar_t *)convert("UTF8","ISO-8859-1", _str);
+	#endif
 #endif
 
 	// it gets cleaned up either on object destruction or the next time this method is called
@@ -4534,11 +4635,15 @@ GString::operator const wchar_t * () const
 	memset(_pWideStr,0,nAllocLen+2);
 	MultiByteToWideChar(CP_ACP, 0, _str, _len, (LPWSTR)_pWideStr, nAllocLen);
 #else
-//   	_pWideStr = (unsigned short *)malloc(sizeof(unsigned short) * _len + 1);
-//	for( __int64 i=0; i<_len+1;i++ )
-//		_pWideStr[i] = _str[i];
-	return (wchar_t *)convert("UTF8", "ISO-8859-1", _str);
-
+	#ifdef _ANDROID
+		if (_pWideStr)
+			free(_pWideStr);
+		_pWideStr = (wchar_t *)malloc(sizeof(wchar_t) * _len + 1);
+		for (__int64 i = 0; i < _len + 1; i++)
+			_pWideStr[i] = _str[i];
+	#else
+		return (wchar_t *)convert("UTF8","ISO-8859-1", _str);
+	#endif
 #endif
 
 

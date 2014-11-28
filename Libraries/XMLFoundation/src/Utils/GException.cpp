@@ -126,17 +126,30 @@ GProfile &GetErrorProfile()
 #define IMGSYMLEN ( sizeof (IMAGEHLP_SYMBOL) )
 #define TTBUFLEN 65536 // for a temp buffer
 
+
 void _stack_se_translator(unsigned int e, _EXCEPTION_POINTERS* p)
 {
-	HANDLE hThread;
+	if ( p->ExceptionRecord->ExceptionCode ==  EXCEPTION_INT_DIVIDE_BY_ZERO )
+	{
+		HANDLE hThread;
 
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hThread, 0, false, DUPLICATE_SAME_ACCESS );
+		DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hThread, 0, false, DUPLICATE_SAME_ACCESS );
 
-	GCallStack *stk = new GCallStack(hThread, *(p->ContextRecord));
+		GCallStack *stk = new GCallStack(hThread, *(p->ContextRecord));
 
-	CloseHandle( hThread );
+		CloseHandle( hThread );
 
-	throw stk;
+		throw stk;
+	}
+	else
+	{
+#ifdef _DEBUG
+	#if defined ( _WIN32 ) && !defined( _WIN64 )
+		_asm { int 3 } // if it would ever hard-break here in your debugger, check your callstack and fix your problem
+	#endif
+#endif
+		int i=0;  i++; // i set a soft-break point on this line and in my own applications it is never hit. 
+	}
 }
 
 
@@ -721,7 +734,7 @@ GException::GException(const char* szSystem, int error, ...)
 		return;
 	}
 
-#if defined ( _WIN32) && defined (_DEBUG) // record the callstack.
+#if defined ( _WIN32) && defined (_DEBUG) && !defined(__WINPHONE)
 	_se_translator_function	f;
 	f = _set_se_translator(_stack_se_translator);
 	try

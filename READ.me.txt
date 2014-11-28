@@ -1,0 +1,110 @@
+=========================================================================================================
+The openssl directory is configured for Windows builds by default.
+=========================================================================================================
+If you are building on Linux
+  rename the [ Libraries/XMLFoundation/inc/openssl ]       to [ Libraries/XMLFoundation/inc/openssl-Windows ]
+  rename the [ Libraries/XMLFoundation/inc/openssl-Linux ] to [ Libraries/XMLFoundation/inc/openssl ]
+
+
+If you are building on iOS
+  rename the [ Libraries/XMLFoundation/inc/openssl ]       to [ Libraries/XMLFoundation/inc/openssl-Windows ]
+  rename the [ Libraries/XMLFoundation/inc/openssl-ios ]   to [ Libraries/XMLFoundation/inc/openssl ]
+
+
+If you are building on Android
+  rename the [ Libraries/XMLFoundation/inc/openssl ]         to [ Libraries/XMLFoundation/inc/openssl-Windows ]
+  rename the [ Libraries/XMLFoundation/inc/openssl-Android ] to [ Libraries/XMLFoundation/inc/openssl ]
+
+=========================================================================================================
+
+
+if you are building on Windows 
+   open the visual studio workspace  
+
+=========================================================================================================
+
+
+
+Android and iPhone have library project files under [ Libraries/XMLFoundation/Build ]
+Android and iPhone also have examples under [ XMLFoundation/Examples ]
+
+
+Additional documentation in [ XMLFoundation/docs ]    index.html    is the article posted at [ http://www.codeproject.com/Articles/37850/XMLFoundation  ]
+
+
+
+
+
+
+=========================================================================================================
+The remainder of this file is about how to build XMLFoundation on Linux
+=========================================================================================================
+
+
+First you need to make sure you have the g++ compiler installed.
+Type the following command at a terminal window:
+
+sudo apt-get install g++
+
+
+First Build the XML library
+-----------------------------
+
+move to the [Libraries/XMLFoundation/Build] folder, then type:
+
+make -f makefile.linux
+or 
+make -f makefile.linux64
+
+
+
+Build XML library usage samples
+--------------------------------------------
+move the the [Examples/C++/StartHere0] folder then type:
+make -f makefile.linux
+./StartHere0
+
+move the the [Examples/C++/StartHere] folder then type:
+make -f makefile.linux
+./StartHere
+
+move the the [Examples/C++/ExObjsFromXML] folder then type:
+make -f makefile.linux
+./ObjectsFromXML
+
+move the the [Examples/C++/ExIndexObjects] folder then type:
+make -f makefile.linux
+./IndexObjects
+
+move the the [Examples/C++/ObjectCache] folder then type:
+make -f makefile.linux
+./ObjectCache
+
+
+Building Server and Framework examples
+-------------------------------------------------
+
+move to the Drivers/Perl folder then type:
+make -f makefile.linux
+
+
+move to the Servers/5Loaves folder then type                         (NOTICE THE COPY of 5LOAVES.TXT IN THIS STEP)
+make -f makefile.linux
+cp 5loavesUnix.txt ./5Loaves.txt
+
+Edit the Servers/5Loaves/5Loaves.txt file so the paths match your machine, then type:
+
+./5Loaves
+
+
+
+
+Sample Environment setup (only needed to load certain language drivers)
+-------------------------------------------------
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ubt/opt/ActivePerl-5.10/lib/CORE
+from a browser view this URL
+http://127.0.0.1:8088/PagePerl
+
+
+
+

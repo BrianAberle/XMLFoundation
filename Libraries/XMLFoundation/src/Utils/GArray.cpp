@@ -330,25 +330,7 @@ const void *GArray::Search(const char *key) const
 	return 0;
 }
 
-GArray::GArray(__int64 nSize, unsigned long nGrowBy) : m_KeySpace(64)
-{
-	m_nGrowBy = nGrowBy;
-	m_nSize = nSize;
-	m_arrObjects = 0;
-	m_nCurrentKeySpaceIndex = 0;
-	
-	Initialize();
-}
 
-GArray::GArray(unsigned long nGrowBy)  : m_KeySpace(64)
-{
-	m_nGrowBy = nGrowBy;
-	m_nSize = m_nGrowBy;
-	m_arrObjects = 0;
-	m_nCurrentKeySpaceIndex = 0;
-
-	Initialize();
-}
 
 GArray::~GArray()
 {
@@ -389,4 +371,25 @@ void GArray::Destruction()
 		delete [] m_arrObjects;
 		m_nNext = 0;
 	}
+}
+
+
+GArray::GArray(unsigned long nGrowBy)  : m_KeySpace(64)
+{
+	m_nGrowBy = nGrowBy;
+	m_nSize = m_nGrowBy;
+	m_arrObjects = 0;
+	m_nCurrentKeySpaceIndex = 0;
+
+	Initialize();
+}
+
+GArray::GArray(__int64 nSize, unsigned long nGrowBy) : m_KeySpace(64)
+{
+	m_nGrowBy = nGrowBy;
+	m_nSize = nSize;
+	m_arrObjects = 0;
+	m_nCurrentKeySpaceIndex = 0;
+	
+	Initialize();
 }

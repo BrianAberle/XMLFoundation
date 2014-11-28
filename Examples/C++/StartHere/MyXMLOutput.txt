@@ -1,0 +1,40 @@
+<Owner>
+	<Word>Words of Art, Words of War.</Word>
+	<Number>777</Number>
+	<Thing Color="Red">
+		<Integer>1</Integer>
+		<String>One</String>
+	</Thing>
+	<Thing Color="Blue">
+		<Integer>2</Integer>
+		<String>Two</String>
+	</Thing>
+	<Thing TotallyNew="Poetic Code" Color="Perl White">
+		<Integer>7</Integer>
+		<String>This IS something NEW.</String>
+	</Thing>
+	<ContainerName>
+		<Thing Color="Green">
+			<Integer>3</Integer>
+			<String>A NEW VALUE!!!!</String>
+		</Thing>
+		<Thing Color="Purple">
+			<Integer>4</Integer>
+			<String>Four</String>
+		</Thing>
+	</ContainerName>
+	<Thing2>
+		<String2>Straight Containment</String2>
+		<Integer2>5</Integer2>
+	</Thing2>
+	<WrapperTag>
+		<Thing2>
+			<String2>Point at this</String2>
+			<Integer2>5</Integer2>
+		</Thing2>
+	</WrapperTag>
+	<Thing3>
+		<String2>Map to Thing3</String2>
+		<Integer2>6</Integer2>
+	</Thing3>
+</Owner>

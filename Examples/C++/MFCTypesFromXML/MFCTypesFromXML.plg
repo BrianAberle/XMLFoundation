@@ -7,20 +7,20 @@
 </h3>
 <h3>Command Lines</h3>
 Creating command line "rc.exe /l 0x409 /fo"Debug/MFCTypesFromXML.res" /d "_DEBUG" /d "_AFXDLL" "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXML.rc"" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP1638.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2ADF.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../Libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/MFCTypesFromXML.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXML.cpp"
 "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXMLDlg.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP1638.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP1649.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP2ADF.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2AE0.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../Libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/MFCTypesFromXML.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP1649.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP164A.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP2AE0.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2AF0.tmp" with contents
 [
 ..\..\..\Libraries\Debug\XmlFoundation.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/MFCTypesFromXML.pdb" /debug /machine:I386 /out:"Debug/MFCTypesFromXML.exe" 
 ".\Debug\MFCTypesFromXML.obj"
@@ -29,7 +29,7 @@ Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP164A.tmp" with c
 ".\Debug\MFCTypesFromXML.res"
 "\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
 ]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP164A.tmp"
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP2AF0.tmp"
 <h3>Output Window</h3>
 Compiling resources...
 Compiling...

@@ -221,3 +221,14 @@ May 9  - Added GString32 and GString0 into the Android build
 May 9  - return void inplace of an unused return value constant 1 in GProfile - the return was 'reserved' for support that was never needed.
 May 9  - Updated the datatypes in the GProfile - it was built before the 'bool' datatype was supported in all C++ compilers
 Aug 25 - Major update for GException, GCallStack and Unicode support also added VS2013 project files
+9   11 -  Added GString::Int() 
+Sep 15 - added GDirectory::FileSize()
+Sep 15 - added the 64 default in GStack::GStack(__int64 growBy = 64)
+---------------------------------------------------------------
+Nov 26 - new build
+---------------------------------------------------------------
+Nov 26 - several small additions to GString
+Nov 26 - 1 new feature addition - the ability to map 2 different object types into the same data structure.  
+Nov 26 - An addition to "Contain Or Inherit" example to use the new feature and put two different object types into the same list.
+Nov 26 - The new work to ServerCore.cpp is well documented in docs/index.html
+Nov 26 - openssl libraries were added into the source distribution

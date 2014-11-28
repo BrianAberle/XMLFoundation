@@ -1,0 +1,70 @@
+For each build, the .h files necessary to interface with the binary static library were collected into the respective openssl folder 
+found in Libraries/XMLFoundation/inc/openssl
+
+Therefore, every project that is already setup to link to XMLFoundation and use it's header files is now setup to use openssl and the standard crypto lib without making any changes to the headerfile search path in any project.
+
+Any project setup to use XMLFoundation is also setup to use openssl in its native path form like this
+
+#include <openssl/md5.h>
+
+
+If you happen to be adding XMLFoundation into a project that already uses openssl, then either use the openssl in XMLFoundation or use your own version.  
+By simply renaming [XMLFoundation/inc/openssl]  to [XMLFoundation/inc/opensslNotUsed], will guarantee that 
+
+#include <openssl/md5.h>
+
+will pick up the openssl headerfiles from your own build of openssl.
+
+
+
+iOS
+------------------------------------------------------------------------------------------------
+iOS ships with openssl libraries in the usr/lib see libcrypto.dylib,libcrypto.0.9.7.dylib and libcrypto.0.9.7.dylib
+
+however, linking to them is discussed here:  http://stackoverflow.com/questions/2616738/linking-to-libcrypto-for-leopard
+ 
+Here is a build structure for openssl to build your own static lib based on the most recent code from openssl.org:    https://github.com/sqlcipher/openssl-xcode/
+
+I used openssl-1.0.1j published Oct 15 2014 to build the most recent static crypto library for iOS.
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+Linux
+------------------------------------------------------------------------------------------------
+building openssl on linux is very simple.
+
+1. download the source from http://www.openssl.org/source/   ( I used openssl-1.0.1j published Oct 15 2014  )
+2. (from in root of the source folder)  $ ./config
+3. $ make
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+Android
+------------------------------------------------------------------------------------------------
+http://wiki.openssl.org/index.php/Android
+
+These binaries were built using 
+--------------------------------------------------------
+Android NDK r10c (October 2014) 
+openssl-1.0.1j   (Oct 15 15:24:39 2014)
+
+
+
+
+
+
+Windows
+------------------------------------------------------------------------------------------------
+The windows openssl libraries were built using the included source, which is an official Microsoft fork(which i predict will one day become merged with the openssl.org branch)
+for now the project is frequently "merged" with the openssl.org code.  
+
+Obtain the source here: https://github.com/Microsoft/openssl/   ( I got it on November 23, 2014 )
+
+Unzip the source. In the root folder read ( INSTALL.W32, INSTALL.W64, and INSTALL.WINAPP ) for building the Windows32, Windows64, and Windows Phone respectively.
+------------------------------------------------------------------------------------------------

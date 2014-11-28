@@ -6,19 +6,19 @@
 --------------------Configuration: WebServerService - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP4EEB.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPF2F8.tmp" with contents
 [
 /nologo /MD /W3 /Gm /GX /ZI /Od /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/Win32" /D "__NOTRACE_STACK__" /D "_STATIC_LINK_LIB" /D "_NO_EXCEPT" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR"WebServerService___Win32_Debug/" /Fp"WebServerService___Win32_Debug/WebServerService.pch" /YX /Fo"WebServerService___Win32_Debug/" /Fd"WebServerService___Win32_Debug/" /FD /c 
 "C:\XMLFoundation\Servers\WebServerService\WebServerService.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP4EEB.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP4EEC.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPF2F8.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPF2F9.tmp" with contents
 [
 netapi32.lib Advapi32.lib user32.lib wsock32.lib ../../Libraries/Debug/XMLFoundation.lib gdi32.lib /nologo /subsystem:windows /incremental:yes /pdb:"WebServerService___Win32_Debug/WebServerService.pdb" /debug /machine:I386 /out:"Debug/WebServerService.exe" /pdbtype:sept 
 .\WebServerService___Win32_Debug\WebServerService.obj
 \XMLFoundation\Libraries\Debug\XMLFoundation.lib
 ]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP4EEC.tmp"
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSPF2F9.tmp"
 <h3>Output Window</h3>
 Compiling...
 WebServerService.cpp

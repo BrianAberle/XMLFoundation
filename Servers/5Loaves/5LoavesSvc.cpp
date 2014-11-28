@@ -1,5 +1,6 @@
-//#define ___XFER			http://1drv.ms/1fo7Asp     // links to the Xfer binary created on 4/29/2014  
+//#define ___XFER			// http://1drv.ms/1fo7Asp     // links to the Xfer binary created on 11/26/2014  
 //#define ___XFER_SRC
+
 
 // --------------------------------------------------------------------------
 //						United Business Technologies

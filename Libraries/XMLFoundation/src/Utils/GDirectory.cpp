@@ -311,6 +311,34 @@ BOOL GetFileSizeExWIN32(HANDLE hFile, PLARGE_INTEGER lpFileSize)
 }
 #endif
 */
+__int64 GDirectory::FileSize(const char *pzFile)
+{
+#ifdef _WIN32
+		WIN32_FIND_DATA find;
+		GString strSearch( pzFile );
+
+	// In VC 6.0 and older we must use FindFirstFile, not FindFirstFileEx
+	#if defined(_MSC_VER) && _MSC_VER <= 1200 
+			HANDLE hFindFile = FindFirstFile(strSearch, &find);
+		   __int64 nSize = ((__int64)find.nFileSizeHigh << 32 | find.nFileSizeLow);
+			FindClose(hFindFile);
+			return nSize;
+	#else
+		// __WINPHONE does not support the older interface, so the newer interface is used in all other _WIN32 builds
+		HANDLE hFind = FindFirstFileEx(strSearch, FindExInfoStandard, &find, FindExSearchNameMatch, NULL, 0);
+		__int64 nSize = ((__int64)find.nFileSizeHigh << 32 | find.nFileSizeLow);
+		FindClose(hFind);
+		return nSize;
+	#endif
+
+
+#else
+		struct stat sstruct;
+		stat(pzFile, &sstruct);
+		return sstruct.st_size;
+#endif
+
+}
 
 int GDirectory::DirStats(const char *pzDirectory, int bDeep, __int64 *pnTotalBytesAllFiles, __int64 *pnTotalFileCount, __int64 *pnTotalFolderCount)
 {

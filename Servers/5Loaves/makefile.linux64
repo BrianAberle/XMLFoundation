@@ -9,8 +9,9 @@ TransactXML: \
 	$(CC) \
 		-o 5Loaves \
 		-L../../Libraries/XMLFoundation/Build \
+		-L../../Libraries/openssl/bin-linux64 \
 		Console.o \
-		-lpthread -lnsl -ldl -lXMLFoundation
+		-lpthread -lnsl -ldl -lXMLFoundation -lcrypto
 
 SocketServer.o: ./Console.cpp
 	$(CC) $(CPPFLAGS) ./Console.cpp -o ./Console.o

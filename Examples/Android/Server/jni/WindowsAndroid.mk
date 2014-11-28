@@ -7,7 +7,7 @@ include $(CLEAR_VARS)
 
 LOCAL_C_INCLUDES := c:\XMLFoundation\Libraries\XMLFoundation\inc
 LOCAL_C_INCLUDES += c:\XMLFoundation\Libraries\XMLFoundation\src\JNI
-LOCAL_CPPFLAGS   := -frtti -fexceptions -c -O3 -w -D_LINUX -D_ANDROID -fpermissive
+LOCAL_CPPFLAGS   := -frtti -fexceptions -c -O3 -w -D_LINUX -D_ANDROID -D__NO_OPENSSL -fpermissive 
 LOCAL_PATH       := c:\XMLFoundation\Libraries\XMLFoundation\src
 LOCAL_MODULE    := Server
 LOCAL_SRC_FILES :=	 ..\..\..\Examples\Android\Server\jni\Server.cpp\

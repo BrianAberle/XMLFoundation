@@ -51,6 +51,9 @@ public:
 	// returns 1 if it worked, otherwise 0 and some indication why in strError
 	static int RmDirDeep(const char *pzDirectory, GString &strError);
 
+	// portable way to obtain bytes in a file
+	static __int64 FileSize(const char *pzFile);
+
 	// recurse the stats on a folder
 	static int DirStats(const char *pzDirectory, int bDeep, __int64 *pnTotalBytesAllFiles, __int64 *pnTotalFileCount, __int64 *pnTotalFolderCount);
 

@@ -1,6 +1,3 @@
-//#define ___XFER				http://1drv.ms/1fo7Asp
-//#define ___XFER_SRC
-//#define ___XFER_EVAL
 // --------------------------------------------------------------------------
 //						United Business Technologies
 //			  Copyright (c) 2000 - 2014  All Rights Reserved.
@@ -625,9 +622,6 @@ void ConsoleCommand(char *pzCommand)
 		GString strStats;
 		strStats +=	"Total Hit Count:";
 		strStats += g_TotalHits;
-
-		strStats += "\nMost threads used: ";
-		strStats += g_ThreadUsageMax;
 
 		strStats += "\nThreads in use now: ";
 		strStats += g_nClientthreadsInUse;

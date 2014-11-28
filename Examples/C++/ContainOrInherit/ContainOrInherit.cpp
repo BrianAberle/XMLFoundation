@@ -191,8 +191,8 @@ public:
 	}
 	
 	DECLARE_FACTORY(CLife, Life) 
-		CLife(){   }
-	~CLife(){};
+	CLife(){ printf("new Clife\r\n");  }
+	~CLife(){  };
 };
 IMPLEMENT_FACTORY(CLife, Life)
 //------------------------------------------------
@@ -211,11 +211,45 @@ public:
 	
 	DECLARE_FACTORY(CHuman, Human) 
 
-	CHuman(){} 
+	CHuman(){printf("new Human\r\n");} 
 	~CHuman(){};
 };
 IMPLEMENT_FACTORY(CHuman, Human)
 //------------------------------------------------
+class ModelContainer :	public XMLObject
+{
+	virtual void MapXMLTagsToMembers();
+public:
+	GList	m_lstMaterials;
+	ModelContainer(){};
+	~ModelContainer(){};
+	DECLARE_FACTORY(ModelContainer, Model)
+};
+
+IMPLEMENT_FACTORY(ModelContainer, Model)
+void ModelContainer::MapXMLTagsToMembers()
+{
+	// Example of a Mixed member map, normally you would map CHumans 
+	// into one list and CLife into another.  Here they go in 1 list.
+	MapMember(&m_lstMaterials,	CHuman::GetStaticTag());
+	MapMember(&m_lstMaterials,	CLife::GetStaticTag());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 char pzXML3[] = 
 "<Human>"
 	"<Gender>Male</Gender>"
@@ -223,6 +257,60 @@ char pzXML3[] =
 	"<FingerPrint>Unique</FingerPrint>"
 	"<Weight>777</Weight>"
 "</Human>";
+
+
+
+void AdvancedInheritMapping()
+{
+	printf("\r\n\r\n");
+	
+	ModelContainer m_modelContainer;
+	GString gsFile = "test110514.xml";
+	
+	CHuman *x = new CHuman;
+	x->m_strDNA = ("m_strDNA_x");
+	x->m_strFingerPrint = ("m_strFingerPrint_x");
+	x->m_strGender = ("m_strGender_x");
+	x->m_strWeight = ("m_strWeight_x");
+
+	CLife *y = new CLife;
+	y->m_strDNA = ("m_strDNA_y");
+	y->m_strWeight = ("m_strWeight_y");
+
+	CHuman *z = new CHuman;
+	z->m_strDNA = ("m_strDNA_z");
+	z->m_strFingerPrint = ("m_strFingerPrintz");
+	z->m_strGender = ("m_strGender_z");
+	z->m_strWeight = ("m_strWeightz");
+
+	m_modelContainer.m_lstMaterials.AddLast(x);
+	m_modelContainer.m_lstMaterials.AddLast(y);
+	m_modelContainer.m_lstMaterials.AddLast(z);
+
+	// Create the XML
+	m_modelContainer.ToXMLFile(gsFile);
+
+	// Empty our list
+	m_modelContainer.m_lstMaterials.RemoveAll();
+
+	// re-load the list from the XML file
+	m_modelContainer.FromXMLFile(gsFile);
+
+	GListIterator it(&m_modelContainer.m_lstMaterials);
+	while (it())
+	{
+
+//		XMLObject *pO = (XMLObject *)it++;    // you can do this ,  or this....
+		CMatter *pO = (CMatter *)it++;
+
+		// this opens up uses cases for the RTTI (Run Time Type Information) within XMLFoundation  
+		// Search the source of XMLFoundation for uppercase RTTI and see what I am referring to.
+
+		printf(pO->m_strWeight);
+		printf("\r\n");
+	}
+}
+
 
 
 
@@ -238,6 +326,7 @@ void MappingAndInheritance()
 	//"</Human>";  
 	O.FromXMLX(pzXML3);
 	
+	// O conatins all of the data although it only made 2 direct MapMembers
 	GString strDebug;
 	strDebug << "\n\n\nGender:" << O.m_strGender << "      FingerPrint:" 
 			 << O.m_strFingerPrint << "\n" << "DNA:" << O.m_strDNA 
@@ -326,6 +415,9 @@ int main(int argc, char* argv[])
 	// and as you can see below there is a time to inherit only inherit
 
 	MappingAndInheritance();
+
+	// puts two different object types into the same list
+	AdvancedInheritMapping();
 	
 	return 0;
 }

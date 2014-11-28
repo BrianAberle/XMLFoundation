@@ -1,4 +1,4 @@
-//#define ___XFER		//		http://1drv.ms/1fo7Asp    // links to the Xfer binary created on 4/29/2014 
+//#define ___XFER		//		http://1drv.ms/1fo7Asp    // links to the Xfer binary created on 11/26/2014  
 //#define ___XFER_SRC
 //#define ___XFER_EVAL
 // --------------------------------------------------------------------------
@@ -627,7 +627,7 @@ void ConsoleCommand(char *pzCommand)
 		strStats += g_TotalHits;
 
 		strStats += "\nMost threads used: ";
-		strStats += g_ThreadUsageMax;
+		strStats += g_nClientthreadsPeakUse;
 
 		strStats += "\nThreads in use now: ";
 		strStats += g_nClientthreadsInUse;

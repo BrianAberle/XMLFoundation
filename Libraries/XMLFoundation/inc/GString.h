@@ -263,13 +263,13 @@ public:
 					  char permille = '?');
 
 	//  Appends an ASCII/HEX dump to this string. Looks like this:
-	//	2F 31 2E 30 0D 0A 41 63 63 65 70 74 3A 20 2A 2F 2A 0D 0A 41 63 63 65 70 74      /1.0..Accept: */*..Accept
-	//	2D 4C 61 6E 67 75 61 67 65 3A 20 65 6E 2D 75 73 0D 0A 55 73 65 72 2D 41 67      -Language: en-us..User-Ag
+	// pzLinePrefix  2F 31 2E 30 0D 0A 41 63 63 65 70 74 3A 20 2A 2F 2A 0D 0A 41 63 63 65 70 74      /1.0..Accept: */*..Accept
+	// pzLinePrefix  2D 4C 61 6E 67 75 61 67 65 3A 20 65 6E 2D 75 73 0D 0A 55 73 65 72 2D 41 67      -Language: en-us..User-Ag
 	//
 	// You may set bIncludeAscii=0, to remove the line breaks and readable column of text from the result.
 	// note: this appends to the string so you may first prefix the dump with context information:
 	// Common usage: s="recv'd:"; s.FormatBinary(buf,N); s.ToFileAppend("debug.txt")
-	void FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAscii=1);
+	void FormatBinary(unsigned char *pData, __int64 nBytes, int bIncludeAscii=1, const char *pzLinePrefix=0);
 	void FormatBinary(const GString &strBinary, int bIncludeAscii =1);
 
 	// CommaNumeric() - 123456789 will become 123,456,789
@@ -529,6 +529,8 @@ public:
 	// the index that [strToFind] begins in [this] or -1 if it was not found, like the other find*'s [nStart]
 	// is the 0 based index in [this] that the search begins at.
 	__int64 FindBinary(GString &strToFind, __int64 nStart = 0);
+	// nToFindLen is measured in bytes
+	__int64 FindBinary(void *pBinary, int nToFindLen, __int64 nStart = 0);
 
 
 	// search starting from the end of the string, 
@@ -632,7 +634,7 @@ public:
 	void UnEscapeURL();
 
 	// Pads the string on the left with nCnt of ch
-	void Prepend(__int64 nCnt, char ch = ' ');
+	void Prepend(__int64 nCnt, char ch );
 	// Copy nBytes from pSrc or up to the NULL in pSrc if nBytes = -1 onto the beginning of 'this'
 	void Prepend(const char *pSrc, int nBytes = -1);
 	// Copy strSource onto the beginning of 'this'
@@ -683,6 +685,9 @@ public:
 	bool DeCompress(__int64 nDecompressedSize = -1);
 
 	// --------------------------------------------------------------------------------------------
+	// Standard Base16 conversions.
+	const char *UUEncode();
+	const char *UUDecode();
 
 	// x-path
 	void NormalizeSpace();
@@ -704,6 +709,10 @@ public:
 	unsigned __int64 GetPacked64(__int64 index);
 
 
+	// Treat this's string value as an Integer.
+	////////////////////////////////////////////////////////////////////////////////
+	// Return the integer value of the string
+	__int64 Int() const;
 	// if the GString value is numeric, change it's value.  For example
 	// s = "700"; s.Inc(77); s == "777"
 	void Inc(__int64 nAmount = 1);				// Increment
@@ -712,6 +721,8 @@ public:
 	// s = "700"; s.Inc("77"); s == "777"
 	void Inc(const char *pzAmount);			
 	void Dec(const char *pzAmount);
+	////////////////////////////////////////////////////////////////////////////////
+
 
 	// assignment operators
 	GString & operator=(const wchar_t *);
@@ -845,8 +856,10 @@ public:
 #else
 	// wchar_t is sometimes defined as unsigned short *, which adds ambiguity and forces us to add type casts, therefore we cannot have an implicit Unicode conversion in all builds
 #endif
+
 	wchar_t *Unicode();
-	void FromUnicode(const wchar_t *);
+	// if nTerminateCount is -1 then pWideSource is NULL terminated otherwise it's the length of pWideSource
+	void FromUnicode(const wchar_t *pWideSource, __int64 nTerminateCount = -1);
 
 #ifdef _UNICODE
 	GString & operator<<(const wchar_t *);

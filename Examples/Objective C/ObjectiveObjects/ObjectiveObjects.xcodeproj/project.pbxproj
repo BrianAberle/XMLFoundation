@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CE2B603F187F1AB90072AA46 /* libiOSXMLF.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE2B603E187F1AB90072AA46 /* libiOSXMLF.a */; };
+		CE8818A51A241DAF0085CFA9 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8818A41A241DAF0085CFA9 /* libcrypto.a */; };
 		CEEA51AB17B5296B00EB8CDB /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEA51AA17B5296B00EB8CDB /* Foundation.framework */; };
 		CEEA51AD17B5296B00EB8CDB /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEA51AC17B5296B00EB8CDB /* CoreGraphics.framework */; };
 		CEEA51AF17B5296B00EB8CDB /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEA51AE17B5296B00EB8CDB /* UIKit.framework */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		CE2B603E187F1AB90072AA46 /* libiOSXMLF.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libiOSXMLF.a; path = "../../../../../Library/Developer/Xcode/DerivedData/iOSXMLF-czwfidzwhlaubchchmxyeohrxljr/Build/Products/Debug-iphonesimulator/libiOSXMLF.a"; sourceTree = "<group>"; };
+		CE8818A41A241DAF0085CFA9 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcrypto.a; sourceTree = "<group>"; };
 		CEEA51A717B5296A00EB8CDB /* ObjectiveObjects.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjectiveObjects.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEEA51AA17B5296B00EB8CDB /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CEEA51AC17B5296B00EB8CDB /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -58,6 +60,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE2B603F187F1AB90072AA46 /* libiOSXMLF.a in Frameworks */,
+				CE8818A51A241DAF0085CFA9 /* libcrypto.a in Frameworks */,
 				CEEA51AD17B5296B00EB8CDB /* CoreGraphics.framework in Frameworks */,
 				CEEA51AF17B5296B00EB8CDB /* UIKit.framework in Frameworks */,
 				CEEA51AB17B5296B00EB8CDB /* Foundation.framework in Frameworks */,
@@ -79,6 +82,7 @@
 		CEEA519E17B5296600EB8CDB = {
 			isa = PBXGroup;
 			children = (
+				CE8818A41A241DAF0085CFA9 /* libcrypto.a */,
 				CE2B603E187F1AB90072AA46 /* libiOSXMLF.a */,
 				CEEA51E517B5A3CF00EB8CDB /* ViewController.m */,
 				CEEA51E617B5A3D000EB8CDB /* ViewController.h */,
@@ -345,8 +349,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../../../../Library/Developer/Xcode/DerivedData/iOSXMLF-czwfidzwhlaubchchmxyeohrxljr/Build/Products/Debug-iphonesimulator",
+					"$(SRCROOT)",
 				);
 				"LIBRARY_SEARCH_PATHS[arch=*]" = "/Users/user/Library/Developer/Xcode/DerivedData/iOSXMLF-czwfidzwhlaubchchmxyeohrxljr/Build/Products/Debug-iphonesimulator";
+				OTHER_LDFLAGS = "-L/Users/user/Desktop/XMLFoundation/Libraries/openssl/bin-ios/";
+				"OTHER_LDFLAGS[arch=*]" = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -364,6 +371,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../../../../Library/Developer/Xcode/DerivedData/iOSXMLF-czwfidzwhlaubchchmxyeohrxljr/Build/Products/Debug-iphonesimulator",
+					"$(SRCROOT)",
+				);
+				OTHER_LDFLAGS = (
+					"-L/Users/user/Desktop/XMLFoundation/Libraries/openssl/bin-ios/",
+					"-lcrypto",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;

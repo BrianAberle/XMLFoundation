@@ -90,12 +90,12 @@ char pzXML[] =
 #endif
 
 
+
 #include "GString0.h"
 #include "GString32.h"
 int main(int argc, char* argv[])
 {
-
-
+	
 	MyCustomObject O;
 	O.FromXMLX(pzXML);
 

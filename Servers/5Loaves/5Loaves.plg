@@ -6,23 +6,6 @@
 --------------------Configuration: 5Loaves - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPE70F.tmp" with contents
-[
-/nologo /MDd /W3 /GX /Zi /Od /I "../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE" /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/Win32" /I "../../Libraries/XFer/inc" /D "_NO_EXCEPT" /D "__NOTRACE_STACK__" /D "_STATIC_LINK_LIB" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\XMLFoundation\Servers\5Loaves\Console.cpp"
-]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPE70F.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPE710.tmp" with contents
-[
-../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE/perl510.lib wsock32.lib netapi32.lib Advapi32.lib user32.lib ../../Libraries/Debug/XMLFoundation.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"libcmtd" /out:"Debug/5Loaves.exe" /libpath:"../../library/buildwin32/debug_mt" /libpath:"../../Servers/CommonSource/JavaNT/" 
-.\Debug\Console.obj
-\XMLFoundation\Libraries\Debug\XMLFoundation.lib
-]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSPE710.tmp"
-<h3>Output Window</h3>
-Compiling...
-Console.cpp
-Linking...
 
 
 

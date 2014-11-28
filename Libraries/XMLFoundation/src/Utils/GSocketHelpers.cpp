@@ -71,28 +71,67 @@ int PortableClose(int fd, const char *pzFromLocation)
 {
 	if (fd != -1)
 	{
-		
-		if (g2_TraceSocketHandles)
+		if (RemoveDebugSocket(fd))
 		{
-			GString strTrace("Close Socket:");
-			strTrace << fd << " at [" << pzFromLocation << "]";
-			g2_fnLog(888,strTrace);
+		
+			if (g2_TraceSocketHandles)
+			{
+				GString strTrace("Close Socket:");
+				strTrace << fd << " at [" << pzFromLocation << "]";
+				g2_fnLog(888,strTrace);
+			}
+
+			#ifdef _WIN32    
+				shutdown(fd, 2);
+				closesocket(fd);
+			#elif _HPUX
+				shutdown(fd, 2);
+			#else
+				close(fd);
+			#endif
+		}
+		else
+		{
+			if (g2_TraceSocketHandles)
+			{
+				GString strTrace("Socket already closed:");
+				strTrace << fd << " at [" << pzFromLocation << "]";
+				g2_fnLog(888,strTrace);
+			}
 		}
 
-		#ifdef _WIN32    
-			shutdown(fd, 2);
-			closesocket(fd);
-		#elif _HPUX
-			shutdown(fd, 2);
-		#else
-			close(fd);
-		#endif
-
-		RemoveDebugSocket(fd);
 	}
 	return 1;
 }
 
+bool IsOpenSocket(int fd)
+{
+	if (!g_DebugSocketLockInit)
+	{
+		g_DebugSocketLockInit = 1;
+		gthread_mutex_init(&g_DebugSocketMutex, NULL);
+	}
+	bool bRetVal = 0;
+	gthread_mutex_lock(&g_DebugSocketMutex);
+	if (g_lstSockethandles.Size())
+	{
+		GListIterator it(&g_lstSockethandles);
+		while(it())
+		{
+#if defined(_LINUX64) || defined(_WIN64)  || defined(_IOS)
+			if (fd == (int)(__int64)it++)
+#else
+			if (fd == (int)it++)
+#endif
+			{
+				bRetVal = 1;
+				break;
+			}
+		}
+	}
+	gthread_mutex_unlock(&g_DebugSocketMutex);
+	return bRetVal;
+}
 
 int ListOpenSockets(GString &strDest)
 {
@@ -131,7 +170,7 @@ void AddDebugSocket(int fd)
 	g_lstSockethandles.AddLast((void *)fd);
 	gthread_mutex_unlock(&g_DebugSocketMutex);
 }
-void RemoveDebugSocket(int fd)
+int RemoveDebugSocket(int fd)
 {
 	if (!g_DebugSocketLockInit)
 	{
@@ -139,8 +178,10 @@ void RemoveDebugSocket(int fd)
 		gthread_mutex_init(&g_DebugSocketMutex, NULL);
 	}
 	gthread_mutex_lock(&g_DebugSocketMutex);
-	g_lstSockethandles.Remove((void *)fd);
+	// returns 1 if found and removed, otherwise Data was not in the list
+	int nRet = g_lstSockethandles.Remove((void *)fd);
 	gthread_mutex_unlock(&g_DebugSocketMutex);
+	return nRet;
 }
 
 
@@ -375,42 +416,70 @@ int writableTimeout(int fd, int seconds, int microseconds)
    
   tv.tv_sec = seconds; 
   tv.tv_usec = microseconds; 
-   
+  int nRetries = 0;
+RETRY:   
   FD_ZERO(&rset); 
   FD_SET(fd, &rset); 
    
   // returns 0 if the time limit expired.
   // returns -1 on error, otherwise data can be written.
-  return select(fd+1, NULL, &rset, NULL, &tv); 
+  int nRet = select(fd+1, NULL, &rset, NULL, &tv); 
+  if (nRet == -1)
+  {
+	int nErrorCode = 0;
+	int size = sizeof(nErrorCode);
+#ifdef _WIN32
+	getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, &size);
+#else
+	getsockopt(fd, SOL_SOCKET, SO_ERROR, (char *) &nErrorCode, (socklen_t *)&size);
+#endif
+	if (nErrorCode == 0 && SOCK_ERR == 0 && nRetries++ < 3)
+	{
+		PortableSleep(0,100000);
+		goto RETRY;
+	}
+  }
+  return nRet;
 } 
 
-
+// return 0 when the time limit expired.
+// return -1 socket error
+// return +number of bytes read
 int nonblockrecvAny(int fd,char *pBuf,int nMaxDataLen, int nTimeOutSeconds, int nTimeOutMicroSeconds)
 {
 	int nRslt;
 	int nRecvRetry = 0;
-RE_RECV:
 	int rslt = readableTimeout(fd, nTimeOutSeconds, nTimeOutMicroSeconds);
 	if ( rslt > 0)
 	{
+		int nRcvRetryCount = 0;
+SUB_RCV_RETRY:
 		nRslt = recv(fd, pBuf, nMaxDataLen, 0 );
 		if (nRslt == 0)
+		{
 			return -1;
+		}
+		else if (nRslt == -1)
+		{
+			int nErr = SOCK_ERR;
+			// 10035 = Resource temporarily unavailable
+			if (nErr == 10035)
+			{
+				goto SUB_RCV_RETRY; 
+			}
+			if(nRcvRetryCount++ < 3 && nErr != 10054 && nErr != 10038) 
+			{
+				gsched_yield();
+				goto SUB_RCV_RETRY; 
+			}
+			return -1;
+		}
+
 		return nRslt; // -1 or the data size
 	}
 	else if (rslt == -1)
 	{
-		if (SOCK_ERR == 10035)
-		{
-			GYield();
-			goto RE_RECV;
-		}
-		else if(nRecvRetry++ < 3 && SOCK_ERR != 10054 && SOCK_ERR != 10038) 
-		{
-			GYield();
-			goto RE_RECV;
-		}
-		return -1;
+		return -1; // socket error while waiting
 	}
 
 	// rslt = 0, the time limit expired.
@@ -418,17 +487,34 @@ RE_RECV:
 }
 
 
-int nonblockrecv(int fd,char *pBuf,int nExpectedDataLen)
+int nonblockrecv(int fd,char *pBuf,int nExpectedDataLen, int nTimeoutSeconds, int nTimeOutMicroSeconds)
 {
 	int nBytesIn = 0;
 	int nRecvRetry = 0;
-RE_RECV:
+
 	while (nBytesIn < nExpectedDataLen)
 	{
-		int rslt = readableTimeout(fd, 60, 0);
-		if ( rslt > 0)
+		int rslt = readableTimeout(fd, nTimeoutSeconds, nTimeOutMicroSeconds);
+		if ( rslt > 0 )
 		{
+			int nRcvRetryCount = 0;
+SUB_RCV_RETRY:
 			int nRslt = recv(fd, &pBuf[nBytesIn], nExpectedDataLen - nBytesIn, 0 );
+			if (nRslt == -1)
+			{
+				int nErr = SOCK_ERR;
+				// 10035 = Resource temporarily unavailable
+				if (nErr == 10035)
+				{
+					goto SUB_RCV_RETRY; 
+				}
+				if(nRcvRetryCount++ < 3 && nErr != 10054 && nErr != 10038) 
+				{
+					gsched_yield();
+					goto SUB_RCV_RETRY; 
+				}
+				return -1;
+			}
 			if (nRslt > 0)
 			{
 				nBytesIn += nRslt;
@@ -436,17 +522,7 @@ RE_RECV:
 		}
 		else if (rslt == -1)
 		{
-			if (SOCK_ERR == 10035)
-			{
-				GYield();
-				goto RE_RECV;
-			}
-			else if(nRecvRetry++ < 3 && SOCK_ERR != 10054 && SOCK_ERR != 10038) 
-			{
-				GYield();
-				goto RE_RECV;
-			}
-			return -1;
+			return -1; // socket error 
 		}
 		else
 		{
@@ -562,7 +638,6 @@ void IOBlocking(int fd, int isNonBlocking)
 	}
 }
 
-// return will equal -10035 when [nTimeOutSeconds] times out
 int nonblockrecvHTTP(int fd,char *sockBuffer,int nMaxLen, char **pContentData/* = 0*/, int *pnContentLen/* = 0*/, int nBytesReadAhead/* = 0*/, int nTimeOutSeconds/* = 30*/, int bReadHeadersOnly/* = 0*/)
 {
 	int nHeaderLength = 0;
@@ -609,12 +684,24 @@ KEEP_READING_HEADER:
 						return SOCK_ERR * -1; // total time limit expired while reading HTTP header
 					}
 
+					int nRcvRetryCount = 0;
+SUB_RCV_RETRY:
 					nReadHeadBytes = recv(fd, &sockBuffer[nHeadIndex], 1, 0 );
 
-					if (nReadHeadBytes == -1 && SOCK_ERR == 10035)
+					if (nReadHeadBytes == -1)
 					{
-						GYield();
-						goto KEEP_READING_HEADER;
+						int nErr = SOCK_ERR;
+						if (nErr == 10035)
+						{
+							GYield();
+							goto KEEP_READING_HEADER;
+						}
+						if(nRcvRetryCount++ < 3 && nErr != 10054 && nErr != 10038) 
+						{
+							gsched_yield();
+							goto SUB_RCV_RETRY; 
+						}
+						return SOCK_ERR * -1;
 					}
 
 					if (nReadHeadBytes == 0)
@@ -629,20 +716,8 @@ KEEP_READING_HEADER:
 							goto KEEP_READING_HEADER;
 						return -1;
 					}
-					if (nReadHeadBytes < 1)
-					{
-						// -1 the client aborted 
-						return SOCK_ERR * -1;
-					}
+
 					nHeadBytes += nReadHeadBytes;
-
-
-//					if (nHeadBytes == 0 && time(0) - lStartTime < (unsigned long)nTimeOutSeconds)
-//					{
-//						gsched_yield();
-//						PortableSleep(1,0);
-//						goto KEEP_LOOKING_FOR_DATA;
-//					}
 
 
 					if (sockBuffer[nHeadIndex] == '\n' && nHeadIndex > 4)
@@ -651,7 +726,7 @@ KEEP_READING_HEADER:
 							 sockBuffer[nHeadIndex-2] == '\n' &&
 							 sockBuffer[nHeadIndex-3] == '\r' )
 						{
-							nBytes = nHeadBytes;
+							nBytes = nHeadBytes; // we got the whole HTTP header
 							break;
 						}
 
@@ -661,30 +736,40 @@ KEEP_READING_HEADER:
 			}
 			else // read as much as we can
 			{
+				int nRcvRetryCount2 = 0;
+SUB_RCV_RETRY2:
 				nBytes = recv(fd, &sockBuffer[sockBufferIndex], nMaxRead, 0 );
+				if (nBytes == -1)
+				{
+					int nErr = SOCK_ERR;
+					if (nErr == 10035)
+					{
+						GYield();
+						goto SUB_RCV_RETRY2;
+					}
+					if(nRcvRetryCount2++ < 3 && nErr != 10054 && nErr != 10038) 
+					{
+						gsched_yield();
+						goto SUB_RCV_RETRY2; 
+					}
+					
+					return SOCK_ERR * -1;
+				}
 			}
 
-			if (SOCK_ERR == 10035)
+
+			if (nBytes == 0)
 			{
-				GYield();
-				goto KEEP_LOOKING_FOR_DATA;
-			}
-			if (nBytes < 0)
-			{
-				// -1 the client aborted 
-				return SOCK_ERR * -1;
-			}
-			if (nBytes == 0 && time(0) - lStartTime < (unsigned long)nTimeOutSeconds)
-			{
-				GYield();
-				
-#ifdef _WIN32
-				Sleep(1000);
-#else
-				PortableSleep(1,0);
-#endif
-				
-				goto KEEP_LOOKING_FOR_DATA;
+				if ( time(0) - lStartTime < (unsigned long)nTimeOutSeconds ) 
+				{
+					GYield();
+					PortableSleep(0,100000);
+					goto KEEP_LOOKING_FOR_DATA;
+				}
+				else
+				{
+					return -1; //timed out
+				}
 			}
 		}
 		bSkipInitialRead = 0;
@@ -733,8 +818,9 @@ KEEP_READING_HEADER:
 				{
 					return nBytes;
 				}
-				if (nPartialHeaderRead++ < 2)
+				if (nPartialHeaderRead++ < 3)
 				{
+					PortableSleep(0,100000);
 					nCumulativeBytes += nBytes;
 					goto KEEP_LOOKING_FOR_DATA;
 				}
@@ -778,7 +864,25 @@ int IsMe(const char *pzIP)
 	if(strcmp(pzIP,"127.0.0.1") == 0)
 		return 1;
 
+	int nDNSResolutionRetries = 0;
+DNSResolutionRETRY:
+	// resolve a DNS server name if inet_addr() came up empty.
 	struct hostent *pHELocal = (struct hostent *)gethostbyname(pzIP);
+	if (pHELocal == 0)
+	{
+		if (nDNSResolutionRetries++ < 5)
+		{
+			PortableSleep(0,250000 * nDNSResolutionRetries);
+			goto DNSResolutionRETRY;
+		}
+#ifdef __SERVER_CORE
+		GString strInfo("*******FAILED to resolve DNS:");
+		strInfo << pzIP; 
+		InfoLog(59,strInfo);
+#endif
+		return 0;
+	}
+
 	if (pHELocal)
 	{
 		struct sockaddr_in my_addr; 

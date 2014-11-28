@@ -2564,46 +2564,14 @@ bool XMLObject::AddEntry( MemberDescriptor** Root, MemberDescriptor *ToAdd )
 
 
 
-void XMLObject::GenerateMappedXML( MemberDescriptor* btRoot, 
-							GString& xml, 
-							int nTabs, 
-							StackFrameCheck *pStack, 
-							int nSerializeFlags)
+void XMLObject::GenerateMappedXML( MemberDescriptor* btRoot, GString& xml, int nTabs, StackFrameCheck *pStack, int nSerializeFlags)
 {
 	GListIterator Iter(&m_lstMembers);
 	while (Iter())
 	{
 		MemberDescriptor *pMemberMap = (MemberDescriptor *)Iter++;
-
-		if  ( (  nSerializeFlags & DIRTY_AND_CACHED_MEMBERS_ONLY ) != 0)
+		if (pMemberMap->m_bFirstMap)
 		{
-			if (pMemberMap->IsDirty() || pMemberMap->IsCached())
-			{
-				pMemberMap->MemberToXML(xml,nTabs,pStack,nSerializeFlags);
-			}
-		}
-		else
-		{
-			pMemberMap->MemberToXML(xml,nTabs,pStack,nSerializeFlags);
-		}
-	}
-}
-
-void XMLObject::GenerateSubsetXML( MemberDescriptor* btRoot, 
-							GString& xml, 
-							int nTabs, 
-							StackFrameCheck *pStack, 
-							int nSerializeFlags,
-							const char *pzSubsetOfObjectByTagName)
-{
-	if (pzSubsetOfObjectByTagName)
-	{
-		GStringList lst("|",pzSubsetOfObjectByTagName);
-		GStringIterator Iter(&lst);
-		while (Iter())
-		{
-			MemberDescriptor *pMemberMap = GetEntry(Iter++);
-
 			if  ( (  nSerializeFlags & DIRTY_AND_CACHED_MEMBERS_ONLY ) != 0)
 			{
 				if (pMemberMap->IsDirty() || pMemberMap->IsCached())
@@ -2619,21 +2587,47 @@ void XMLObject::GenerateSubsetXML( MemberDescriptor* btRoot,
 	}
 }
 
-void XMLObject::GenerateOrderedXML( MemberDescriptor* btRoot, 
-							GString& xml, 
-							int nTabs, 
-							StackFrameCheck *pStack, 
-							int nSerializeFlags)
+void XMLObject::GenerateSubsetXML( MemberDescriptor* btRoot, GString& xml, int nTabs, StackFrameCheck *pStack, int nSerializeFlags,	const char *pzSubsetOfObjectByTagName)
+{
+	if (pzSubsetOfObjectByTagName)
+	{
+		GStringList lst("|",pzSubsetOfObjectByTagName);
+		GStringIterator Iter(&lst);
+		while (Iter())
+		{
+			MemberDescriptor *pMemberMap = GetEntry(Iter++);
+			if (pMemberMap->m_bFirstMap)
+			{
+				if  ( (  nSerializeFlags & DIRTY_AND_CACHED_MEMBERS_ONLY ) != 0)
+				{
+					if (pMemberMap->IsDirty() || pMemberMap->IsCached())
+					{
+						pMemberMap->MemberToXML(xml,nTabs,pStack,nSerializeFlags);
+					}
+				}
+				else
+				{
+					pMemberMap->MemberToXML(xml,nTabs,pStack,nSerializeFlags);
+				}
+			}
+		}
+	}
+}
+
+void XMLObject::GenerateOrderedXML( MemberDescriptor* btRoot, GString& xml, int nTabs, StackFrameCheck *pStack, int nSerializeFlags)
 {
 	if(btRoot)
 	{
-		if( btRoot->Left )
-			GenerateOrderedXML( btRoot->Left, xml, nTabs, pStack, nSerializeFlags );
+		if (btRoot->m_bFirstMap)
+		{
+			if( btRoot->Left )
+				GenerateOrderedXML( btRoot->Left, xml, nTabs, pStack, nSerializeFlags );
 
-		btRoot->MemberToXML(xml,nTabs,pStack,nSerializeFlags);
+			btRoot->MemberToXML(xml,nTabs,pStack,nSerializeFlags);
 
-		if( btRoot->Right )
-			GenerateOrderedXML( btRoot->Right, xml, nTabs, pStack, nSerializeFlags );
+			if( btRoot->Right )
+				GenerateOrderedXML( btRoot->Right, xml, nTabs, pStack, nSerializeFlags );
+		}
 	}
 }
 

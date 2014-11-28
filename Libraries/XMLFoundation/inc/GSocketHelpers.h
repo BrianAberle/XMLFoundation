@@ -26,15 +26,27 @@ extern GString g_strThisHostName;
 extern int g_nMaxSocketWriteBlock;
 
 int readableTimeout(int fd, int seconds, int microseconds) ;
+
+// recv() anything on the TCP buffers - Non Blocked I/O
+// return 0 when the time limit expired.
+// return -1 socket error
+// return +number of bytes read
 int nonblockrecvAny(int fd,char *pBuf,int nMaxDataLen, int nTimeOutSeconds = 60, int nTimeOutMicroSeconds = 0);
-int nonblockrecv(int fd,char *pBuf,int nExpectedDataLen);
+
+
+// recv() n butes from the TCP buffers - Non Blocked I/O
+// return 0 when the time limit expired.
+// return -1 socket error
+// return +number of bytes read
+int nonblockrecv(int fd,char *pBuf,int nExpectedDataLen, int nTimeOutSeconds = 60, int nTimeOutMicroSeconds = 0);
+
 int writableTimeout(int fd, int seconds, int microseconds);
 int nonblocksend(int fd,unsigned char *pData,int nDataLen);
 int nonblocksend(int fd,const char *pData,int nDataLen);
 unsigned __int64 ntoh64(unsigned __int64 n);
 unsigned __int64 hton64(unsigned __int64 n);
 void IOBlocking(int fd, int isNonBlocking);  // 1 is async(non blocking), 0 is synchronous - blocking
-int nonblockrecvHTTP(int fd,char *sockBuffer,int nMaxLen, char **pContentData = 0, int *pnContentLen = 0, int nBytesReadAhead = 0, int nTimeOutSeconds = 30, int bReadHeadersOnly = 0);
+int nonblockrecvHTTP(int fd,char *sockBuffer,int nMaxLen, char **pContentData = 0, int *pnContentLen = 0, int nBytesReadAhead = 0, int nTimeOutSeconds = 300, int bReadHeadersOnly = 0);
 int HTTPSend(int fd, const char *pzData, int nDataLen, const char *pzContentType=0);
 int PortableClose(int fd, const char *pzFromLocation);
 int MakeHTTPHeader(GString &strHeader, unsigned long nDataLen, const char *pzCfgSection = 0, const char *pzAltCfgSection = 0, const char *pzContentType =0, int nKeepAliveTimeout=300,  int nMaxKeepAlives = 150);
@@ -44,9 +56,9 @@ void SetSocketHandleDebugTrace( void (*pfn) (int, GString &) );
 
 
 void AddDebugSocket(int fd);
-void RemoveDebugSocket(int fd);
+int RemoveDebugSocket(int fd);
 int ListOpenSockets(GString &strDest);
-
+bool IsOpenSocket(int fd);
 
 
 

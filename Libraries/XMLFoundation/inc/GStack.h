@@ -28,7 +28,7 @@ public:
 	unsigned __int64 m_nSize;
 public:
 	// Construct an empty stack - with no allocation - if nothing is ever added, no memory is ever used.
-	GStack(__int64 growBy) :  m_nGrowBy(growBy)
+	GStack(__int64 growBy = 64) :  m_nGrowBy(growBy)
 	{
 		m_arrPtr = 0;
 		m_nSize = m_nNext = 0;
