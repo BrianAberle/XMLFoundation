@@ -152,7 +152,7 @@ long pascal ServerStart()
 			s._len = wcslen(s._pWideStr);				
 #else
 			GString s(512);								
-			GetModuleFileName(0, s._str, s._len);		
+			GetModuleFileName(0, s._str, (unsigned long)s._len);		
 			s._len = strlen(s._str);						
 #endif
 			GString strStartupMessage;

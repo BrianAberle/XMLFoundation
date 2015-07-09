@@ -38,6 +38,13 @@
 class CStringAbstraction;
 extern CStringAbstraction gC;
 
+
+//#pragma warning( disable: 6011 )
+//#pragma warning( disable: 6001 ) 
+
+
+
+
 // Older versions of MFC do not implement AtlConvAllocMemory(), ATLPREFAST_SUPPRESS, or ATLPREFAST_UNSUPPRESS
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 
@@ -132,12 +139,12 @@ public:
 	void assign(userString pString, const char *pzValue)
 	{
 		*((CString *)pString) = pzValue;
-		((CString *)pString)->TrimRight();
+		//((CString *)pString)->TrimRight();
 	}
 	void append(userString pString, const char *pzValue)
 	{
 		*((CString *)pString) += pzValue;
-		((CString *)pString)->TrimRight();
+		//((CString *)pString)->TrimRight();
 	}
 	const char *data(userString pString)
 	{
@@ -306,13 +313,13 @@ public:
 		if(pos && *pos == 0)
 		{
 			delete pos;
-			*pos = 0;
+			// Thank Nadim Mando for removing     *pos = 0;       from here.  4/12/2015  
 			return 0;
 		}
 #if defined(_UNICODE)
 		return UnicodeToAscii(pTypedList->GetNext(*pos), 1252);
 #else
-		return pTypedList->GetNext(*pos);
+		return pTypedList->GetNext(*pos); // FYI: MSVC warns C6011 "Dereferencing NULL pointer 'pos'.", The warning is safely ignored.  Its not null, it was set in the application layer.
 #endif
 		
 	}

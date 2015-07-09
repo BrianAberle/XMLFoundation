@@ -851,8 +851,12 @@ public:
 	int operator != (const char *) const;
 
 	// these two methods convert from [char *] to [wchar_t *]
+	// the first  - wide char operator overload - is conditionally compiled into only Unicode applications
+	// the second - Unicode() is compiled into all builds
 #ifdef 	_NATIVE_WCHAR_T_DEFINED 
-	operator const wchar_t * () const; 
+	#ifdef _UNICODE
+		operator const wchar_t * () const; 
+	#endif
 #else
 	// wchar_t is sometimes defined as unsigned short *, which adds ambiguity and forces us to add type casts, therefore we cannot have an implicit Unicode conversion in all builds
 #endif

@@ -6,11 +6,22 @@
 --------------------Configuration: 5Loaves - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP450.tmp" with contents
+[
+../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE/perl510.lib wsock32.lib netapi32.lib Advapi32.lib user32.lib ../../Libraries/Debug/XMLFoundation.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"libcmtd" /out:"Debug/5Loaves.exe" /libpath:"../../library/buildwin32/debug_mt" /libpath:"../../Servers/CommonSource/JavaNT/" 
+.\Debug\Console.obj
+\XMLFoundation\Libraries\Debug\XMLFoundation.lib
+]
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP450.tmp"
+<h3>Output Window</h3>
+Linking...
+LINK : fatal error LNK1181: cannot open input file ".\Debug\Console.obj"
+Error executing link.exe.
 
 
 
 <h3>Results</h3>
-5Loaves.exe - 0 error(s), 0 warning(s)
+5Loaves.exe - 1 error(s), 0 warning(s)
 </pre>
 </body>
 </html>

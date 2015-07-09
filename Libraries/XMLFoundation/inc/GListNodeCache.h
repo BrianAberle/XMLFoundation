@@ -286,7 +286,7 @@ CHECK_NEXT_BLOCK:
 			// All these variables  are running counts (or current values like nBlockOffset) during the attempt to destroy 1 pBlock (of N number of them in [_pStackAllocBlocks])
 			//
 			
-			int nBlockOffest = NODES_PER_ALLOC - 1;
+			int nBlockOffest = NODES_PER_ALLOC - 1; //FYI: Local declaration hides local	Local declaration of 'nBlockOffest' hides declaration of the same name in outer scope. 
 
 			int nFreeFound = 0;
 

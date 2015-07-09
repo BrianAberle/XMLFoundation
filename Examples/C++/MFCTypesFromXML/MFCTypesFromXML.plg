@@ -3,24 +3,190 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
+--------------------Configuration: XMLFoundationLib - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2526.tmp" with contents
+[
+/nologo /MDd /W3 /GX /Zi /Od /I "..\inc" /D "_WIN32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\XMLFoundation\Libraries\XMLFoundation\src\AttributeList.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\CacheManager.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\DynamicLibrary.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\FactoryManager.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\FileDataSource.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\FrameworkAuditLog.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\IntegrationBase.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\IntegrationLanguages.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\MemberDescriptor.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\ObjQueryParameter.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\ProcedureCall.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Schema.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\SocketHTTPDataSource.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\StackFrameCheck.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\WinINetHTTPDataSource.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlAttribute.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlDataSource.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlElement.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlElementTree.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\XMLException.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlLex.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlObject.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\xmlObjectFactory.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\XMLProcedureDescriptor.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\Base64.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\BZip.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GArray.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GBTree.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GDirectory.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GException.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GHash.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GHTTPMultiPartPOST.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GList.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GMemory.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GPerformanceTimer.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GProfile.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GSocketHelpers.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GStack.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GString.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GString0.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GString32.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GStringList.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GThread.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\GZip.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\PluginBuilderLowLevelStatic.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\SHA256.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\SwitchBoard.cpp"
+"C:\XMLFoundation\Libraries\XMLFoundation\src\Utils\TwoFish.cpp"
+]
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP2526.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2537.tmp" with contents
+[
+/nologo /out:"../../Debug/XMLFoundation.lib" 
+.\Debug\AttributeList.obj
+.\Debug\CacheManager.obj
+.\Debug\DynamicLibrary.obj
+.\Debug\FactoryManager.obj
+.\Debug\FileDataSource.obj
+.\Debug\FrameworkAuditLog.obj
+.\Debug\IntegrationBase.obj
+.\Debug\IntegrationLanguages.obj
+.\Debug\MemberDescriptor.obj
+.\Debug\ObjQueryParameter.obj
+.\Debug\ProcedureCall.obj
+.\Debug\Schema.obj
+.\Debug\SocketHTTPDataSource.obj
+.\Debug\StackFrameCheck.obj
+.\Debug\WinINetHTTPDataSource.obj
+.\Debug\xmlAttribute.obj
+.\Debug\xmlDataSource.obj
+.\Debug\xmlElement.obj
+.\Debug\xmlElementTree.obj
+.\Debug\XMLException.obj
+.\Debug\xmlLex.obj
+.\Debug\xmlObject.obj
+.\Debug\xmlObjectFactory.obj
+.\Debug\XMLProcedureDescriptor.obj
+.\Debug\Base64.obj
+.\Debug\BZip.obj
+.\Debug\GArray.obj
+.\Debug\GBTree.obj
+.\Debug\GDirectory.obj
+.\Debug\GException.obj
+.\Debug\GHash.obj
+.\Debug\GHTTPMultiPartPOST.obj
+.\Debug\GList.obj
+.\Debug\GMemory.obj
+.\Debug\GPerformanceTimer.obj
+.\Debug\GProfile.obj
+.\Debug\GSocketHelpers.obj
+.\Debug\GStack.obj
+.\Debug\GString.obj
+.\Debug\GString0.obj
+.\Debug\GString32.obj
+.\Debug\GStringList.obj
+.\Debug\GThread.obj
+.\Debug\GZip.obj
+.\Debug\PluginBuilderLowLevelStatic.obj
+.\Debug\SHA256.obj
+.\Debug\SwitchBoard.obj
+.\Debug\TwoFish.obj
+]
+Creating command line "link.exe -lib @C:\Users\theboss\AppData\Local\Temp\RSP2537.tmp"
+<h3>Output Window</h3>
+Compiling...
+AttributeList.cpp
+CacheManager.cpp
+DynamicLibrary.cpp
+FactoryManager.cpp
+FileDataSource.cpp
+FrameworkAuditLog.cpp
+IntegrationBase.cpp
+IntegrationLanguages.cpp
+MemberDescriptor.cpp
+ObjQueryParameter.cpp
+ProcedureCall.cpp
+Schema.cpp
+SocketHTTPDataSource.cpp
+StackFrameCheck.cpp
+WinINetHTTPDataSource.cpp
+xmlAttribute.cpp
+xmlDataSource.cpp
+xmlElement.cpp
+xmlElementTree.cpp
+XMLException.cpp
+Generating Code...
+Compiling...
+xmlLex.cpp
+xmlObject.cpp
+xmlObjectFactory.cpp
+XMLProcedureDescriptor.cpp
+Base64.cpp
+BZip.cpp
+GArray.cpp
+GBTree.cpp
+GDirectory.cpp
+GException.cpp
+GHash.cpp
+GHTTPMultiPartPOST.cpp
+GList.cpp
+GMemory.cpp
+GPerformanceTimer.cpp
+GProfile.cpp
+GSocketHelpers.cpp
+GStack.cpp
+GString.cpp
+GString0.cpp
+Generating Code...
+Compiling...
+GString32.cpp
+GStringList.cpp
+GThread.cpp
+GZip.cpp
+PluginBuilderLowLevelStatic.cpp
+SHA256.cpp
+SwitchBoard.cpp
+TwoFish.cpp
+Generating Code...
+Creating library...
+<h3>
 --------------------Configuration: MFCTypesFromXML - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
 Creating command line "rc.exe /l 0x409 /fo"Debug/MFCTypesFromXML.res" /d "_DEBUG" /d "_AFXDLL" "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXML.rc"" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2ADF.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5C20.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../Libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/MFCTypesFromXML.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXML.cpp"
 "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\MFCTypesFromXMLDlg.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP2ADF.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2AE0.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP5C20.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5C21.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../Libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR"Debug/" /Fp"Debug/MFCTypesFromXML.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\EXAMPLES\C++\MFCTypesFromXML\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP2AE0.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2AF0.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP5C21.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP5C22.tmp" with contents
 [
 ..\..\..\Libraries\Debug\XmlFoundation.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/MFCTypesFromXML.pdb" /debug /machine:I386 /out:"Debug/MFCTypesFromXML.exe" 
 ".\Debug\MFCTypesFromXML.obj"
@@ -29,7 +195,7 @@ Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP2AF0.tmp" with c
 ".\Debug\MFCTypesFromXML.res"
 "\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
 ]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP2AF0.tmp"
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP5C22.tmp"
 <h3>Output Window</h3>
 Compiling resources...
 Compiling...

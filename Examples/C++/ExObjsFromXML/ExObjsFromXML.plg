@@ -6,26 +6,6 @@
 --------------------Configuration: ExObjsFromXML - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP3803.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /Zi /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fp"Debug/ExObjsFromXML.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"C:\XMLFoundation\Examples\C++\ExObjsFromXML\Main.cpp"
-"C:\XMLFoundation\Examples\C++\ExObjsFromXML\ObjectModel.cpp"
-]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSP3803.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSP3814.tmp" with contents
-[
-..\..\..\Libraries\Debug\XmlFoundation.lib msvcrtd.lib libcmtd.lib wsock32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"msvcrtd.lib libcmtd.lib" /out:"Debug/ExObjsFromXML.exe" 
-".\Debug\Main.obj"
-".\Debug\ObjectModel.obj"
-"\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
-]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSP3814.tmp"
-<h3>Output Window</h3>
-Compiling...
-Main.cpp
-ObjectModel.cpp
-Linking...
 
 
 

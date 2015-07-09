@@ -1,0 +1,3 @@
+If this folder does contain "bin-androidARM"  and "bin-androidX86"  and "bibn-ios"  and "bin-linux64" and "bin-win32" and "bin-win-64" and "bin-winphone"  then
+this is a minimal source code download to optimize bandwidth usage and it does not contain the openssl libraries.  You may obtain them here:
+ http://www.codeproject.com/Articles/37850/XMLFoundation 

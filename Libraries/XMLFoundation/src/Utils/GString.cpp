@@ -2559,7 +2559,7 @@ GString GString::FindStringBetween(const char *pSearchForBegin, const char *pSea
 	if (nIndex > -1)
 	{
 		const char *pStart = &_str[nIndex + strlen(pSearchForBegin)];
-		__int64 nIndex = FindCaseInsensitive( pSearchForEnd );
+		nIndex = FindCaseInsensitive( pSearchForEnd );
 		if (nIndex > -1)
 			return GString(pStart,nIndex);
 		return GString(pStart);
@@ -4618,7 +4618,7 @@ wchar_t *GString::Unicode()
 
 
 #ifdef 	_NATIVE_WCHAR_T_DEFINED 
-
+#ifdef _UNICODE
 GString::operator const wchar_t * () const
 {
     if (_pWideStr)
@@ -4651,6 +4651,7 @@ GString::operator const wchar_t * () const
     return _pWideStr;
 }
 
+#endif
 #endif
 
 

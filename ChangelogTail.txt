@@ -1,5 +1,7 @@
 This file contains recent news and development in XMLFoundation
 
+April 12 - Fix made in MFCAbstractions.h to remove line 313 which was *pos = 0; when pos = 0; was intended but it was removed entirely.
+April 2 2015 - put the GString::operator wchar_t * overload inside a conditional preprocessor #ifdef _UNICODE
 ---------------------------------------------------------------
 Nov 26 - new build
 ---------------------------------------------------------------

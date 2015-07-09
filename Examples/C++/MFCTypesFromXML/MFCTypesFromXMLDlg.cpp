@@ -15,7 +15,7 @@
 CStringAbstraction gC;      // (G)lobal (C)String Abstraction
 CStringListAbstraction gCL; // (G)lobal (C)String (L)ist Abstraction
 CStringArrayAbstraction gCA;// (G)lobal (C)String (A)rray Abstraction
-CDWordArrayAbstraction gDA; // (G)lobal (D)String (A)rray Abstraction
+CDWordArrayAbstraction gDA; // (G)lobal (D)WORD (A)rray Abstraction
 CDoubleArrayAbstraction gAA;
 //
 ////////////////////////////////////////////////////////////////////////////

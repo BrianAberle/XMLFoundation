@@ -21,6 +21,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+
+#define __NO_OPENSSL // simplify the example
 #include "..\..\..\Servers\Core\ServerCore.cpp"
 
 

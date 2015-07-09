@@ -232,3 +232,5 @@ Nov 26 - 1 new feature addition - the ability to map 2 different object types in
 Nov 26 - An addition to "Contain Or Inherit" example to use the new feature and put two different object types into the same list.
 Nov 26 - The new work to ServerCore.cpp is well documented in docs/index.html
 Nov 26 - openssl libraries were added into the source distribution
+April 2 2015 - put the GString::operator wchar_t * overload inside a conditional preprocessor #ifdef _UNICODE
+April 12 - Fix made in MFCAbstractions.h to remove line 313 which was *pos = 0; when pos = 0; was intended but it was removed entirely.
