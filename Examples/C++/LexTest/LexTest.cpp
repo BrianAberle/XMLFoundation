@@ -13,7 +13,7 @@
 #include "XMLFoundation.h"
 
 
-void dump(CXMLElement *node, int *indent)
+void dump(CXMLElementx *node, int *indent)
 {
 	printf("\n");
 	for (int i = 0 ; i < *indent; i++)
@@ -58,7 +58,7 @@ void dump(CXMLElement *node, int *indent)
 		GListIterator itChildren(node->getChildren());
 		while (itChildren())
 		{
-			dump((CXMLElement *)itChildren++, indent);
+			dump((CXMLElementx *)itChildren++, indent);
 		}
 	}
 	(*indent)--;
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 //		cout << "Time in milliseconds to parse XML into the tree: " << getTimeMS() - startTime;
 
 		int indent = 0;
-		CXMLElement *root = tree.getRoot();
+		CXMLElementx *root = tree.getRoot();
 		if (root)
 			dump(root, &indent);
 	}

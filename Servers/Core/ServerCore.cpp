@@ -19,7 +19,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #ifndef __NO_OPENSSL		// prevent the openssl calls and library link requirements by defining __NO_OPENSSL prior to including ServerCore.cpp
-	#define __OPENSSL		// preprocessor directive used by XMLFoundation to expect openssl implementations.  NOTE: in Visual Studio project settings under linker, all settings,  change "Image Has Safe Exception Handlers" to "No (/SAFESEH:NO)" when linking openssl 
+	#define __OPENSSL
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -38,6 +38,8 @@
 		#include <errno.h>
 		#include <direct.h>			// for mkdir()
 	#else // 32 and 64 bit and also older MSC compilers
+
+		#include <winsock.h>		// added August 2015 for ntohl() and many more needed definitions now that <windows.h> is not yet included due to COM_NO_WINDOWS_H, RPC_NO_WINDOWS_H, and WIN32_LEAN_AND_MEAN
 		#define socklen_t int
 		#include <time.h>			// for tm struct and time()	
 		#include <io.h>				// for _chmod() in _WIN32
@@ -94,7 +96,9 @@ GList g_lstActivePlugins;
 	#ifndef NO_PRAGMA_CRYPTO_LINK
 		#ifdef _WIN32
 			#ifdef _WIN64
-				#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")	
+				//#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/libeay32.lib")	
+				#pragma comment(lib,    "c:/XMLFoundation/Libraries/openssl/bin-win64/libeay32.lib")	
+
 			#elif __WINPHONE
 				#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib") // the extra .. needs to be there for the WindowsPhone example
 			#else
@@ -6927,7 +6931,6 @@ int startListeners(int nAction, int nPort = -1)
 	return nRet;
 }
 
-void showActiveThreads(GString *pG = 0);
 
 #ifdef ___XFER
 	#include "../../Libraries/Xfer/Core/XferLocalCommands.cpp"

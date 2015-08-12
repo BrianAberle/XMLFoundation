@@ -198,6 +198,7 @@
       <PrecompiledHeaderOutputFile>.\WebServerService___Win32_Debug\WebServerService.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\WebServerService___Win32_Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\WebServerService___Win32_Debug\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

@@ -30,6 +30,7 @@
     <SccProjectName />
     <SccLocalPath />
     <ProjectGuid>{6790B355-E7EA-4C28-BD3C-BC05CBDB0CE6}</ProjectGuid>
+    <ProjectName>5LoavesSvc</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -142,6 +143,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>Debug/5LoavesSvc.exe</OutputFile>
       <AdditionalDependencies>netapi32.lib;Advapi32.lib;wsock32.lib;../../Libraries/Debug/XMLFoundation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -200,6 +202,7 @@
       <PrecompiledHeaderOutputFile>.\Release\5LoavesSvc.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -222,6 +225,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\5LoavesSvc.exe</OutputFile>
       <AdditionalDependencies>netapi32.lib;wsock32.lib;Advapi32.lib;../../Libraries/Release/XMLFoundation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -29,7 +29,6 @@
 //			  Use str1 and str2 to contain the request, and to build your response in and your server will be very fast.
 // Finally, Note that the 2 buffers are actually 1 buffer divided in half, the lower address is safe for 128k, or MAX_DATA_CHUNK * 2
 
-
 g_TotalHits++; // this is not required, it's just interesting and you can see it with the shell command: hits
 // Note: hold F5 in the browser for a while then look at the hit count.  
 // Implement the identical application in IIS or Apache. Race them. Publish the results.

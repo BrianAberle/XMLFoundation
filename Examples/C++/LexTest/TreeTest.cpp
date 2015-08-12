@@ -40,7 +40,7 @@ void dump(CGenericList *pAttributelist)
 	}
 }
 
-void dump(CXMLElement *root,  int *indent)
+void dump(CXMLElementx *root,  int *indent)
 {
 	for (int i = 0 ; i < *indent; i++)
 		cout << '\t';
@@ -61,7 +61,7 @@ void dump(CXMLElement *root,  int *indent)
 		CListIterator itChildren(root->getChildren());
 		while (!itChildren)
 		{
-			dump((CXMLElement *)itChildren++, indent);
+			dump((CXMLElementx *)itChildren++, indent);
 		}
 	}
 	(*indent)--;

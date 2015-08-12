@@ -50,7 +50,7 @@ CXMLTree::~CXMLTree()
 // 
 //*********************************************************
 
-CXMLElement *CXMLTree::addChild(CXMLElement *parent, 
+CXMLElementx *CXMLTree::addChild(CXMLElementx *parent, 
 								xml::token &tok,
 								const char *TokTag,
 								__int64 TokTagLength)
@@ -96,7 +96,7 @@ CXMLElement *CXMLTree::addChild(CXMLElement *parent,
 
 
 
-CXMLElement *CXMLTree::addAttribute(CXMLElement *parent, 
+CXMLElementx *CXMLTree::addAttribute(CXMLElementx *parent, 
 									xml::token &tok,
 									const char *TokTag,
 									__int64 TokTagLength)
@@ -124,7 +124,7 @@ CXMLElement *CXMLTree::addAttribute(CXMLElement *parent,
 void CXMLTree::parseXML(char *xml, bool bEatWhite /*= 0*/)
 {
 	setStream(xml);
-	CXMLElement *current = 0;
+	CXMLElementx *current = 0;
 	xml::token tok;
 	do
 	{
@@ -138,7 +138,7 @@ void CXMLTree::parseXML(char *xml, bool bEatWhite /*= 0*/)
 			}
 			else if (m_root == 0)
 			{
-				m_root = new CXMLElement(tok.get(), tok.length());
+				m_root = new CXMLElementx(tok.get(), tok.length());
 				current = m_root;
 			}
 			break;
@@ -208,7 +208,7 @@ void CXMLTree::parseXML(char *xml, bool bEatWhite /*= 0*/)
 
 
 // Prune out any repeating nodes 
-void CXMLTree::PruneTree(CXMLElement *root/* = 0*/)
+void CXMLTree::PruneTree(CXMLElementx *root/* = 0*/)
 {
 	/*	so that.....
 	// Two customers each with different amount of orders
@@ -256,27 +256,27 @@ void CXMLTree::PruneTree(CXMLElement *root/* = 0*/)
 		GListIterator itRecurseChildren(root->getChildren());
 		while (itRecurseChildren())
 		{
-			PruneTree((CXMLElement *)itRecurseChildren++);
+			PruneTree((CXMLElementx *)itRecurseChildren++);
 		}
 
 		// on the way out make the first sibling, the only sibling.
 REMOVE_NEXT:
 		GListIterator itChildren(root->getChildren());
-		CXMLElement *pFirstChild = 0;
-		CXMLElement *pNextChild = 0;
+		CXMLElementx *pFirstChild = 0;
+		CXMLElementx *pNextChild = 0;
 		while (itChildren())
 		{
 			if (!pFirstChild)
-				pFirstChild = (CXMLElement *)itChildren++;
+				pFirstChild = (CXMLElementx *)itChildren++;
 			else
-				pNextChild = (CXMLElement *)itChildren++;
+				pNextChild = (CXMLElementx *)itChildren++;
 			if (pNextChild)
 			{
 				GString strFirst(pFirstChild->m_tag, pFirstChild->m_nTagLen);
 				GString strNext(pNextChild->m_tag, pNextChild->m_nTagLen);
 				if ( strFirst.CompareNoCase(strNext) == 0 )
 				{
-					CXMLElement *parent = pFirstChild->getParent();
+					CXMLElementx *parent = pFirstChild->getParent();
 					if (parent)
 					{
 						parent->removeChild(pNextChild,true);

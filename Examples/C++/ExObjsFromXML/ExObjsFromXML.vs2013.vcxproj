@@ -32,6 +32,7 @@
     <SccLocalPath>
     </SccLocalPath>
     <ProjectGuid>{92D40C0C-B16C-4F99-9527-EFE9E8354430}</ProjectGuid>
+    <ProjectName>ExObjsFromXML</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -160,6 +161,7 @@
       <PrecompiledHeaderOutputFile>.\Release\ExObjsFromXML.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\ExObjsFromXML.tlb</TypeLibraryName>
@@ -215,6 +217,7 @@
       <IgnoreSpecificDefaultLibraries>msvcrtd.lib libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <OutputFile>.\Debug\ExObjsFromXML.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Debug\XmlFoundation.lib;msvcrtd.lib;libcmtd.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

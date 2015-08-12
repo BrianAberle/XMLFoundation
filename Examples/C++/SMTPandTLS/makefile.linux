@@ -1,0 +1,23 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+SMTPandTLS: \
+	clear \
+	SMTPandTLS.o
+	 
+	$(CC) \
+		-o SMTPandTLS \
+		-L../../../Libraries/XMLFoundation/Build \
+		-L../../../Libraries/openssl/bin-linux64 \
+		SMTPandTLS.o \
+		-lnsl -lXMLFoundation -ldl -lssl -lcrypto
+
+SMTPandTLS.o: ./SMTPandTLS.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./SMTPandTLS.cpp -o ./SMTPandTLS.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

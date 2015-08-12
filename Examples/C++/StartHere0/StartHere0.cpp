@@ -138,6 +138,16 @@ int main(int argc, char* argv[])
 	O.m_strColor = O.m_strString;
 
 
+//
+// It's the whole set of characters, escaped where need be.
+//
+// <Thing Color=" !&#34;#$&amp;'()*+,-./0123456789:;&lt;=&gt;?@ABCDEFGHIJKLMNOPQRST
+// UVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¦ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥Pƒáíóúñ
+// Ñªº¿¬¬½¼¡«»¦¦¦¦¦¦¦++¦¦++++++--+-+¦¦++--¦-+----++++++++¦_¦¦¯aßGpSsµtFTOd8fen=±==(
+// )÷˜°··vn²¦ ">
+
+
+
 	O.m_nInteger = 21;
 
 	strcpy(O.m_szNative,"so native");

@@ -21,19 +21,19 @@ static char SOURCE_FILE[] = __FILE__;
 #include "GException.h"
 #include <string.h>			// for: strlen() strpbrk()
 
-#ifndef __WINPHONE
- #ifndef ETIMEDOUT
-  #define ETIMEDOUT               WSAETIMEDOUT
- #endif
-#endif
 
 
 #if defined _WIN32
 	#include <wtypes.h>		
 	#include <tchar.h>
 	// FindFirstFile & FindNextFile
-	#include "Winbase.h"
-	#include <windows.h>
+
+
+	#include <GThread.h>	    // <winbase.h> needs HANDLE and Thread definitions
+	#include "Winbase.h"		// for typedef struct _WIN32_FIND_DATA
+
+
+	#include <errno.h>
 	#ifndef WINCE
 		#include <sys/stat.h>
 		#include <io.h>

@@ -299,8 +299,12 @@ void *CXMLDialogDlg::ObjectMessage( int nCase, const char *pzArg1, const char *p
 			// Now that we know for sure what we are dealing with we can cast it up
 			MyOrder *pO = (MyOrder *)p;
 
-			int nItemIndex = m_List.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM,
-								  0, pO->m_strOrderDate, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pO);
+//			int nItemIndex = m_List.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM,
+	//							  0, pO->m_strOrderDate, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pO);
+
+			int nItemIndex = m_List.InsertItem(LVIF_IMAGE | LVIF_TEXT | LVIF_STATE | LVIF_PARAM,
+				0, pO->m_strOrderDate, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED, 0, (LPARAM)pO);
+
 			m_List.SetItemText(nItemIndex, 1, pO->m_strShippedDate);
 
 			// uncomment this to see that it works
@@ -336,7 +340,7 @@ void CXMLDialogDlg::LoadLineItems()
 			int nItemIndex = m_ListLineItems.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM, 0, 
 				// itoa(pLI->m_nProductID,buf,10), 
 				g,
-				LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pLI);
+				LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (LPARAM)pLI);
 
 			m_ListLineItems.SetItemText(nItemIndex, 1, pLI->m_strUnitPrice);
 			m_ListLineItems.SetItemText(nItemIndex, 2, pLI->m_strDescription);
@@ -435,7 +439,7 @@ void CXMLDialogDlg::OnBtnAdd()
 
 		int nItemIndex = m_ListLineItems.InsertItem(LVIF_IMAGE|LVIF_TEXT|LVIF_STATE|LVIF_PARAM, 0, 
 		//itoa(pLI->m_nProductID,buf,10), 
-		g,LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (long)pLI);
+		g,LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED, 0, (LPARAM)pLI);
 		m_ListLineItems.SetItemText(nItemIndex, 1, pLI->m_strUnitPrice);
 		m_ListLineItems.SetItemText(nItemIndex, 2, pLI->m_strDescription);
 

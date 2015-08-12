@@ -30,6 +30,7 @@
     <SccProjectName />
     <SccLocalPath />
     <ProjectGuid>{E7078622-72EE-4896-9960-F0080FB4A95A}</ProjectGuid>
+    <ProjectName>5LoavesDLL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -150,6 +151,7 @@
       <ImportLibrary>.\Debug\5Loaves.lib</ImportLibrary>
       <AdditionalDependencies>../../Libraries/Debug/XMLFoundation.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\5LoavesDll.def</ModuleDefinitionFile>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -237,6 +239,7 @@
       <ImportLibrary>.\Release\5Loaves.lib</ImportLibrary>
       <AdditionalDependencies>netapi32.lib;odbc32.lib;odbccp32.lib;wsock32.lib;../../Libraries/Release/XMLFoundation.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\5LoavesDll.def</ModuleDefinitionFile>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -256,6 +259,7 @@
       </PrecompiledHeader>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

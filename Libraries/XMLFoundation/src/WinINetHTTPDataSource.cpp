@@ -20,14 +20,19 @@
 
 #ifdef _WIN32	
 
-#ifndef WINCE	// this will be easy to port to Windows CE when necessary.  
+#ifndef WINCE	
 #include "GlobalInclude.h"
 static char SOURCE_FILE[] = __FILE__;
+
 
 #include "WinINetHTTPDataSource.h"
 #include "GString.h"
 #include "GException.h"
 #include "FrameworkAuditLog.h"
+
+// this <stdlib.h> include was added in 2015 because Windows.h now loads after XMLFoundation header files exposing actual XMLFoundation dependencies
+#include <stdlib.h> // for atol()
+
 
 
 

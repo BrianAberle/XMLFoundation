@@ -29,6 +29,7 @@ static char SOURCE_FILE[] = __FILE__;
 
 	#include <netinet/in.h> // for inet_ntoa()
 	#include <arpa/inet.h>	// for inet_ntoa()
+
 #endif
 #ifdef __WINPHONE
 	#include <windows.h> // for Sleep()
@@ -38,11 +39,21 @@ static char SOURCE_FILE[] = __FILE__;
 #endif
 
 
+#ifdef _LINUX 
+	#include <stdio.h>      
+	#include <sys/types.h>
+	#include <ifaddrs.h>
+	#include <netinet/in.h> 
+	#include <string.h> 
+	#include <arpa/inet.h>
+#endif
+
 #include <stdlib.h>			// for atol(), strtol(), srand(), rand(), atoi()
 #include <string.h>			// for strcmp(), memcpy(), memset(), strlen(), strpbrk()
 
 #include <time.h>	
 #include "GThread.h"
+
 
 
 GString g_strThisIPAddress;
@@ -448,7 +459,7 @@ RETRY:
 int nonblockrecvAny(int fd,char *pBuf,int nMaxDataLen, int nTimeOutSeconds, int nTimeOutMicroSeconds)
 {
 	int nRslt;
-	int nRecvRetry = 0;
+//	int nRecvRetry = 0;
 	int rslt = readableTimeout(fd, nTimeOutSeconds, nTimeOutMicroSeconds);
 	if ( rslt > 0)
 	{
@@ -490,7 +501,7 @@ SUB_RCV_RETRY:
 int nonblockrecv(int fd,char *pBuf,int nExpectedDataLen, int nTimeoutSeconds, int nTimeOutMicroSeconds)
 {
 	int nBytesIn = 0;
-	int nRecvRetry = 0;
+//	int nRecvRetry = 0;
 
 	while (nBytesIn < nExpectedDataLen)
 	{
@@ -901,6 +912,117 @@ DNSResolutionRETRY:
 }
 
 
+bool ExternalIP(GString *pstrIP, GString *pstrError, const char *pzURL, const char *pzHost, const char *pzBeginMatch, const char *pzEndMatch)
+{
+	int fd, numbytes;  
+#ifdef _WIN32
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
+#endif
+	int nPort = 80;
+
+	GString strServerAddress(pzURL);
+	
+	struct sockaddr_in their_addr; 
+	their_addr.sin_family = AF_INET;      
+	their_addr.sin_port = htons(nPort); 
+	their_addr.sin_addr.s_addr = inet_addr (strServerAddress._str);
+	if (their_addr.sin_addr.s_addr == -1)
+	{
+		// resolve a DNS server name if inet_addr() came up empty.
+		struct hostent *pHE = (struct hostent *)gethostbyname(strServerAddress._str);
+		if (pHE == 0)
+		{ 
+			*pstrError <<"gethostbyname() failed to resolve " << strServerAddress._str;
+			return false;
+			
+		}
+		memcpy((char *)&(their_addr.sin_addr), pHE->h_addr,pHE->h_length); 
+	}
+	memset(&(their_addr.sin_zero),0, 8);//zero the rest of the struct
+
+
+	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+	{	
+		*pstrError = "No Socket - Check permissions";
+		return false;
+	}
+
+	
+	struct sockaddr_in localAddr; 
+	localAddr.sin_family = AF_INET;
+	localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	localAddr.sin_port = htons(0);
+	int rc = bind(fd, (struct sockaddr *) &localAddr, sizeof(localAddr));
+	if(rc<0) 
+	{
+		pstrError->Format("failed to bind([%s]:%d)",strServerAddress._str,(int)nPort);
+		return false;
+	}
+
+	if (connect(fd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1) 
+	{
+		pstrError->Format("failed to connect([%s]:%d)",strServerAddress._str,(int)nPort);
+		return false;
+	}
+
+	// todo, support URL here some sites have this service as a back page, not in the homepage as we get here
+	GString strSendBuf("GET / HTTP/1.1\r\nHost: ");
+	strSendBuf << pzHost << "\r\n\r\n";
+
+	
+	if ((numbytes=sendto(fd, strSendBuf._str, strSendBuf._len, 0,  (struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) 
+	{
+		pstrError->Append("sendto() failed");
+		return false;
+	}
+
+	GString destinationStream;
+	int nMaxPageSize = 8192; // for loading other web pages this value is normally much larger, actual bytes loaded may be more than nMaxPageSize, but the HTML read is reduced from infinity(think buffer overrun attack) to this cutoff value.  DynDNS wouldnt attack us, but any ISP or proxy could as well if we didnt have some sort of cut off.
+	int nCumulativeBytes = 0;
+	char winsockBuffer[4096];
+	numbytes = 0;
+	do
+	{
+		if ((numbytes=recv(fd, winsockBuffer, sizeof(winsockBuffer), 0)) == -1) 
+		{
+			continue;
+		}
+		destinationStream.write(winsockBuffer,numbytes);
+		nCumulativeBytes += numbytes;
+	}while( numbytes != 0 && nCumulativeBytes < nMaxPageSize);
+
+	// parse the IP out of the HTML
+	*pstrIP =  destinationStream.FindStringBetween(pzBeginMatch, pzEndMatch);
+	pstrIP->TrimRightWS();
+	pstrIP->TrimLeftWS();
+
+	PortableClose(fd, "ExternalIP");
+	return true;
+
+}
+
+
+bool ExternalIP(GString *pstrIP, GString *pstrError)
+{
+	// todo: randomize this so dyndns doesnt have to support us all - thanks dyn dns for all you do - you've been around for a long time, keep the server plugged in.
+	if (ExternalIP(pstrIP, pstrError, "checkip.dyndns.org", "dyndns.org", "Current IP Address: ", "<") == false)
+	{
+		if (ExternalIP(pstrIP, pstrError, "checkip.org", "checkip.org", "Your IP Address:  <span style=\"color: #5d9bD3;\">", "<") == false)
+		{
+			if (ExternalIP(pstrIP, pstrError, "www.ipchicken.com", "ipchicken.com", "size=\"5\" color=\"#0000FF\"><b>", "<") == false)
+			{
+				if (ExternalIP(pstrIP, pstrError, "ipburger.com", "ipburger.com", "<div id=\"ipbody\">", "<") == false)
+				{
+					false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+
 
 
 AutoInitThisHostAndIP::AutoInitThisHostAndIP()
@@ -919,7 +1041,18 @@ AutoInitThisHostAndIP::AutoInitThisHostAndIP()
 		struct sockaddr_in my_addr; 
 		memcpy((char *)&(my_addr.sin_addr), pHELocal->h_addr,pHELocal->h_length); 
 		memset(&(my_addr.sin_zero),0, 8);// zero the rest of the (unused) struct
+
+
 		g_strThisIPAddress = inet_ntoa(my_addr.sin_addr);
+
+////
+////		// #include <arpa/inet.h>
+////		inet_ntop(AF_INET, &their_addr.sin6_addr, g_strThisIPAddress._str, g_strThisIPAddress._max ), 
+////               // AF_INET6
+
+
+
+
 	}
 	else
 	{
@@ -928,6 +1061,8 @@ AutoInitThisHostAndIP::AutoInitThisHostAndIP()
 		// todo: search for the source code ifconfig.c, that will have the resolution
 	}
 	g_strThisHostName=pzHostName;
+
+
 }
 
 AutoInitThisHostAndIP g_AutoInitIt;

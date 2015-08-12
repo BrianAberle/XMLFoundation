@@ -17,32 +17,32 @@
 #include "GList.h"
 #include "xmlLex.h"
 
-class CXMLElement;
+class CXMLElementx;
 class CXMLTree : public xml::lex
 {
 	GList m_paramtererEntities;
 	GList m_generalEntities;
 
 protected:
-	CXMLElement *addChild(CXMLElement *parent, 
+	CXMLElementx *addChild(CXMLElementx *parent, 
 						  xml::token &tok,
 						  const char *TokTag,
 						  __int64 TokTagLength);
-	CXMLElement *addAttribute(CXMLElement *parent, 
+	CXMLElementx *addAttribute(CXMLElementx *parent, 
 							  xml::token &tok,
 							  const char *TokTag,
 							  __int64 TokTagLength);
-	CXMLElement *m_root;
+	CXMLElementx *m_root;
 
 public:
 
-	void PruneTree(CXMLElement *root = 0);
+	void PruneTree(CXMLElementx *root = 0);
 	virtual void parseXML(char *xml, bool bEatWhite = 0);
 
-	inline CXMLElement *getRoot(void);
+	inline CXMLElementx *getRoot(void);
 
 	inline void detach(void);
-	inline void attach(CXMLElement *);
+	inline void attach(CXMLElementx *);
 
 	/*
 		constructs an empty XML tree
@@ -57,14 +57,14 @@ public:
 	virtual ~CXMLTree();
 };
 
-inline void CXMLTree::attach(CXMLElement *pNode)
+inline void CXMLTree::attach(CXMLElementx *pNode)
 {
 	if (m_root != 0)
 		throw 1;
 	m_root = pNode;
 }
 
-inline CXMLElement *CXMLTree::getRoot(void)
+inline CXMLElementx *CXMLTree::getRoot(void)
 {
 	return m_root;
 }

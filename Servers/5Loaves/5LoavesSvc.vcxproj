@@ -119,6 +119,7 @@
       <PrecompiledHeaderOutputFile>.\5LoavesSvc___Win32_Debug\5LoavesSvc.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\5LoavesSvc___Win32_Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\5LoavesSvc___Win32_Debug\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

@@ -41,13 +41,25 @@ The remainder of this file is about how to build XMLFoundation on Linux
 =========================================================================================================
 
 
+----------------------------------------------------------
 First you need to make sure you have the g++ compiler installed.
 Type the following command at a terminal window:
 
 sudo apt-get install g++
 
+or
 
-First Build the XML library
+from the graphical shell  -"Applications" - "System Tools" - "Software" (under "Development"- "Development Tools") select "C++ Support for GCC"
+
+----------------------------------------------------------
+
+Next, rename   [/Libraries/XMLFoundation/inc/openssl]   to [/Libraries/XMLFoundation/inc/opensslWindows]
+then rename [/Libraries/XMLFoundation/inc/opensslLinux]   to   [/Libraries/XMLFoundation/inc/openssl]
+
+----------------------------------------------------------
+
+
+Then Build the XML library
 -----------------------------
 
 move to the [Libraries/XMLFoundation/Build] folder, then type:

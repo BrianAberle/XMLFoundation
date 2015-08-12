@@ -12,6 +12,9 @@
 // --------------------------------------------------------------------------
 #include <Windows.h>
 
+
+
+
 #define dimof(A)  (sizeof(A) / sizeof(A[0]))
 HANDLE g_hIOCP = NULL;
 enum COMPKEY 

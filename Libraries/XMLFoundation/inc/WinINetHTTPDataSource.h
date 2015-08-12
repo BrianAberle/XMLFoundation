@@ -20,10 +20,16 @@
 // SSL when the port = 443.
 
 
-#include "XMLDataSource.h"
+#include "XMLDataSource.h" // includes "GList.h" "GHash.h" "GString.h" ["XMLDefines.h"] "GlobalInclude.h set #define WIN32_LEAN_AND_MEAN"
 
-// microsoft makes me include wtypes.h, before Wininet.h can be included.
+
+// microsoft makes me include wtypes.h, before Wininet.h can be included.  <----That is an ancient comment from year 2000 or so.
+// WTypes.h is also a dependency for ATL, this uses the wtypes in XMLFoundation which does not include <Windows.h>
 #include <wtypes.h>		
+
+//so in July 2015, the inclusion of Windows.h became necessary here;
+#include <windows.h>
+
 #include "Wininet.h"
 
 class GString;

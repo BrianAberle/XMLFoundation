@@ -60,7 +60,8 @@ int RemoveDebugSocket(int fd);
 int ListOpenSockets(GString &strDest);
 bool IsOpenSocket(int fd);
 
-
+bool ExternalIP(GString *pstrIP, GString *pstrError);
+bool ExternalIP(GString *pstrIP, GString *pstrError, const char *pzURL, const char *pzHost, const char *pzBeginMatch, const char *pzEndMatch);
 
 
 // given either an ip address or a host name, this function  returns true if the address is 'this' machine

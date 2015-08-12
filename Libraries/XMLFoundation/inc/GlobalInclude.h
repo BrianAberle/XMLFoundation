@@ -21,7 +21,8 @@
 #pragma warning (disable:4702)	// Unreachable Code
 #pragma warning (disable:4127)	// conditional expression is constant
 
-
+// This makes a big difference in build order, only building dependencies as they are needed, and even less dependencies in some applications.
+#define WIN32_LEAN_AND_MEAN
 
 
 #ifndef new

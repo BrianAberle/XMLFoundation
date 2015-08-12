@@ -2558,10 +2558,11 @@ GString GString::FindStringBetween(const char *pSearchForBegin, const char *pSea
 	__int64 nIndex = FindCaseInsensitive( pSearchForBegin ); 
 	if (nIndex > -1)
 	{
-		const char *pStart = &_str[nIndex + strlen(pSearchForBegin)];
-		nIndex = FindCaseInsensitive( pSearchForEnd );
+		int nSearchBeginLen = strlen(pSearchForBegin);
+		const char *pStart = &_str[nIndex + nSearchBeginLen ];
+		nIndex = FindCaseInsensitive( pSearchForEnd, (pStart - _str) );
 		if (nIndex > -1)
-			return GString(pStart,nIndex);
+			return GString(pStart,nIndex - (pStart - _str));
 		return GString(pStart);
 	}
 	return GString();
@@ -4777,3 +4778,31 @@ __int64 Gstrlen( const char *str )
 {
 	return strlen(str);
 }
+
+
+void GString::ReleaseBuffer(__int64 nLength) // nLength defaults to -1
+{
+	if (nLength == -1)  
+		SetLength( strlen(_str) ); 
+	else 
+		SetLength(nLength);              
+}
+
+void GString::Append(const char *pzValue, __int64 nLen )// nLen defaults to -1
+{
+	if (nLen > 0)	
+		write(pzValue,nLen);  
+	else 	
+		write(pzValue,strlen(pzValue));	
+}
+
+// for CSimpleStringT interop,  SetString is implemented as "append", calling Empty() will make it "assign"
+void GString::SetString(const char *pxSrc, int nBytes ) // nBytes defaults to -1
+{ 
+	if ( nBytes < 0 ) 
+		write(pxSrc,strlen(pxSrc) ); 
+	else 
+		write(pxSrc,nBytes );		
+}
+
+

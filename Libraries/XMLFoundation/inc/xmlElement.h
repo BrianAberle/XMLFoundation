@@ -23,7 +23,7 @@
 
 class CXMLAttribute;
 
-class CXMLElement;
+class CXMLElementx;
 
 // class used to store text or element node pointer
 class CXMLNode
@@ -50,7 +50,7 @@ public:
 	inline void setValue(const char *value, __int64 nValueLen);
 	inline const void *getValue() const { return m_node; }
 	inline __int64 getValueLen() const { return m_len; }
-	inline void setValue(CXMLElement *element);
+	inline void setValue(CXMLElementx *element);
 
 	inline void disableOutputEscaping();
 	inline bool getDisableOutputEscaping();
@@ -64,7 +64,7 @@ public:
 	CXMLNode(const char *szText, __int64 nLength);
 
 	// creates an element node
-	CXMLNode(CXMLElement *element);
+	CXMLNode(CXMLElementx *element);
 
 	// destroys the text node if it owns the memory
 	~CXMLNode();
@@ -90,21 +90,21 @@ inline void CXMLNode::setValue(const char *value, __int64 nValueLen)
 	m_len = nValueLen;
 }
 
-inline void CXMLNode::setValue(CXMLElement *value)
+inline void CXMLNode::setValue(CXMLElementx *value)
 {
 	if (m_bOwnsMemory)
 		delete (char *)m_node;
 	m_type = elementN;
-	m_node = (CXMLElement *)value;
-	m_len = sizeof(CXMLElement *);
+	m_node = (CXMLElementx *)value;
+	m_len = sizeof(CXMLElementx *);
 }
 
-class CXMLElement
+class CXMLElementx
 {
 
 protected:
 
-	CXMLElement *m_parent;
+	CXMLElementx *m_parent;
 
 	// list of attributes for the element
 	GList *m_pAttributelist;
@@ -146,7 +146,7 @@ public:
 
 	// Warning: our implementation of the XML parser does not copy data.
 	// The tokenizer parses a source input stream. Pointers into the stream
-	// are handed up to the Parser that creates objects like this CXMLElement.
+	// are handed up to the Parser that creates objects like this CXMLElementx.
 	// Since the source input never gets copied the tokenizer is very fast
 	// and it uses 1/2 the memory of 'normal' parsers.  Using these members
 	// will sprinkle null terminations in the actual source buffer of XML that
@@ -178,11 +178,11 @@ public:
 
 	// returns a pointer to this element's parent or 
 	// NULL if this element doesn't have a parent.
-	inline CXMLElement *getParent() const;
+	inline CXMLElementx *getParent() const;
 
 	// unlinks itself from its current parent and
 	// reasignes itself to a different parent.
-	void setParent(CXMLElement *np, CXMLElement *ia = 0);
+	void setParent(CXMLElementx *np, CXMLElementx *ia = 0);
 
 	inline GList *getChildren();
 	inline GList *getAttributes();
@@ -201,34 +201,34 @@ public:
 
 	//	creates a new element and adds the newly created child 
 	//	to the children list.
-	CXMLElement *addChild(const char *tag, 
+	CXMLElementx *addChild(const char *tag, 
 						  const char *value);
-	CXMLElement *addChild(const char *tag, 
+	CXMLElementx *addChild(const char *tag, 
 						  __int64 nTagLen);
-	CXMLElement *addChild(const char *tag, __int64 nTagLen, 
+	CXMLElementx *addChild(const char *tag, __int64 nTagLen, 
 						  const char *value, __int64 nValueLen);
-	// add an existing CXMLElement as an element
-	CXMLElement *addChild(CXMLElement *pElement, CXMLElement *ia = 0);
+	// add an existing CXMLElementx as an element
+	CXMLElementx *addChild(CXMLElementx *pElement, CXMLElementx *ia = 0);
 
 	// find the 1 based nth Occurrence of a child element
-	CXMLElement *findChild(const char *tag, int nOccurrence = 1) const;
+	CXMLElementx *findChild(const char *tag, int nOccurrence = 1) const;
 
 	// remove a child node.
-	void removeChild(CXMLElement *pElement, bool bDestroy = true);
+	void removeChild(CXMLElementx *pElement, bool bDestroy = true);
 
 	//	constructs an element w/a tag value pair, an empty 
 	//	attribute list, and an empty child list.
-	CXMLElement(const char *tag, 
+	CXMLElementx(const char *tag, 
 				const char *value,
-				CXMLElement *parent = 0);
-	CXMLElement(const char *tag, __int64 nTagLen, 
+				CXMLElementx *parent = 0);
+	CXMLElementx(const char *tag, __int64 nTagLen, 
 				const char *value, __int64 nValueLen,
-				CXMLElement *parent = 0);
-	CXMLElement(const char *tag, __int64 nTagLen, 
-			    CXMLElement *parent = 0);
+				CXMLElementx *parent = 0);
+	CXMLElementx(const char *tag, __int64 nTagLen, 
+			    CXMLElementx *parent = 0);
 
 	//	frees all attributes and children
-	~CXMLElement();
+	~CXMLElementx();
 
 
 	// inserts valid XML into the destination string
@@ -239,31 +239,31 @@ public:
 				   bool bShortHand = true) const;
 
 	// Define an equality test operator
-	inline int operator==(const CXMLElement& element) const;
+	inline int operator==(const CXMLElementx& element) const;
 
 	// Define a less-than operator
-	inline int operator<(const CXMLElement& element) const;
+	inline int operator<(const CXMLElementx& element) const;
 
 //	void toFile(const char *dst, long nGrowBy = 5000) const;
 };
 
-inline void CXMLElement::setOID(const char *szOID)
+inline void CXMLElementx::setOID(const char *szOID)
 {
 	m_strOID = szOID;
 }
 
-inline const char * CXMLElement::getOID() const
+inline const char * CXMLElementx::getOID() const
 {
 	return (const char *)m_strOID;
 }
 
-inline const char * CXMLElement::getpzTag() const
+inline const char * CXMLElementx::getpzTag() const
 {
 	m_tag[m_nTagLen] = 0;
 	return m_tag;
 }
 
-inline const char * CXMLElement::getpzValue() const
+inline const char * CXMLElementx::getpzValue() const
 {
 	char *pV = (char *)(const char *)m_value->getValue();
 	pV[m_value->getValueLen()] = 0;
@@ -272,75 +272,75 @@ inline const char * CXMLElement::getpzValue() const
 
 
 // Warning: Data may not be null terminated.  Also use getTagLen()
-inline const char *CXMLElement::getTag() const
+inline const char *CXMLElementx::getTag() const
 {
 	return m_tag;
 }
-inline __int64 CXMLElement::getTagLen() const
+inline __int64 CXMLElementx::getTagLen() const
 {
 	return m_nTagLen;
 }
 
-inline void CXMLElement::setValue(const char *value)
+inline void CXMLElementx::setValue(const char *value)
 {
 	m_value->setValue(value);
 }
 
-inline void CXMLElement::setValue(const char *value, __int64 nValueLen)
+inline void CXMLElementx::setValue(const char *value, __int64 nValueLen)
 {
 	m_value->setValue(value, nValueLen);
 }
 
-inline CXMLNode *CXMLElement::appendText(const char *value)
+inline CXMLNode *CXMLElementx::appendText(const char *value)
 {
 	m_TextChildList.AddLast(new CXMLNode(value));
 	return (CXMLNode *)m_TextChildList.Last();
 }
 
-inline CXMLNode *CXMLElement::appendText(const char *value, __int64 nValueLen)
+inline CXMLNode *CXMLElementx::appendText(const char *value, __int64 nValueLen)
 {
 	m_TextChildList.AddLast(new CXMLNode(value, nValueLen));
 	return (CXMLNode *)m_TextChildList.Last();
 }
 
 // Warning: Data may not be null terminated.  Also use getValueLen()
-inline const char *CXMLElement::getValue() const
+inline const char *CXMLElementx::getValue() const
 {
 	return (const char *)m_value->getValue();
 }
-inline __int64 CXMLElement::getValueLen() const
+inline __int64 CXMLElementx::getValueLen() const
 {
 	return m_value->getValueLen();
 }
 
-inline CXMLElement *CXMLElement::getParent() const
+inline CXMLElementx *CXMLElementx::getParent() const
 {
 	return m_parent;
 }
 
-inline GList * CXMLElement::getChildren()
+inline GList * CXMLElementx::getChildren()
 {
 	return m_pChildrenlist;
 }
 
-inline GList * CXMLElement::getAllNodes()
+inline GList * CXMLElementx::getAllNodes()
 {
 	return &m_TextChildList;
 }
 
-inline GList * CXMLElement::getAttributes()
+inline GList * CXMLElementx::getAttributes()
 {
 	return m_pAttributelist;
 }
 
-inline void CXMLElement::setItemData(void *itemData, int nIndex/* = 0*/)
+inline void CXMLElementx::setItemData(void *itemData, int nIndex/* = 0*/)
 {
 	if (nIndex > 4)
 		return;
 	m_itemData[nIndex] = itemData;
 }
 
-inline void *CXMLElement::getItemData(int nIndex /* = 0*/) const
+inline void *CXMLElementx::getItemData(int nIndex /* = 0*/) const
 {
 	if (nIndex > 4)
 		return 0;

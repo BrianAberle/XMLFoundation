@@ -76,7 +76,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 netapi32.lib Advapi32.lib user32.lib ../../Library/Build/Debug/XMLFoundation.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"libcmtd" /libpath:"../../library/buildwin32/debug_mt" /libpath:"../../Servers/CommonSource/JavaNT/"
-# ADD LINK32 ../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE/perl510.lib wsock32.lib netapi32.lib Advapi32.lib user32.lib ../../Libraries/Debug/XMLFoundation.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"libcmtd" /libpath:"../../library/buildwin32/debug_mt" /libpath:"../../Servers/CommonSource/JavaNT/"
+# ADD LINK32 wsock32.lib netapi32.lib Advapi32.lib user32.lib ../../Libraries/Debug/XMLFoundation.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:console /profile /debug /machine:I386 /nodefaultlib:"libcmtd" /libpath:"../../library/buildwin32/debug_mt" /libpath:"../../Servers/CommonSource/JavaNT/"
 
 !ENDIF 
 

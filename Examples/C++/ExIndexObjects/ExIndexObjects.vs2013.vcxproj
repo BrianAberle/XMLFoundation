@@ -32,6 +32,7 @@
     <SccLocalPath>
     </SccLocalPath>
     <ProjectGuid>{2BA36734-E7F1-4A99-BEF3-C9DEBF3A6CCF}</ProjectGuid>
+    <ProjectName>ExIndexObjects</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -167,6 +168,7 @@
       <AssemblerOutput>All</AssemblerOutput>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <BrowseInformationFile>.\Release\</BrowseInformationFile>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\ExIndexObjects.tlb</TypeLibraryName>
@@ -224,6 +226,7 @@
       <IgnoreSpecificDefaultLibraries>..\..\..\..\..\SmartHeap\Win32\msvc\shlW32M.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <OutputFile>.\Debug\ExIndexObjects.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Debug\XmlFoundation.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

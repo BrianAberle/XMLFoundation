@@ -32,6 +32,7 @@
     <SccLocalPath>
     </SccLocalPath>
     <ProjectGuid>{57C0A9FC-C173-470D-A55A-6702E407F746}</ProjectGuid>
+    <ProjectName>ObjectCache</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -124,6 +125,7 @@
       <PrecompiledHeader />
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\ObjectCache.tlb</TypeLibraryName>
@@ -160,6 +162,7 @@
       </PrecompiledHeader>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\ObjectCache.tlb</TypeLibraryName>
@@ -216,6 +219,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\ObjectCache.exe</OutputFile>
       <AdditionalDependencies>../../../libraries/Debug/XmlFoundation.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

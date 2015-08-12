@@ -146,4 +146,12 @@ void BufferTerminate( BUFFER *pB );
 unsigned char *BufferQueryPtr( BUFFER * pB );
 bool BufferResize( BUFFER *pB, unsigned int cNewL );
 
+
+//
+//	This interface is easier to port from in some cases, declared in GString.h
+//
+//const char *base64_encode(const unsigned char * , unsigned int len, GString *pDestination);
+//const char *base64_decode(const unsigned char *, GString *pDestination);
+
+
 #endif // __BASE64__H__

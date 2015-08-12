@@ -362,7 +362,7 @@ void ConsoleCommand(char *pzCommand)
 		printf("%d Threads/Transactions currently in progress\n",g_nClientthreadsInUse);
 		if (g_nClientthreadsInUse)
 		{
-			showActiveThreads();
+			showActiveThreads(0);
 		}
 	}
 	else if (strCmdIn.CompareNoCase("hp") == 0 ) // Halt port

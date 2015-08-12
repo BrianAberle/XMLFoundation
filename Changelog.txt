@@ -234,3 +234,13 @@ Nov 26 - The new work to ServerCore.cpp is well documented in docs/index.html
 Nov 26 - openssl libraries were added into the source distribution
 April 2 2015 - put the GString::operator wchar_t * overload inside a conditional preprocessor #ifdef _UNICODE
 April 12 - Fix made in MFCAbstractions.h to remove line 313 which was *pos = 0; when pos = 0; was intended but it was removed entirely.
+August 2015 - added more methods to GString identical to CString methods for easy porting
+August 2015 - Added GProcess.cpp to obtain process lists on Android, iOS, Linux, Win Phone, Win32 and Win64 also lists Network Connections
+August 2015 - Added new example SMTPandTLS
+August 2015 - Added "VC6.sp7" for linking with updated RPC and Winsock libraries under VC6
+August 2015 - 1 bug fix in GString::FindStringBetween() that caused the method to fail in some cases
+August 2015 - Added ExternalIP() to GSocketHelpers.cpp a pinging external servers to obtain the WAN IP
+August 2015 - Fixed up the VS2013 project workspace built everyhting in debug/release/32/and 64 bit
+August 2015 - Added the VS2015 project workspace (Note that the OpenSSL projects do not link in the vs2015 workspace)
+August 2015 - Updated Linux OpenSSL binaries and headerfiles
+

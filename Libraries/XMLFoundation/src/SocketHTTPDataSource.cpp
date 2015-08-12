@@ -25,9 +25,7 @@ static char SOURCE_FILE[] = __FILE__;
 
 #include <stdio.h> // for: sprintf()
 #include <string.h> // for: strlen() memcpy(), memset() strcat()
-#ifndef _WIN32
-#include <errno.h> // for global errno an all OS's except MSFT
-#endif
+#include <errno.h> // for global errno an all OS's.  In July 2015 the XMLFundation defined WIN32_LEAN_AND_MEAN in GlobalIncludes.h, now that Windows.h and its dependencies are loaded naturally it revealed why errno was mysteriously pre-defined here in the Windows build.  Now, as expected, it its the same code for all operating systems.
 
 #ifndef WINCE
 	#include <sys/types.h>

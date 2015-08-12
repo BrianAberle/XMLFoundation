@@ -1117,13 +1117,13 @@ void ComponentInterface::ThrowException(int nExceptionFlags ,const char *pzExcep
 		{
 			CXMLTree xmlGraftTree;
 			xmlGraftTree.parseXML( (char *)pzData );
-			CXMLElement *pRoot = xmlGraftTree.getRoot();
+			CXMLElementx *pRoot = xmlGraftTree.getRoot();
 			
 			GString strRootTag(pRoot->getTag(), pRoot->getTagLen());
 			if (strRootTag.CompareNoCase("Exception") == 0)
 			{
 				int nError = 0;
-				CXMLElement *pE = pRoot->findChild("ErrorNumber");
+				CXMLElementx *pE = pRoot->findChild("ErrorNumber");
 				if (pE)
 				{
 					GString strE(pE->getTag(), pE->getTagLen());
@@ -1131,7 +1131,7 @@ void ComponentInterface::ThrowException(int nExceptionFlags ,const char *pzExcep
 				}
 
 				int nSubSys = 0;
-				CXMLElement *pS = pRoot->findChild("SubSystem");
+				CXMLElementx *pS = pRoot->findChild("SubSystem");
 				if (pS)
 				{
 					GString strS(pS->getTag(), pS->getTagLen());
@@ -1139,7 +1139,7 @@ void ComponentInterface::ThrowException(int nExceptionFlags ,const char *pzExcep
 				}
 
 				GString strDescription("User Defined Exception with no Description");
-				CXMLElement *pD = pRoot->findChild("Description");
+				CXMLElementx *pD = pRoot->findChild("Description");
 				if (pD)
 				{
 					GString strD(pD->getTag(), pD->getTagLen());
@@ -1147,13 +1147,13 @@ void ComponentInterface::ThrowException(int nExceptionFlags ,const char *pzExcep
 				}
 
 				GStringList Stack;
-				CXMLElement *pC = pRoot->findChild("CallStack");
+				CXMLElementx *pC = pRoot->findChild("CallStack");
 				if (pC)
 				{
 					int i = 0;
 					while (1)
 					{
-						CXMLElement *pF = pC->findChild("Frame",++i);
+						CXMLElementx *pF = pC->findChild("Frame",++i);
 						if (!pF)
 							break;
 						GString strF(pF->getTag(), pF->getTagLen());

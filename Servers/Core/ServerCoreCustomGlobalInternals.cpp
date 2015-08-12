@@ -8,8 +8,10 @@
 // You can #include<xxxxx.h> any header files you need
 
 // put your code own code in this file and replace this example...
-	
+
+
 GString g_MyExampleGlobalString;
+void showActiveThreads(GString *pG/* = 0*/);
 
 class CMyGlobalClassExample
 {
@@ -19,7 +21,7 @@ public:
 	{
 		if (i == 1)
 		{
-			showActiveThreads();
+			showActiveThreads(0);
 		}
 	}
 	CMyGlobalClassExample()

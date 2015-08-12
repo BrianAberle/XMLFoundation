@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0595 */
-/* at Thu Apr 02 19:51:00 2015
+/* at Tue Aug 11 16:50:06 2015
  */
 /* Compiler settings for ATLExample2012.idl:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0595 

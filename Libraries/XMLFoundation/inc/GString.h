@@ -338,12 +338,22 @@ public:
 	inline __int64 GetLength() const { return _len; } // for CString interoperability
 	inline __int64 size() const { return _len; } // for std::string interoperability
 
+	// added in 2015 for CString interoperability, in many cases I can just repalce CString with GString.
+	// several are inlined in GString.cpp to avoid #including the definition for strlen() in this .h file.
+	char *GetBuffer(__int64 nMinLength)							{ SetPreAlloc(nMinLength); return _str; } 
+	void ReleaseBuffer(__int64 nLength = -1 );				//	{ if (nLength == -1)  SetLength( strlen(_str) ); else SetLength(nLength);              }
+	void Append(const char *pzValue, __int64 nLen = -1);	//	{ if (nLen > 0)	write(pzValue,nLen);  else 	write(pzValue,strlen(pzValue));	}
+	// for CSimpleStringT interop,  SetString is implemented as "append", calling Empty() will make it "assign"
+	void SetString(const char *pxSrc, int nBytes = -1);		//  { if ( nBytes < 0 ) write(pxSrc,strlen(pxSrc) ); else write(pxSrc,nBytes );		}
+
+
+
 	// a fast 'truncate' of the string length
 	//
 	//	 if (s.CompareSubNoCase(".exe",s.Length() - 4) == 0)// <--if the last 4 bytes are ".exe"
 	//		s.SetLength( s.Length() - 4 );					// <--remove them from the string
 	//
-	//	  if (s.GetAt(s.Length()-1) == '\\' )				// <-- If the last byte of the path is a shash
+	//	  if (s.GetAt(s.Length()-1) == '\\' )				// <-- If the last byte of the path is a slash
 	//	    s.SetLength(s.Length() - 1);					// <-- shorten the string by 1 byte
 	inline void SetLength(__int64 nLen) { if (nLen > -1 && nLen < _max) {_len = nLen; _str[_len] = 0;} } 
 
@@ -888,6 +898,7 @@ char *Xi64toa ( __int64 val, char *buf, int radix = 10);
 
 // faster implementation - works ONLY for unsigned __int64 and radix 10(aka decimal) which can never have a negative value.
 char *Xi64toa ( unsigned __int64 val, char *buf);
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
