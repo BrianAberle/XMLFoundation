@@ -1,13 +1,13 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2015  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
 // This toolkit may be used free of charge for any purpose including corporate
 // and academic use.  For profit, and Non-Profit uses are permitted.
 //
-// This source code and any work derived from this source code must retain 
+// This source code and any work derived from this source code must retain
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 
@@ -18,13 +18,13 @@
 #include "GString.h"
 #include "GList.h"
 #include "GStringList.h"
-#include "MemberHandler.h" 
+#include "MemberHandler.h"
 #include "ObjectDataHandler.h"
 #include "MemberDescriptor.h"
 #include "CacheManager.h"
 
 
-// for describing native (Java,VB,Perl,Python...) members
+// for describing native (Java,Perl,Python...) members
 class NativeMemberDescriptor
 {
 public:
@@ -49,6 +49,7 @@ class DynamicXMLObject :  public  XMLObject,
 	void *m_pUserObject; // handle to VB/Java object
 	static int nInstanceCount;
 	long m_lAutoSync;
+	__int64 m_ndupIndex;
 protected:
 	GString m_strObjectValue;
 	GString m_strThisObjectXMLTag;
@@ -56,11 +57,13 @@ protected:
 	GList   *m_plstSubObjects;		// DynamicXMLObject's (data of members or sub-objects)
 	GList	m_lstSubUserObjs;		// Active User Object Reference list
 
-	GBTree   m_hshMemberDescriptors; // NativeMemberDescriptor's
+	GBTree  m_hshMemberDescriptors; // NativeMemberDescriptor's
+	GHash   m_hshMemberCount;		// an integer count for each occurance of a type
 public:
+	void DupIndexReset(){m_ndupIndex=0;}
 	void setAutoSync(long nAutoSync){m_lAutoSync = nAutoSync;}
 	long useAutoSync(){return m_lAutoSync;}
-	
+
 	void setUserLanguageObject(void *p) {m_pUserObject =p;}
 	void *getUserLanguageObject() {return m_pUserObject;}
 	void addSubUserLanguageObject(void *p)
@@ -124,7 +127,10 @@ public:
 	GStringList *GetKeyPartsList(){return &m_lstKeyParts;}
 	bool IsCacheDisabled(){return m_bIsCacheDisabled;}
 	void DisableCache() { m_bIsCacheDisabled = true; }
-	void AddMemberDescriptor(NativeMemberDescriptor *p){m_hshMemberDescriptors.insert(p->strName,p);}
+	void AddMemberDescriptor(NativeMemberDescriptor *p)
+	{
+		m_hshMemberDescriptors.insert(p->strName,p);
+	}
 	NativeMemberDescriptor *FindMemberDescriptor(const char *pzVarName){return (NativeMemberDescriptor *)m_hshMemberDescriptors.search(pzVarName);}
 	GBTree *GetMemberDescriptors(){return &m_hshMemberDescriptors;}
 	void FreeMemberDescriptors()
@@ -154,15 +160,27 @@ protected:
 	}
 
 
-public:	
+public:
 	GList *GetSubObjectList(){return m_plstSubObjects;}
-	
+
 	DynamicXMLObject* NewSubObject( const char *pzTag )
 	{
 		DynamicXMLObject *d = new DynamicXMLObject(pzTag);
 		if (!m_plstSubObjects)
 			m_plstSubObjects = new GList;
 		m_plstSubObjects->AddLast(d);
+
+		__int64 *pCount = (__int64 *)m_hshMemberCount.Lookup(pzTag);
+		if (pCount)
+			(*pCount)++;
+		else
+		{
+			__int64 *i = new __int64;
+			*i = 1;
+			m_hshMemberCount.Insert(pzTag,i);
+		}
+
+
 		return d;
 	}
 	DynamicXMLObject* GetSubObject( const char *pzTag, int nIndex = 0 )
@@ -191,6 +209,14 @@ public:
 		FreeMemberDescriptors();
 		if (m_plstSubObjects)
 			delete m_plstSubObjects;
+
+
+		GHashIterator it(&m_hshMemberCount);
+		while( it() )
+		{
+			delete (__int64 *)it++;
+		}
+
 	}
 	DynamicXMLObject( const char *pzTag )
 	{
@@ -203,9 +229,11 @@ public:
 		m_plstSubObjects = new GList;
 		m_pUserObject = 0;
 		m_lAutoSync = 0;
+		m_ndupIndex = 0;
+
 		nInstanceCount++;
 //		printf("++DXOInstanceCount=%d\n",nInstanceCount);
-	}	
+	}
 	bool IsXMLTag(const char *pzTag)
 	{
 		int n = m_strThisObjectXMLTag.CompareNoCase(pzTag);
@@ -215,11 +243,47 @@ public:
 	{
 		XMLObject::FromXML(pzXML);
 	}
-	
+
 	// XMLObjectDataHandler Interface
-	virtual void SetObjectValue(const char *strSource, __int64 nLength, int nType){ m_strObjectValue = strSource;}
+	virtual void SetObjectValue(const char *strSource, __int64 nLength, int nType){
+		m_strObjectValue = strSource;
+	}
 	const char * GetObjectValue(){ return m_strObjectValue;}
-	virtual void AppendObjectValue(GString& xml){if (m_strObjectValue.Length()) { xml << (const char *)m_strObjectValue;} }
+	virtual void AppendObjectValue(GString& xml){
+		if (m_strObjectValue.Length())
+		{
+			xml << (const char *)m_strObjectValue;
+		}
+	}
+
+	// called directly by the ObjectFactory to get a new Object based on the supplied tag.
+	virtual XMLObject *GetObject(const char *pzTag,
+								 const char *pzOID,
+								 const char *pzUpdateTime,
+								 int *bDidCreate)
+	{
+		*bDidCreate = 0;
+
+
+		DynamicXMLObject *d = new DynamicXMLObject(pzTag);
+		m_plstSubObjects->AddLast(d);
+		m_pLastIssuedObject = d;
+
+
+		__int64 *pCount = (__int64 *)m_hshMemberCount.Lookup(pzTag);
+		if (pCount)
+			(*pCount)++;
+		else
+		{
+			__int64 *i = new __int64;
+			*i = 1;
+			m_hshMemberCount.Insert(pzTag,i);
+		}
+
+
+
+		return d;
+	}
 
 
 	// Member Handler Interface - called by the XML factory process
@@ -239,27 +303,27 @@ public:
 		}
 		return true;
 	}
-
-	// called directly by the ObjectFactory to get a new Object based on the supplied tag.
-	virtual XMLObject *GetObject(const char *pzTag, 
-								 const char *pzOID,
-								 const char *pzUpdateTime,
-								 int *bDidCreate)
+	virtual void *ObjectMessage( int nCase, const char *pzArg1, const char *pzArg2, __int64 nArg3 = 0, void *pArg4 = 0 )
 	{
-		*bDidCreate = 0;
+		if (nCase == MSG_XML_ASSIGN)
+		{
+//			pzArg1 = Tag Name
+//			pzArg2 = Value
+//			nArg3 = Length
 
-		DynamicXMLObject *d = new DynamicXMLObject(pzTag);
-		m_plstSubObjects->AddLast(d);
-		m_pLastIssuedObject = d;
-		return d;
-	}
+//			SetMemberVar( pzArg1, pzArg2, 1 ); // when 1, updates items in a stringlist to replace each other as they have the same element tag
+//			SetMemberVar( pzArg1, pzArg2, 0 ); // when 0 - no update
+			SetMember(pzArg1, pzArg2); // works faster than SetMemberVar() by avoiding list walking also supports duplicates whereas SetMemberVar() does not
+		}
+		return 0;
+	};
 
 	void AddSubObject( DynamicXMLObject *d ) {m_plstSubObjects->AddLast(d);}
 
 	void SetMemberVar( const char *pzTag, const char *pzValue, int nUpdate = 1 )
 	{
 		GListIterator Iter(m_plstSubObjects);
-		
+
 		// this searches the list first before adding the new item
 		// it may be unnecessary.
 		int nFound = 0;
@@ -278,9 +342,9 @@ public:
 		}
 		if (!nFound)
 		{
-			DynamicXMLObject *d = new DynamicXMLObject(pzTag);
-			d->SetObjectValue(pzValue, -1, 0);
-			m_plstSubObjects->AddLast(d);
+			DynamicXMLObject *d2 = new DynamicXMLObject(pzTag);
+			d2->SetObjectValue(pzValue, -1, 0);
+			m_plstSubObjects->AddLast(d2);
 		}
 	}
 
@@ -299,9 +363,9 @@ public:
 		return 0;
 	}
 
-	virtual bool GetMember( const char *pzTag,
-							GString &strAppendValueDestination)
+	virtual bool GetMember( const char *pzTag,	GString &strAppendValueDestination)
 	{
+		__int64 *pCount = (__int64 *)m_hshMemberCount.Lookup(pzTag);
 		GListIterator Iter(m_plstSubObjects);
 		while ( Iter() )
 		{
@@ -315,25 +379,48 @@ public:
 	}
 
 
-	// custom object streaming for you to handle serialization of 
-	// complex objects. This member will only be called if you 
+	// custom object streaming for you to handle serialization of
+	// complex objects. This member will only be called if you
 	// returned true from IsMemberObject().
-	virtual void StreamObject(	const char *pzTag, 
-								GString& xml, 
-								int nDebugBeautifyTabs, 
-								bool bForceOutput)
+	virtual void StreamObject(const char *pzTag, GString& xml, int nDebugBeautifyTabs,  bool bForceOutput)
 	{
 		if (m_strObjectValue.Length())
 			xml << m_strObjectValue;
-		
+
+		__int64 *pCount = (__int64 *)m_hshMemberCount.Lookup(pzTag);
+		if (pCount)
+		{
+			if (*pCount > 1)
+			{
+				// we have been asked to stream member [pzTag], but there is > 1.
+				m_ndupIndex++;
+			}
+
+		}
+
+		__int64 nDXOIndex=0;
 		GListIterator Iter(m_plstSubObjects);
 		while ( Iter() )
 		{
 			DynamicXMLObject *d = (DynamicXMLObject*)Iter++;
 			if (d->IsXMLTag(pzTag))
 			{
-				d->ToXML(&xml,nDebugBeautifyTabs);
-				break;
+				nDXOIndex++; // the Nth time [pzTag] has been found in member list [m_plstSubObjects]
+				if (m_ndupIndex)
+				{
+					if(nDXOIndex == m_ndupIndex)
+					{
+						d->ToXML(&xml,nDebugBeautifyTabs);
+						break;
+					}
+					else
+						continue;
+				}
+				else
+				{
+					d->ToXML(&xml,nDebugBeautifyTabs);
+					break;
+				}
 			}
 		}
 	}
@@ -358,8 +445,8 @@ public:
 			while ( Iter() )
 			{
 				XMLAttributeList::XMLAttributeNameValuePair *temp =
-					(XMLAttributeList::XMLAttributeNameValuePair *)Iter++;
-				xml << " " << temp->strAttrName << "=\"" << temp->strAttrValue << "\"";	
+						(XMLAttributeList::XMLAttributeNameValuePair *)Iter++;
+				xml << " " << temp->strAttrName << "=\"" << temp->strAttrValue << "\"";
 			}
 		}
 		xml << '>';
@@ -379,7 +466,7 @@ public:
 	// custom attribute management
 	virtual bool SetAttribute(const char *pzAttrib, const char *pzVal)
 	{
-		return true;	
+		return true;
 	}
 };
 

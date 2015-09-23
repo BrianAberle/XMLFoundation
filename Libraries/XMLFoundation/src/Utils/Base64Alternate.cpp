@@ -28,6 +28,12 @@
 #include "Base64Alternate.h"
 #include <iostream>
 
+// --UBT
+#ifdef _ANDROID // needed for isalnum() and isdigit() in Android NDK, apparently Linux and Windows define them in <iostream>
+	#include <ctype.h>
+#endif
+
+
 #pragma warning (disable:4267) // conversion from 'size_t' to 'int', possible loss of data
 
 static const std::string base64_chars = 

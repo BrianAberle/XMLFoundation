@@ -14,7 +14,10 @@
 // symbols truncated in the browser database unless MSVC has corrected this
 #pragma warning (disable:4786) 
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #include "xmlObjectFactory.h"
 #include "xmlObject.h"
@@ -891,13 +894,11 @@ void XMLObjectFactory::SetObjectOrElementAttributeValue(xml::token **attNameTok,
 		if ( !nMapped )
 		{
 			// add attributes to this member if it is mapped to the object
-			if ( pMap && pMap->DataType == 
-									MemberDescriptor::ManagedByDerivedClass )
+			if ( pMap &&    pMap->DataType ==  MemberDescriptor::ManagedByDerivedClass )
 			{
 				if ( pMap->m_Member.pObject )
 				{
-					pMap->m_DataAbstractor.pMemberHandler->
-										SetAttribute(strAttributeName, m_token.get());
+					pMap->m_DataAbstractor.pMemberHandler->SetAttribute(strAttributeName, m_token.get());
 				}
 			}
 			else if (pMap)

@@ -20,7 +20,10 @@
 
 #include <stdio.h>
 
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #include <memory.h>
 #include <string.h> // needed for memcpy() definition on Android build

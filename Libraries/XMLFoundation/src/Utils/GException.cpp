@@ -11,7 +11,9 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 #include "GlobalInclude.h"
-static char SOURCE_FILE[] = __FILE__;
+#ifndef _LIBRARY_IN_1_FILE
+	static char SOURCE_FILE[] = __FILE__;
+#endif
 #undef new
 
 #include "GException.h"

@@ -1,5 +1,8 @@
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #if defined(_WIN32)
 #  define NO_vsnprintf  // added 7/9/09 for VS2008

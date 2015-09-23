@@ -42,7 +42,13 @@ static char SOURCE_FILE[] = __FILE__;
 #ifdef _LINUX 
 	#include <stdio.h>      
 	#include <sys/types.h>
-	#include <ifaddrs.h>
+	#ifdef _ANDROID
+		#include <GSocketHelpersAndroid.h> // <ifaddrs.h> is not part of Android, so GSocketHelpersAndroid.h implements that and other missing bits in Android
+	    #include <Utils/GSocketHelpersAndroid.cpp> 
+	#else
+		#include <ifaddrs.h>
+	#endif
+
 	#include <netinet/in.h> 
 	#include <string.h> 
 	#include <arpa/inet.h>

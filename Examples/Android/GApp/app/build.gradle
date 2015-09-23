@@ -1,0 +1,75 @@
+apply plugin: 'com.android.model.application'
+model {
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.0"
+
+        defaultConfig.with {
+            applicationId = "com.android.gapp"
+            minSdkVersion.apiLevel = 11
+            targetSdkVersion.apiLevel = 11
+        }
+
+    }
+    android.ndk {
+        moduleName = "GAppNative"
+
+        cppFlags += "-frtti"
+        cppFlags += "-fexceptions"
+        cppFlags += "-c"
+        cppFlags += "-O3"
+        cppFlags += "-w"
+        cppFlags += "-D_LINUX"
+        cppFlags += "-D_ANDROID"
+        cppFlags += "-fpermissive"
+        cppFlags += "-IC:\\XMLFoundation\\Libraries\\XMLFoundation\\inc"
+        cppFlags += "-IC:\\XMLFoundation\\Libraries\\XMLFoundation\\src"
+        cppFlags += "-IC:\\XMLFoundation\\Servers\\Core"
+
+        // CFlags is configured in similar way as cppFlags
+        // CFlags += "-I${file("src/main/jni/native_app_glue")}".toString()
+        ldFlags += "-lc:\\XMLFoundation\\Libraries\\openssl\\bin-androidARM\\libssl.a"
+        ldFlags += "-lc:\\XMLFoundation\\Libraries\\openssl\\bin-androidARM\\libcrypto.a"
+
+
+        ldLibs += ["android", "dl", "log"]
+        stl = "stlport_static"
+    }
+    // jni is the default dir; config this if yours is in different directory
+    android.sources {
+        main {
+            jni {
+                source {
+                    srcDirs 'src/main/jni'
+                }
+            }
+        }
+    }
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles += file('proguard-rules.txt')
+        }
+    }
+    android.productFlavors {
+        create("arm7") {
+            ndk.abiFilters += "armeabi-v7a"
+        }
+        create("arm8") {
+            ndk.abiFilters += "arm64-v8a"
+        }
+        create("x86-32") {
+            ndk.abiFilters += "x86"
+        }
+        // for detailed abiFilter descriptions, refer to "Supported ABIs" @
+        // https://developer.android.com/ndk/guides/abis.html#sa
+        // build one including all productFlavors
+        create("fat")
+    }
+}
+
+dependencies {
+    compile files('src/main/jni/android-support-v4.jar')
+    compile files('src/main/jni/httpcore-4.1.jar')
+    compile files('src/main/jni/httpclient-4.1.1.jar')
+}

@@ -2,7 +2,10 @@
 //	Author unknown.
 
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #include "Base64.h"
 #include <memory.h> // for : memcpy()

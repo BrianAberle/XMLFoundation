@@ -11,7 +11,10 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 #include "GlobalInclude.h"
-static char SOURCE_FILE[] = __FILE__;
+#ifndef _LIBRARY_IN_1_FILE
+	static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #include "GString.h"
 #include "GString0.h"
@@ -4504,7 +4507,7 @@ bool GString::Compress( )
 			converted = iconv(cd, (char **)&inbuf, &inleft, &outbuf, &outleft);
 			if (converted != (size_t)-1 || errno == EINVAL) 
 			{
-				// EINVAL  An  incomplete  multibyte sequence has been encoun­-tered in the input.  We'll just truncate it and ignore it.
+				// EINVAL  An  incomplete  multibyte sequence has been encounï¿½-tered in the input.  We'll just truncate it and ignore it.
 				break;
 			}
 
@@ -4806,3 +4809,13 @@ void GString::SetString(const char *pxSrc, int nBytes ) // nBytes defaults to -1
 }
 
 
+__int64 GString::OccurrenceCount(char chCharToCount)
+{
+	__int64 nReturnCount = 0;
+	for(__int64 i=0; i<_len; i++)
+	{
+		if (_str[i] == chCharToCount)
+			nReturnCount++;
+	}
+	return nReturnCount;
+}

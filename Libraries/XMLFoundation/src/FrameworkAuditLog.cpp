@@ -11,7 +11,13 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
+
+
+
 
 #include "FrameworkAuditLog.h"
 #include "GProfile.h"

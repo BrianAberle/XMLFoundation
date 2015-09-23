@@ -1,4 +1,4 @@
-//#define ___XFER			// http://1drv.ms/1fo7Asp     // links to the Xfer binary created on 11/26/2014  
+//#define ___XFER		    // Xfer binary created on 8/18/2015
 //#define ___XFER_SRC
 
 
@@ -494,9 +494,25 @@ void MakePassword( GString strPassword )
 	// easy to find for the brief time that it exists.
 }
 
+
+//void DebugServiceStartup(char *pzMsg)
+//{
+//	GString g(pzMsg);
+//	char pzName[512];  // get the path and file name containing the compiled executable machine code for this process.
+//	memset(pzName, 0, 512);
+//	GetModuleFileName(NULL, pzName, 512);
+//	GString strSameDirLogFile(pzName);
+//	strSameDirLogFile.TrimRightBytes(4); // lop off the ".exe" so "c:\a\b\c\file.exe" becomes "c:\a\b\c\file"
+//	strSameDirLogFile << "Startuplog.txt";  // tack this on and remember that an executable file can be renamed
+//	g.ToFileAppend(strSameDirLogFile);
+//}
+
+
+
 // this is the main() for this service.
 void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv) 
 {
+
 
 #ifdef _WIN64
 	unsigned __int64 dwCompKey  = CK_SERVICECONTROL;
@@ -566,6 +582,7 @@ void WINAPI FiveLoavesServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 			strPassword = "Password";
 	//	g_strFinalRunTimePassword = strPassword;  // this was used by ThreadConsole() removed 2014
 	////////////////////////////////////////////////////////////////////////////////////////////
+
 
       switch (dwCompKey) 
 	  {
@@ -971,9 +988,14 @@ void StartService()
 
 
 //////////////////////////////////////////////////////////////////////////////
+SERVICE_TABLE_ENTRY ServiceTable[] = {
+		{ pzServer, FiveLoavesServiceMain },
+		{ NULL, NULL } };   // End of list
+
 
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hinstExePrev, LPSTR pszCmdLine, int nCmdShow) 
 {
+
 	//
 	// ***** To debug this application  ****
 	// set fDebug to 1, then recompile and run the program in a debugger like any windows .exe
@@ -1079,14 +1101,11 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE hinstExePrev, LPSTR pszCmdLine, in
 	strcpy(pzServer,strServerName);
 	if (bStartService) 
 	{
-		SERVICE_TABLE_ENTRY ServiceTable[] = {
-			{ pzServer, FiveLoavesServiceMain },
-			{ NULL,        NULL }   // End of list
-	};
-	StartServiceCtrlDispatcher(ServiceTable);
-   
-   }
-   return 0;
+
+		StartServiceCtrlDispatcher(ServiceTable);
+	}
+
+	return 0;
 }
 
 

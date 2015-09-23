@@ -89,6 +89,11 @@
 // So - For the purposes of "Store and Forward" SMTP these interfaces work, and the algorithm implementations were only slightly modified to build into XMLFoundation without conflict.
 // Therefore, the XMLFoundation has both implementations (of MD5 and Base64) the implementations that came with "CSmtp" and the pre-existing implementations in the XMLFoundation.
 //
+#include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
+	static char SOURCE_FILE[] = __FILE__;
+#endif
+
 #include "CSmtp.h"
 #include "Base64Alternate.h"
 #include "Base64Alternate.cpp" 
@@ -122,8 +127,7 @@
 				#define _SS_PAD2SIZE (_SS_MAXSIZE - (sizeof(USHORT) + _SS_PAD1SIZE + _SS_ALIGNSIZE))
 				#else
 				#define _SS_PAD1SIZE (_SS_ALIGNSIZE - sizeof (short))
-				#define _SS_PAD2SIZE (_SS_MAXSIZE - (sizeof (short) + _SS_PAD1SIZE \
-				+ _SS_ALIGNSIZE))
+				#define _SS_PAD2SIZE (_SS_MAXSIZE - (sizeof (short) + _SS_PAD1SIZE + _SS_ALIGNSIZE))
 				#endif //(_WIN32_WINNT >= 0x0600)
 
 				typedef struct sockaddr_storage {
@@ -172,8 +176,8 @@ using std::string;
 	#ifdef _WIN32
 		#ifdef _WIN64
 			#  if defined(_MSC_VER) && _MSC_VER < 1900 // for VS2003 VS2005 VS2012 and VS2013 
-				#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/libeay32.lib")	
-				#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/ssleay32.lib")
+				#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")	
+				#pragma comment(lib,    "../../Libraries/openssl/bin-win64/ssleay32.lib")
 			#else
 				// VS2015 apparently no longer supports relative linking in a pragma 
 				// Is this a VS2015 Bug?  Hardcoding the path is a workaround that works - but VS2015 users MUST unzip the source to C:\ 
@@ -186,8 +190,8 @@ using std::string;
 			#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib")
 			#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/ssleay32.lib")
 		#else
-			#pragma comment(lib,    "../../../Libraries/openssl/bin-win32/libeay32.lib")
-			#pragma comment(lib,    "../../../Libraries/openssl/bin-win32/ssleay32.lib")
+			#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+			#pragma comment(lib,    "../../Libraries/openssl/bin-win32/ssleay32.lib")
 		#endif
 
 //  --UBT Note:  openssl uses _iob.   // It has gone missing from the C Runtime.  Read about it:
@@ -1099,7 +1103,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				// if ustrPassword is longer than 64 bytes reset it to ustrPassword=MD5(ustrPassword)
 				int passwordLength=m_sPassword.size();
 				if(passwordLength > 64){
-					MD5 md5password;
+					MD5Alt md5password;
 					md5password.update(ustrPassword, passwordLength);
 					md5password.finalize();
 					ustrPassword = md5password.raw_digest();
@@ -1120,14 +1124,14 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				}
 
 				//perform inner MD5
-				MD5 md5pass1;
+				MD5Alt md5pass1;
 				md5pass1.update(ipad, 64);
 				md5pass1.update(ustrChallenge, decoded_challenge.size());
 				md5pass1.finalize();
 				unsigned char *ustrResult = md5pass1.raw_digest();
 
 				//perform outer MD5
-				MD5 md5pass2;
+				MD5Alt md5pass2;
 				md5pass2.update(opad, 64);
 				md5pass2.update(ustrResult, 16);
 				md5pass2.finalize();
@@ -1240,7 +1244,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				if(!ustrRealm || !ustrUsername || !ustrPassword || !ustrNonce || !ustrCNonce || !ustrUri || !ustrNc || !ustrQop)
 					throw ECSmtp(ECSmtp::BAD_LOGIN_PASSWORD);
 
-				MD5 md5a1a;
+				MD5Alt md5a1a;
 				md5a1a.update(ustrUsername, m_sLogin.size());
 				md5a1a.update((unsigned char*)":", 1);
 				md5a1a.update(ustrRealm, realm.size());
@@ -1249,7 +1253,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				md5a1a.finalize();
 				unsigned char *ua1 = md5a1a.raw_digest();
 
-				MD5 md5a1b;
+				MD5Alt md5a1b;
 				md5a1b.update(ua1, 16);
 				md5a1b.update((unsigned char*)":", 1);
 				md5a1b.update(ustrNonce, nonce.size());
@@ -1259,7 +1263,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				md5a1b.finalize();
 				char *a1 = md5a1b.hex_digest();
 				
-				MD5 md5a2;
+				MD5Alt md5a2;
 				md5a2.update((unsigned char*) "AUTHENTICATE:", 13);
 				md5a2.update(ustrUri, uri.size());
 				//authint and authconf add an additional line here	
@@ -1271,7 +1275,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				unsigned char *ua2 = CharToUnsignedChar(a2);
 				
 				//compute KD
-				MD5 md5;
+				MD5Alt md5;
 				md5.update(ua1, 32);
 				md5.update((unsigned char*)":", 1);
 				md5.update(ustrNonce, nonce.size());

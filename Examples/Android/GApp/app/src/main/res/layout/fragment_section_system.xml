@@ -1,0 +1,80 @@
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollView"
+
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:scrollbars="vertical"
+        android:layout_gravity="right|center_vertical"
+        android:fillViewport="true" >
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:layout_gravity="left|top"
+            android:focusable="false"
+             />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/clear"
+        android:layout_width="81dp"
+        android:layout_height="wrap_content"
+        android:text="Clear"
+        android:layout_gravity="right|bottom" />
+
+    <Button
+        android:id="@+id/pids"
+        android:layout_width="92dp"
+        android:layout_height="wrap_content"
+        android:text="Pids"
+        android:layout_gravity="left|bottom" />
+
+    <Button
+        android:id="@+id/ports"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="Ports"
+        android:layout_gravity="center_horizontal|bottom" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kill"
+        android:id="@+id/one"
+        android:layout_gravity="left|top" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Execute"
+        android:id="@+id/buttonExec"
+        android:layout_gravity="right|top" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_above="@+id/scrollview"
+        android:layout_toLeftOf="@+id/one"
+        android:layout_height="wrap_content"
+        android:id="@+id/editCommand"
+        android:layout_gravity="center_horizontal|top" />
+
+</FrameLayout>

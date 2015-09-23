@@ -39,8 +39,8 @@ documentation and/or software.
 
 */
 #pragma once
-#ifndef __MD5_H__
-#define __MD5_H__
+#ifndef __MD5_HH__
+#define __MD5_HH__
 
 #include <stdio.h>
 #include <fstream>
@@ -48,11 +48,12 @@ using namespace std;
 #include <iostream>
 using namespace std;
 
-class MD5 {
+
+class MD5Alt {
 
 public:
 // methods for controlled operation:
-  MD5              ();  // simple initializer
+  MD5Alt              ();  // simple initializer
   void  update     (unsigned char *input, unsigned int input_length);
   void  update     (istream& stream);
   void  update     (FILE *file);
@@ -60,16 +61,16 @@ public:
   void  finalize   ();
 
 // constructors for special circumstances.  All these constructors finalize
-// the MD5 context.
-  MD5              (unsigned char *string); // digest string, finalize
-  MD5              (istream& stream);       // digest stream, finalize
-  MD5              (FILE *file);            // digest file, close, finalize
-  MD5              (ifstream& stream);      // digest stream, close, finalize
+// the MD5Alt context.
+  MD5Alt              (unsigned char *string); // digest string, finalize
+  MD5Alt              (istream& stream);       // digest stream, finalize
+  MD5Alt              (FILE *file);            // digest file, close, finalize
+  MD5Alt              (ifstream& stream);      // digest stream, close, finalize
 
 // methods to acquire finalized result
   unsigned char    *raw_digest ();  // digest as a 16-byte binary array
   char *            hex_digest ();  // digest as a 33-byte ascii-hex string
-  friend ostream&   operator<< (ostream&, MD5 context);
+  friend ostream&   operator<< (ostream&, MD5Alt context);
 
 
 
@@ -111,4 +112,4 @@ private:
 
 };
 
-#endif // __MD5_H__
+#endif // __MD5_HH__

@@ -1,0 +1,99 @@
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+    </LinearLayout>
+
+
+    <ScrollView
+        android:id="@+id/scrollViewValue"
+
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="40dp"
+        android:scrollbars="vertical"
+        android:layout_gravity="right|top"
+        android:fillViewport="true" >
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:inputType="text"
+            android:ems="10"
+            android:id="@+id/editTextValue"
+            android:layout_gravity="left|top"
+            android:focusable="true"
+            android:editable="true" />
+    </ScrollView>
+
+
+
+    <ScrollView
+        android:id="@+id/scrollView"
+
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="40dp"
+        android:scrollbars="vertical"
+        android:layout_gravity="top|center_vertical"
+        android:fillViewport="true" >
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:layout_gravity="left|top"
+            android:focusable="false"
+             />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/clear"
+        android:layout_width="81dp"
+        android:layout_height="wrap_content"
+        android:text="Clear"
+        android:layout_gravity="right|bottom" />
+
+    <Button
+        android:id="@+id/showall"
+        android:layout_width="92dp"
+        android:layout_height="wrap_content"
+        android:text="Preview"
+        android:layout_gravity="left|bottom" />
+
+    <Button
+        android:id="@+id/send"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="send"
+        android:layout_gravity="center_horizontal|bottom" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set"
+        android:id="@+id/setvalue"
+        android:layout_gravity="right|top" />
+
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="55dp"
+        android:id="@+id/spinner"
+        android:layout_gravity="left|top"
+         />
+
+</FrameLayout>

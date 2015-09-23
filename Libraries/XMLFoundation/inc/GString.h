@@ -346,6 +346,9 @@ public:
 	// for CSimpleStringT interop,  SetString is implemented as "append", calling Empty() will make it "assign"
 	void SetString(const char *pxSrc, int nBytes = -1);		//  { if ( nBytes < 0 ) write(pxSrc,strlen(pxSrc) ); else write(pxSrc,nBytes );		}
 
+	// returns the number of [chCharToCount] in 'this'
+	__int64 OccurrenceCount(char chCharToCount);
+	//__int64 OccurrenceCount(const char *pzSubStringToCount, bool bMatchCase=1);
 
 
 	// a fast 'truncate' of the string length

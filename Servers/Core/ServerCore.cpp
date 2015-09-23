@@ -1,7 +1,6 @@
-
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2014  All Rights Reserved.
+//			  Copyright (c) 2000 - 2015  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -102,7 +101,7 @@ GList g_lstActivePlugins;
 			#elif __WINPHONE
 				#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib") // the extra .. needs to be there for the WindowsPhone example
 			#else
-				#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+//				#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
 
 				//  openssl uses _iob
 				//	https://social.msdn.microsoft.com/Forums/vstudio/en-US/4a1c9610-fa41-45f6-ad39-c9f6795be6f2/msvcrt-iob-disappeared?forum=vclanguage#page:2
@@ -11414,7 +11413,7 @@ RETRY_FOR_LINUX:
 
 			// if you do "too much"(per config file) connection traffic
 			// slow down this guys transaction rate by dropping the connection.
-			if ( ConnectionCounter(strConnectedIPAddress,1) > g_nMaxConnections ) 
+			if ( g_nMaxConnections && ConnectionCounter(strConnectedIPAddress,1) > g_nMaxConnections ) 
 			{
 				TCD.pTSD->nTooMany++;
 
@@ -12024,7 +12023,29 @@ int server_start(const char *pzStartupMessage = 0)
 	gthread_create(&listen_thr,	NULL, loggingThread, 0 );
 
 
-	InfoLog(777,"Log File Notes: tid = 'Thread ID'    seq = HTTP Sequence or times the connection was 'Keep-Alive' fd='File Descriptor' which is a socket() handle.  fd's in the 200 range are a ProxyHelperThread() and fd's < 100 are a clientthread()");
+
+	g_SwitchBoard.SetInfoLog( InfoLog );
+
+#ifdef ___XFER
+	g_XferSwitchBoard.SetInfoLog( InfoLog );
+	SetXferSwitchBoardConnect( SBConnect );
+	SetXferWaitForReply( SBWaitForReply );
+	SetXferInfoLog( InfoLog );
+	// this forces logging to be on during startup regardless of logfile configuration - it only logs to memory
+	g_LogCache = 1;
+	int g_NoLogPush = g_NoLog;
+	g_NoLog = 0;
+	int g_bDisableLogPush = g_bDisableLog;
+	g_bDisableLog = 0;
+
+#endif
+#ifdef __CUSTOM_CORE__
+	#include "ServerCoreCustomServerStart.cpp"
+#endif
+
+
+
+//	InfoLog(777,"Log File Notes: tid = 'Thread ID'    seq = HTTP Sequence or times the connection was 'Keep-Alive' fd='File Descriptor' which is a socket() handle.  fd's in the 200 range are a ProxyHelperThread() and fd's < 100 are a clientthread()");
 
 	GString strStartup("Server starting at:");
 	strStartup << g_strThisIPAddress;
@@ -12038,17 +12059,7 @@ int server_start(const char *pzStartupMessage = 0)
 	strftime(pzTime, 128, "Date: %a, %d %b %Y %H:%M:%S GMT\r\n", newtime);
 	InfoLog(323,pzTime);
 
-	g_SwitchBoard.SetInfoLog( InfoLog );
 
-#ifdef ___XFER
-	g_XferSwitchBoard.SetInfoLog( InfoLog );
-	SetXferSwitchBoardConnect( SBConnect );
-	SetXferWaitForReply( SBWaitForReply );
-	SetXferInfoLog( InfoLog );
-#endif
-#ifdef __CUSTOM_CORE__
-	#include "ServerCoreCustomServerStart.cpp"
-#endif
 
 try
 {
@@ -12174,7 +12185,6 @@ try
 			strcpy(pTSD->szConfigSectionName,"TXML");
 		}
 	}
-
 
 	if ( GetProfile().GetBoolean("HTTPProxy","Enable",false) )
 	{
@@ -12310,10 +12320,16 @@ try
 	gthread_create(&listen_thr,	NULL, SwitchBoardPoll, (void *)0 );
 
 	gthread_create(&listen_thr,	NULL, SystemTrace, (void *)0 );
-// HOOK:protocol init
+
 #ifdef __CUSTOM_CORE__
 	#include "ServerCoreCustomServerStarted.cpp"
 #endif
+#ifdef ___XFER
+	XferStartupNotify(&g_strCachedLog);
+	g_NoLog = g_NoLogPush;
+	g_bDisableLog = g_bDisableLogPush;
+#endif
+
 
 }
 
@@ -12830,8 +12846,8 @@ void DeHexUUCipher(GString *pStrIn, GString *pStrDest, const char *pzPass)
 
 
 	pStrDest->WriteOn(pWkBuf,nBitsCrypted/8);
-//	pStrDest->TrimRight('¿');      // this was the code prior to Nov 3, 2010 replaced with...
-	pStrDest->TrimRight((char)168);// For Chinese character support the ¿ was represented in its ascii base 10 numerical equivalent.
+//	pStrDest->TrimRight('ï¿½');      // this was the code prior to Nov 3, 2010 replaced with...
+	pStrDest->TrimRight((char)168);// For Chinese character support the ï¿½ was represented in its ascii base 10 numerical equivalent.
 
 	delete pWkBuf;
 }
@@ -12843,14 +12859,14 @@ void EnHexUUCipher(GString *pStrIn, GString *pStrDest, const char *pzPass)
 	unsigned char nPad = (16 - ((int)pStrIn->Length()) % 16);
 	nPad = (nPad == 16) ? 0 : nPad;
 	// pad it
-	pStrIn->PadRight(pStrIn->Length() + nPad,(char)168); // 168 is seen as'¿'
+	pStrIn->PadRight(pStrIn->Length() + nPad,(char)168); // 168 is seen as'ï¿½'
 	char *pWkBuf = new char[(int)pStrIn->Length()+16];
 
 	CipherData en(pzPass,DIR_ENCRYPT);
 	int nBitsCrypted = en.blockEncrypt ((unsigned char *)pStrIn->StrVal(),((int)pStrIn->Length())*8,(unsigned char *)pWkBuf);
 
-//	pStrIn->TrimRight('¿',nPad); // lop off the pad so the input is 'const' - this was the code prior to Nov 3, 2010 replaced with...
-	pStrIn->TrimRight((char)168,nPad);  // For Chinese character support the ¿ was represented in its ascii base 10 numerical equivalent.
+//	pStrIn->TrimRight('ï¿½',nPad); // lop off the pad so the input is 'const' - this was the code prior to Nov 3, 2010 replaced with...
+	pStrIn->TrimRight((char)168,nPad);  // For Chinese character support the ï¿½ was represented in its ascii base 10 numerical equivalent.
 
 	// uuencode it
 	BUFFER b;	

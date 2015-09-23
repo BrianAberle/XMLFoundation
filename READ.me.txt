@@ -59,7 +59,7 @@ then rename [/Libraries/XMLFoundation/inc/opensslLinux]   to   [/Libraries/XMLFo
 ----------------------------------------------------------
 
 
-Then Build the XML library
+Then Build the XMLFoundation library
 -----------------------------
 
 move to the [Libraries/XMLFoundation/Build] folder, then type:

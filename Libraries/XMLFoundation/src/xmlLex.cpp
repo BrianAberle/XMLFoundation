@@ -14,7 +14,10 @@
 
 // Fast, portable, non-validating, XML Lexical Analyzer 
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #include "xmlLex.h"
 #include <string.h> // for: strlen(), memcpy(), memcmp(), strcmp(), memset()

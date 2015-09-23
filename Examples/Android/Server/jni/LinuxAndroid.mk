@@ -13,6 +13,7 @@ include $(CLEAR_VARS)
 #
 #
 # This works, and produces a warning that does not seem to be a problem
+LOCAL_LDFLAGS += -l/home/user/XMLFoundation/Libraries/openssl/bin-androidARM/libssl.a
 LOCAL_LDFLAGS += -l/home/user/XMLFoundation/Libraries/openssl/bin-androidARM/libcrypto.a
 #
 #######################################################################################################
@@ -30,6 +31,7 @@ LOCAL_SRC_FILES  :=	 ../../../Examples/Android/Server/jni/Server.cpp\
 					 ../../../Servers/Core/ServerCore.cpp\
 					 Utils/GSocketHelpers.cpp\
 					 Utils/GArray.cpp\
+					 Utils/CSmtp.cpp\
 					 Utils/GBTree.cpp\
 					 Utils/GException.cpp\
 					 Utils/GHash.cpp\

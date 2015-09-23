@@ -89,7 +89,12 @@
 	#include <netdb.h>			// for gethostbyname()
 	#include <unistd.h>			// for unlink()
 	#include <netinet/tcp.h>	// for no reason other than the #define of TCP_NODELAY (==1)
-    #include <ifaddrs.h>		// for ifaddrs and getifaddrs()
+	#ifdef _ANDROID
+		#include <GSocketHelpersAndroid.h> // <ifaddrs.h> is not part of Android, so GSocketHelpersAndroid.h implements that and other missing bits in Android
+	#else
+		#include <ifaddrs.h>    // for ifaddrs and getifaddrs()
+	#endif
+
 #endif
 
 
@@ -148,8 +153,9 @@ BOOL CALLBACK EnumWindowsProc(   HWND hwnd,    DWORD lParam   )
 
 
 //#ifdef WINCE
- //typedef BOOL (CALLBACK *PROCENUMPROC)( DWORD, DWORD, WORD, LPSTR, LPARAM ) ;
+//  typedef BOOL (CALLBACK *PROCENUMPROC)( DWORD, DWORD, WORD, LPSTR, LPARAM ) ;
 //#endif
+
 #if defined(_WIN32) && !defined(WINCE)
 BOOL WINAPI EnumProcs( PROCENUMPROC lpProc, LPARAM lParam ) ;
 #include <vdmdbg.h>
@@ -553,7 +559,6 @@ struct MoreTreadInfo
 
 #ifdef _ANDROID
 
-extern void JavaShellExec(GString &strCommand, GString &strResult); // in Library/src/JNI/Xfer.cpp
 
 void ParseAndroidProcessInfo(GString &g,GString &strResult)
 {
@@ -625,6 +630,7 @@ void ParseAndroidProcessInfo(GString &g,GString &strResult)
 #endif
 
 
+extern void JavaShellExec(GString &strCommand, GString &strResult); // in GAppServer.cpp
 
 
 
@@ -690,6 +696,8 @@ void GetProcessList( GString *pstrResults )
 	// Android has no popen() implemented, we will JNI up to the Java bootloader application
 	// which executes the same via code in the JVM.
 	GString strCommand("ps");
+//	GString strCommand("ps -eo comm:15,pid:7,pcpu:5,sz:8,etime:12,command:25,pri:4");
+
 	GString strCmdResult;
 	JavaShellExec(strCommand, strCmdResult); // executes any command that the ADB Debugger can.
 
@@ -706,7 +714,7 @@ void GetProcessList( GString *pstrResults )
 		if (i == pstrResults->Length()-1)
 		{
 			GString g(strCmdResult.StartingAt(nStart));
-			ParseAndroidProcessInfo(g,*pstrResultst);
+			ParseAndroidProcessInfo(g,*pstrResults);
 		}
 	}
 #else
@@ -910,67 +918,71 @@ bool GetNetworkConnections(GString &strResults, int nFlags)
 
 
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//										Get TCP4 Table
-	int res = GetTCPTable(buffer, &nSize, true, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0);
-	if (res != 0) //If there is not enough memory to execute function
+	if ( ( nFlags & NET_FLAG_NO_TCP4 ) == 0)
 	{
-		FreeLibrary(hstLibrary);
-		return false;
-	}
-	PMIB_TCPTABLE_OWNER_PID tcp4Table = (PMIB_TCPTABLE_OWNER_PID)(void *)&buffer[0];
 
-	for (unsigned int i = 0; i < tcp4Table->dwNumEntries; i++)
-	{
-		int nPID = tcp4Table->table[i].dwOwningPid;
-		
-		GString strConnectedIPAddress;
-		GString strConnectedIPAddress2;
-
-		GProcessListRow *pRow = (GProcessListRow *)hashProcessSnapshot.Lookup((unsigned int)nPID);
-		if(!pRow)
-			pRow = &defaultRow;
-
-		if (tcp4Table->table[i].dwLocalAddr != 0)
+		int res = GetTCPTable(buffer, &nSize, true, AF_INET, TCP_TABLE_OWNER_PID_ALL, 0);
+		if (res != 0) //If there is not enough memory to execute function
 		{
-			struct in_addr addr;
-			addr.S_un.S_addr = tcp4Table->table[i].dwLocalAddr;
-			//rtlIpv4AddressToStringA(&addr, addressBufferLocal);// we can use this new interface or the old inet_ntoa()
-			strConnectedIPAddress = inet_ntoa(addr); // get his string n.n.n.n IP address
-
-		}
-		// On Windows <= XP, remote addr is filled even if socket is in LISTEN mode in which case we just ignore it.
-		if (  tcp4Table->table[i].dwRemoteAddr != 0 )
-		{
-			struct in_addr addr;
-			addr.S_un.S_addr = tcp4Table->table[i].dwRemoteAddr;
-			//rtlIpv4AddressToStringA(&addr, addressBufferRemote); // we can use this new interface or the old inet_ntoa()
-			strConnectedIPAddress2 = inet_ntoa(addr); // get his string n.n.n.n IP address
+			FreeLibrary(hstLibrary);
+			return false;
 		}
 
-		if (tcp4Table->table[i].dwState != 2) // they all have a remote port of 0 and no other info except a local port
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//										Get TCP4 Table
+		PMIB_TCPTABLE_OWNER_PID tcp4Table = (PMIB_TCPTABLE_OWNER_PID)(void *)&buffer[0];
+
+		for (unsigned int i = 0; i < tcp4Table->dwNumEntries; i++)
 		{
-			if (nFlags & NET_FLAG_REDUCE_INFO)
+			int nPID = tcp4Table->table[i].dwOwningPid;
+			
+			GString strConnectedIPAddress;
+			GString strConnectedIPAddress2;
+
+			GProcessListRow *pRow = (GProcessListRow *)hashProcessSnapshot.Lookup((unsigned int)nPID);
+			if(!pRow)
+				pRow = &defaultRow;
+
+			if (tcp4Table->table[i].dwLocalAddr != 0)
 			{
-				strResults	<< "TCP4 pid:" << nPID << "          TO=" << strConnectedIPAddress2 << " port:" << tcp4Table->table[i].dwRemotePort  << "              FROM=" << strConnectedIPAddress << " port: "<< tcp4Table->table[i].dwLocalPort
-							<< "       ["  <<  pRow->strName << "]" << pRow->strBinaryPath << "\n";; 
+				struct in_addr addr;
+				addr.S_un.S_addr = tcp4Table->table[i].dwLocalAddr;
+				//rtlIpv4AddressToStringA(&addr, addressBufferLocal);// we can use this new interface or the old inet_ntoa()
+				strConnectedIPAddress = inet_ntoa(addr); // get his string n.n.n.n IP address
+
 			}
-			else
+			// On Windows <= XP, remote addr is filled even if socket is in LISTEN mode in which case we just ignore it.
+			if (  tcp4Table->table[i].dwRemoteAddr != 0 )
 			{
-				strResults	<< "TCP4," << nPID << "," << tcp4Table->table[i].dwLocalPort << "," << strConnectedIPAddress << "," << tcp4Table->table[i].dwRemotePort << "," << strConnectedIPAddress2 
-							<< "," 	   <<  pRow->strName << "," <<  pRow->strCPU << "," << pRow->strMem << "," << pRow->strRunTime << "," << pRow->strThreads 
-							<< ","     << pRow->strHandles << "," << pRow->strPriority << "," << pRow->strBinaryPath << "\n";
+				struct in_addr addr;
+				addr.S_un.S_addr = tcp4Table->table[i].dwRemoteAddr;
+				//rtlIpv4AddressToStringA(&addr, addressBufferRemote); // we can use this new interface or the old inet_ntoa()
+				strConnectedIPAddress2 = inet_ntoa(addr); // get his string n.n.n.n IP address
+			}
+
+			if (tcp4Table->table[i].dwState != 2) // they all have a remote port of 0 and no other info except a local port
+			{
+				if (nFlags & NET_FLAG_REDUCE_INFO)
+				{
+					strResults	<< "TCP4 pid:" << nPID << "          TO=" << strConnectedIPAddress2 << " port:" << tcp4Table->table[i].dwRemotePort  << "              FROM=" << strConnectedIPAddress << " port: "<< tcp4Table->table[i].dwLocalPort
+								<< "       ["  <<  pRow->strName << "]" << pRow->strBinaryPath << "\n";; 
+				}
+				else
+				{
+					strResults	<< "TCP4," << nPID << "," << tcp4Table->table[i].dwLocalPort << "," << strConnectedIPAddress << "," << tcp4Table->table[i].dwRemotePort << "," << strConnectedIPAddress2 
+								<< "," 	   <<  pRow->strName << "," <<  pRow->strCPU << "," << pRow->strMem << "," << pRow->strRunTime << "," << pRow->strThreads 
+								<< ","     << pRow->strHandles << "," << pRow->strPriority << "," << pRow->strBinaryPath << "\n";
+				}
 			}
 		}
 	}
-
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//										Get UDP4 Table
-	if ( ( nFlags & NET_FLAG_NO_UDP ) == 0)
+	if ( ( nFlags & NET_FLAG_NO_UDP4 ) == 0)
 	{
 		nSize = 32767;
-		res = GetUDPTable(buffer, &nSize, false, AF_INET, UDP_TABLE_OWNER_PID, 0);
+		int res = GetUDPTable(buffer, &nSize, false, AF_INET, UDP_TABLE_OWNER_PID, 0);
 		if (res != 0)
 		{
 			FreeLibrary(hstLibrary);
@@ -994,7 +1006,7 @@ bool GetNetworkConnections(GString &strResults, int nFlags)
 
 				if (nFlags & NET_FLAG_REDUCE_INFO)
 				{
-					strResults	<< "UDP4 pid:" << nPID << "      IP=" << strConnectedIPAddress << " port:" << tcp4Table->table[i].dwLocalPort 
+					strResults	<< "UDP4 pid:" << nPID << "      IP=" << strConnectedIPAddress << " port:" << udp4Table->table[i].dwLocalPort 
 								<< "       ["  <<  pRow->strName << "]" << pRow->strBinaryPath << "\n"; 
 				}
 				else
@@ -1008,56 +1020,59 @@ bool GetNetworkConnections(GString &strResults, int nFlags)
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//										Get TCP6 Table
-	nSize = 32767;
-    if (GetTCPTable(buffer, &nSize, false, AF_INET6,  TCP_TABLE_OWNER_PID_ALL, 0) == 0)
-    {
-		PMIB_TCP6TABLE_OWNER_PID tcp6Table = (PMIB_TCP6TABLE_OWNER_PID)(void *)&buffer[0];
-        for (unsigned int i = 0; i < tcp6Table->dwNumEntries; i++)
-        {
-            int nPID = tcp6Table->table[i].dwOwningPid;
-			GProcessListRow *pRow = (GProcessListRow *)hashProcessSnapshot.Lookup((unsigned int)nPID);
-			if(!pRow)
-				pRow = &defaultRow;
-
-			char addressBufferLocal[256];
-			char addressBufferRemote[256];
-
-            if (memcmp(tcp6Table->table[i].ucLocalAddr, null_address, 16) != 0 || tcp6Table->table[i].dwLocalPort != 0)
-            {
-                struct in6_addr addr;
-                memcpy(&addr, tcp6Table->table[i].ucLocalAddr, 16);
-                rtlIpv6AddressToStringA(&addr, addressBufferLocal);
-            }
-
-            
-            if ((memcmp(tcp6Table->table[i].ucRemoteAddr, null_address, 16) != 0 ||  tcp6Table->table[i].dwRemotePort != 0) )
-            {
-                struct in6_addr addr;
-                memcpy(&addr, tcp6Table->table[i].ucRemoteAddr, 16);
-                rtlIpv6AddressToStringA(&addr, addressBufferRemote);
-
-
-				if (nFlags & NET_FLAG_REDUCE_INFO)
-				{
-					strResults	<< "TCP6 pid:" << nPID << "          TO=" << addressBufferRemote << " port:" << tcp6Table->table[i].dwRemotePort  << "              FROM=" << addressBufferLocal << " port: "<< tcp6Table->table[i].dwLocalPort
-								<< "       ["  <<  pRow->strName << "]" << pRow->strBinaryPath << "\n";
-
-				}
-				else
-				{
-					strResults	<< "TCP6," << nPID << "," << tcp6Table->table[i].dwLocalPort << "," << addressBufferLocal << "," << tcp6Table->table[i].dwRemotePort << "," <<  addressBufferRemote
-								<< "," 	   <<  pRow->strName << "," << pRow->strCPU << "," << pRow->strMem << "," << pRow->strRunTime << "," << pRow->strThreads 
-								<< ","     <<  pRow->strHandles << "," << pRow->strPriority << "," << pRow->strBinaryPath << "\n";
-				}
-            }
-        }
-    }
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//											Get UDP6 Table
-	if (( nFlags & NET_FLAG_NO_UDP ) == 0)
+	if ( ( nFlags & NET_FLAG_NO_TCP6 ) == 0)
 	{
 		nSize = 32767;
-		res = GetUDPTable(buffer, &nSize, false, AF_INET, UDP_TABLE_OWNER_PID, 0);
+		if (GetTCPTable(buffer, &nSize, false, AF_INET6,  TCP_TABLE_OWNER_PID_ALL, 0) == 0)
+		{
+			PMIB_TCP6TABLE_OWNER_PID tcp6Table = (PMIB_TCP6TABLE_OWNER_PID)(void *)&buffer[0];
+			for (unsigned int i = 0; i < tcp6Table->dwNumEntries; i++)
+			{
+				int nPID = tcp6Table->table[i].dwOwningPid;
+				GProcessListRow *pRow = (GProcessListRow *)hashProcessSnapshot.Lookup((unsigned int)nPID);
+				if(!pRow)
+					pRow = &defaultRow;
+
+				char addressBufferLocal[256];
+				char addressBufferRemote[256];
+
+				if (memcmp(tcp6Table->table[i].ucLocalAddr, null_address, 16) != 0 || tcp6Table->table[i].dwLocalPort != 0)
+				{
+					struct in6_addr addr;
+					memcpy(&addr, tcp6Table->table[i].ucLocalAddr, 16);
+					rtlIpv6AddressToStringA(&addr, addressBufferLocal);
+				}
+
+            
+				if ((memcmp(tcp6Table->table[i].ucRemoteAddr, null_address, 16) != 0 ||  tcp6Table->table[i].dwRemotePort != 0) )
+				{
+					struct in6_addr addr;
+					memcpy(&addr, tcp6Table->table[i].ucRemoteAddr, 16);
+					rtlIpv6AddressToStringA(&addr, addressBufferRemote);
+
+
+					if (nFlags & NET_FLAG_REDUCE_INFO)
+					{
+						strResults	<< "TCP6 pid:" << nPID << "          TO=" << addressBufferRemote << " port:" << tcp6Table->table[i].dwRemotePort  << "              FROM=" << addressBufferLocal << " port: "<< tcp6Table->table[i].dwLocalPort
+									<< "       ["  <<  pRow->strName << "]" << pRow->strBinaryPath << "\n";
+
+					}
+					else
+					{
+						strResults	<< "TCP6," << nPID << "," << tcp6Table->table[i].dwLocalPort << "," << addressBufferLocal << "," << tcp6Table->table[i].dwRemotePort << "," <<  addressBufferRemote
+									<< "," 	   <<  pRow->strName << "," << pRow->strCPU << "," << pRow->strMem << "," << pRow->strRunTime << "," << pRow->strThreads 
+									<< ","     <<  pRow->strHandles << "," << pRow->strPriority << "," << pRow->strBinaryPath << "\n";
+					}
+				}
+			}
+		}
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//											Get UDP6 Table
+	if (( nFlags & NET_FLAG_NO_UDP6 ) == 0)
+	{
+		nSize = 32767;
+		int res = GetUDPTable(buffer, &nSize, false, AF_INET, UDP_TABLE_OWNER_PID, 0);
 		if (res != 0)
 		{
 			FreeLibrary(hstLibrary);
@@ -1079,7 +1094,7 @@ bool GetNetworkConnections(GString &strResults, int nFlags)
 				rtlIpv6AddressToStringA(&addr, addressBufferLocal);
 				if (nFlags & NET_FLAG_REDUCE_INFO)
 				{
-					strResults	<< "UDP6 pid:" << nPID << "      IP=" << addressBufferLocal << " port:" << tcp4Table->table[i].dwLocalPort
+					strResults	<< "UDP6 pid:" << nPID << "      IP=" << addressBufferLocal << " port:" << udp6Table->table[i].dwLocalPort
 								<< "   name["  <<  pRow->strName << "]" << pRow->strBinaryPath << "\n";; 
 				}
 				else
@@ -1157,6 +1172,7 @@ void InternalIPs(GStringList*plstBoundIPAddresses)
 	struct ifaddrs * ifa=NULL;
 	void * tmpAddrPtr=NULL;
 
+	GString strLocalHost("127.0.0.1");
 	getifaddrs(&ifAddrStruct);
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) 
@@ -1167,12 +1183,12 @@ void InternalIPs(GStringList*plstBoundIPAddresses)
 		}
 		if (ifa->ifa_addr->sa_family == AF_INET) 
 		{ 
-			// check it is IP4
-			// is a valid IP4 Address
+			// check if this is a valid IP4 Address
 			tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 			char addressBuffer[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-			printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
+			if (strLocalHost != addressBuffer)
+				plstBoundIPAddresses->AddFirst(addressBuffer);
 		} 
 		// check it is IP6
 		else if (ifa->ifa_addr->sa_family == AF_INET6) 
@@ -1181,7 +1197,7 @@ void InternalIPs(GStringList*plstBoundIPAddresses)
 			tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
 			char addressBuffer[INET6_ADDRSTRLEN];
 			inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-			printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer); 
+			plstBoundIPAddresses->AddFirst(addressBuffer);
 		} 
 	}
 	if (ifAddrStruct!=NULL) 

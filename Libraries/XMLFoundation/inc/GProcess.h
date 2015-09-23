@@ -34,14 +34,16 @@
 //#include <GStringIterator.h>
 
 #define NET_FLAG_REDUCE_INFO			0x01 // reduced information set with labels in the data - not as good to parse - better to view directly
-#define NET_FLAG_NO_UDP					0x02 // exclude UDP from the results
-#define NET_FLAG_NEXT					0x04 // in XML woud be nice then we can throw XSL at it to make HTML or whatever
+#define NET_FLAG_NO_UDP4				0x02 // exclude UDP4 from the results
+#define NET_FLAG_NO_UDP6				0x04 // exclude UDP6 from the results
+#define NET_FLAG_NO_TCP4				0x08 // exclude TCP4 from the results
+#define NET_FLAG_NO_TCP6				0x10 // exclude TCP6 from the results
+#define NET_FLAG_NEXT					0x20 
 
 bool GetNetworkConnections(GString &strResults, int nFlags);
 void InternalIPs(GStringList*plstBoundIPAddresses);
-
-
 void GetProcessList( GString *pstrResults );
+
 
 class GProcessListRow
 {

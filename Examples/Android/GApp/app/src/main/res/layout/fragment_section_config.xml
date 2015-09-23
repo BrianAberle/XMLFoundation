@@ -1,0 +1,58 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView"
+        android:layout_gravity="right|center_vertical"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="32dp"
+        android:scrollbars="vertical"
+        android:fillViewport="true"
+        android:focusable="true">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:layout_gravity="left|top"
+            android:focusable="true"
+            android:editable="true"
+            android:enabled="true" />
+            </ScrollView>
+
+            <Button
+                android:id="@+id/save"
+                android:layout_width="wrap_content"
+                android:layout_height="37dp"
+                android:text="Save"
+                android:layout_gravity="left|bottom" />
+            <Button
+                android:id="@+id/load"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Load"
+                android:layout_gravity="right|bottom" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editConfigFileName"
+                android:layout_gravity="left|top"
+                android:editable="true"
+                android:enabled="true"
+                android:gravity="left" />
+
+        </FrameLayout>

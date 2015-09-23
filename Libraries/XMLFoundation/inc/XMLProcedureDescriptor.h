@@ -10,6 +10,8 @@
 // This source code and any work derived from this source code must retain 
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
+#ifndef  _XMLParameterDEFINED_
+#define _XMLParameterDEFINED_
 
 #include "xmlObject.h"
 #include "GString.h"
@@ -42,3 +44,4 @@ public:
 	virtual void MapXMLTagsToMembers();
 };
 
+#endif // _XMLParameterDEFINED_

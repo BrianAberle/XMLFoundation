@@ -1,5 +1,8 @@
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #define BZ_NO_STDIO
 #define BZ_STATIC_LINK

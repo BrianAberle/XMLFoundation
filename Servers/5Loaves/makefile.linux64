@@ -11,7 +11,7 @@ TransactXML: \
 		-L../../Libraries/XMLFoundation/Build \
 		-L../../Libraries/openssl/bin-linux64 \
 		Console.o \
-		-lpthread -lnsl -ldl -lXMLFoundation -lcrypto
+		-lpthread -lnsl -ldl -lXMLFoundation -lssl -lcrypto
 
 SocketServer.o: ./Console.cpp
 	$(CC) $(CPPFLAGS) ./Console.cpp -o ./Console.o

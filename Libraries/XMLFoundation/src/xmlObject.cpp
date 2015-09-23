@@ -11,7 +11,10 @@
 // this copyright at the top of each source file.
 // --------------------------------------------------------------------------
 #include "GlobalInclude.h"
+#ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
+#endif
+
 
 #include "xmlObject.h"
 #include "FrameworkAuditLog.h"
@@ -1347,13 +1350,16 @@ int XMLObject::FindAttribute( const char *pzAttName, GString &strDest )
 	}
 	if (!pRet)  // then look in m_pMappedAttributeHash if we didnt find it in m_pAttributes
 	{
-		GString strUpper(pzAttName);
-		strUpper.MakeUpper();
-		MemberDescriptor *pMD = (MemberDescriptor *)m_pMappedAttributeHash->Lookup((const char *)strUpper);
-		if (pMD)
+		if (m_pMappedAttributeHash) // this line added 9/16/2015 fixes a crash when searching for an attribute on an object with no attributes.
 		{
-			pMD->GetMemberValue( strDest );
-			pRet = 1;
+			GString strUpper(pzAttName);
+			strUpper.MakeUpper();
+			MemberDescriptor *pMD = (MemberDescriptor *)m_pMappedAttributeHash->Lookup((const char *)strUpper);
+			if (pMD)
+			{
+				pMD->GetMemberValue( strDest );
+				pRet = 1;
+			}
 		}
 	}
 	return pRet;

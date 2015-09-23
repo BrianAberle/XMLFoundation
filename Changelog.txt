@@ -243,4 +243,6 @@ August 2015 - Added ExternalIP() to GSocketHelpers.cpp a pinging external server
 August 2015 - Fixed up the VS2013 project workspace built everyhting in debug/release/32/and 64 bit
 August 2015 - Added the VS2015 project workspace (Note that the OpenSSL projects do not link in the vs2015 workspace)
 August 2015 - Updated Linux OpenSSL binaries and headerfiles
-
+Aug 26 - fixed up the Android build under CentOS7 - update makefile, updated openssl
+Aug 26 - updated Android openssl to the most recent versions and added CSmtp into the Android build of XMLFoundation
+Sep 22 - added GApp, and Andriod Studio Support, updated DynamicXMLObject.h, updated JavaXMLFoundation.cpp ***************************************

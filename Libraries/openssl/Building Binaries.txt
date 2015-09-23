@@ -51,8 +51,8 @@ http://wiki.openssl.org/index.php/Android
 
 These binaries were built using 
 --------------------------------------------------------
-Android NDK r10c (October 2014) 
-openssl-1.0.1j   (Oct 15 15:24:39 2014)
+Android NDK r10e (2015 August) 
+openssl-1.0.1p   (2015-Jul-09 08:42:53)
 
 
 

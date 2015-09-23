@@ -1,5 +1,8 @@
-#include "GHTTPMultiPartPOST.h"
+#ifndef _LowLevelStaticController_
+#define _LowLevelStaticController_
 
+
+#include "GHTTPMultiPartPOST.h"
 
 class LowLevelStaticController : public DataController
 {
@@ -21,3 +24,5 @@ public:
 
 	~LowLevelStaticController(){};
 };
+
+#endif // _LowLevelStaticController_
