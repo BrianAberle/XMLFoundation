@@ -365,7 +365,7 @@ public:
 
 	virtual bool GetMember( const char *pzTag,	GString &strAppendValueDestination)
 	{
-		__int64 *pCount = (__int64 *)m_hshMemberCount.Lookup(pzTag);
+//		__int64 *pCount = (__int64 *)m_hshMemberCount.Lookup(pzTag);
 		GListIterator Iter(m_plstSubObjects);
 		while ( Iter() )
 		{

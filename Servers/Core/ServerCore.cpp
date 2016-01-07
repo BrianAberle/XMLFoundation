@@ -101,17 +101,23 @@ GList g_lstActivePlugins;
 			#elif __WINPHONE
 				#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib") // the extra .. needs to be there for the WindowsPhone example
 			#else
-//				#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
 
 				//  openssl uses _iob
 				//	https://social.msdn.microsoft.com/Forums/vstudio/en-US/4a1c9610-fa41-45f6-ad39-c9f6795be6f2/msvcrt-iob-disappeared?forum=vclanguage#page:2
 				//
-				// for Visual Studio newer than VC6
 				#if defined(_MSC_VER) && _MSC_VER > 1200 
+				// for Visual Studio newer than VC6 making a 32 bit build
+
+//					#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+
 					// unless _NO_IOB__ is defined _iob is added
 					#ifndef _NO_IOB__
 						extern "C" { FILE _iob[3] = { __iob_func()[0], __iob_func()[1], __iob_func()[2] }; }
 					#endif
+				#else
+					// relative path linking works fine in the VC6 build
+					#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+
 				#endif
 			#endif
 		#endif

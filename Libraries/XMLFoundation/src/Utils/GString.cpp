@@ -4628,7 +4628,7 @@ GString::operator const wchar_t * () const
     if (_pWideStr)
 	{
 	    free(_pWideStr);
-		(wchar_t *)_pWideStr = 0; // note: the typecast is necessary to cast off the constness of _pWideStr so that is may be assigned a value from within a const method
+		(wchar_t *)_pWideStr = 0; // note: the typecast is necessary to cast off the constness of _pWideStr so that it may be assigned a value from within a const method
 	}
     
 #ifdef _WIN32

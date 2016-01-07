@@ -29,8 +29,8 @@
   <PropertyGroup Label="Globals">
     <SccProjectName />
     <SccLocalPath />
-    <ProjectGuid>{237D1E69-48BA-4790-A374-D6C56E46CBB2}</ProjectGuid>
-    <ProjectName>SMTPandTLS</ProjectName>
+    <ProjectGuid>{1A006314-246B-4B80-A7E1-5748B8A29B40}</ProjectGuid>
+    <ProjectName>Threading</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
@@ -121,14 +121,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Debug\SMTPandTLS.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Debug\Threading.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader />
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Midl>
-      <TypeLibraryName>.\Debug\SMTPandTLS.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug\Threading.tlb</TypeLibraryName>
     </Midl>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -136,13 +136,13 @@
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Debug\SMTPandTLS.bsc</OutputFile>
+      <OutputFile>.\Debug\Threading.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\SMTPandTLS.exe</OutputFile>
+      <OutputFile>.\Debug\Threading.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Debug\XmlFoundation.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
@@ -154,13 +154,13 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>../../../libraries/XMLFoundation/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Debug\SMTPandTLS.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Debug\Threading.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <ObjectFileName>.\Debug\</ObjectFileName>
@@ -169,7 +169,7 @@
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
-      <TypeLibraryName>.\Debug\SMTPandTLS.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug\Threading.tlb</TypeLibraryName>
     </Midl>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -177,13 +177,13 @@
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Debug\SMTPandTLS.bsc</OutputFile>
+      <OutputFile>.\Debug\Threading.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\SMTPandTLS.exe</OutputFile>
+      <OutputFile>.\Debug\Threading.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Debug\XmlFoundation.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -199,7 +199,7 @@
       <AdditionalIncludeDirectories>../../../libraries/XMLFoundation/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Release\SMTPandTLS.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Release\Threading.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
@@ -207,7 +207,7 @@
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
-      <TypeLibraryName>.\Release\SMTPandTLS.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release\Threading.tlb</TypeLibraryName>
     </Midl>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -215,14 +215,13 @@
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\SMTPandTLS.bsc</OutputFile>
+      <OutputFile>.\Release\Threading.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\SMTPandTLS.exe</OutputFile>
+      <OutputFile>.\Release\Threading.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Release\XmlFoundation.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -237,14 +236,15 @@
       <AdditionalIncludeDirectories>../../../libraries/XMLFoundation/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
-      <PrecompiledHeaderOutputFile>.\Release\SMTPandTLS.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Release\Threading.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
-      <TypeLibraryName>.\Release\SMTPandTLS.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release\Threading.tlb</TypeLibraryName>
     </Midl>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -252,25 +252,22 @@
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\SMTPandTLS.bsc</OutputFile>
+      <OutputFile>.\Release\Threading.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\SMTPandTLS.exe</OutputFile>
+      <OutputFile>.\Release\Threading.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Release\XmlFoundation.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SMTPandTLS.cpp">
+    <ClCompile Include="Threading.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

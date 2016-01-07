@@ -246,3 +246,12 @@ August 2015 - Updated Linux OpenSSL binaries and headerfiles
 Aug 26 - fixed up the Android build under CentOS7 - update makefile, updated openssl
 Aug 26 - updated Android openssl to the most recent versions and added CSmtp into the Android build of XMLFoundation
 Sep 22 - added GApp, and Andriod Studio Support, updated DynamicXMLObject.h, updated JavaXMLFoundation.cpp ***************************************
+Sep 27 - made a few fixes found by code analyzer.  1 in GThread.cpp, in gthread_key_create(), also extra checks for null that have no known error case.
+Oct 27 - Updated CSmtp to the most recent version released 4 days ago.
+Jan 2016 - added GException into other Utilty classes - for example into GList
+Jan 2016 - added new GException entries into EnglishErrors.cpp
+Jan 2016 - added new Threads example showing a 3X performance improvement by using all XMLObject has to offer.
+Jan 2016 - fixed an error in GException affecting 32 bit apps with not enough memory remaining to capture the callstack
+Jan 2016 - Added a GException catch onto the bottom of the gthread callstack
+Jan 2016 - added more checks for NULL results after calling new()
+

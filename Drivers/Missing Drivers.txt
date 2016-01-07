@@ -2,5 +2,4 @@ If this folder is empty and does not contain a "Drivers" sub-folder then -
 this is a minimal source code download to optimize bandwidth usage and it does not contain the drivers 
 that allow XMLFoundation to execute plugins via DLL Call/ COM / Java / Perl / and Python
 
-You may obtain the additional source code here (1.06Mb):
 

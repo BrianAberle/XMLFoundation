@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2014  All Rights Reserved.
+//			  Copyright (c) 2000 - 2016  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -49,12 +49,35 @@ private:
 	// Private member string storage
 	// Storage is allocated only when necessary to keep the XMLObject lightweight
 	// Note: these variable names are misleading, m_strObjectType should be m_pstrObjectType
-	// Long ago, these variables were not pointers.  They added construction overhead for the
-	// majority of cases where these were never used.
+	// Long ago, these variables were not [GString *] - they were [GString] and always allocated.  They added construction 
+	// overhead for many use cases where these were never used yet paid a penalty for allocating them.
 	GString *m_strObjectType;		// derived class name - Runtime type information
 	GString *m_strXMLTag;			// default tag for this instance
 	GString *m_oid;
-	//GList   *m_lstOIDKeyParts; // in 2014 this was moved to static storage.
+	GString *m_TimeStamp;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// the following 4 variables were added in 2016 to avoid putting a new() GString on the heap - one of the 4 above this line.
+	//
+	char  m_pzObjectType[32];	// storage takes prescedence over m_strObjectType if the value  is < sizeof(m_pzObjectType)
+	char  m_pzXMLTag[32];		// storage takes prescedence over m_strXMLTag if the value  is < sizeof(m_pzXMLTag)
+	char  m_pzoid[32];			// storage takes prescedence over m_oid if the value  is < sizeof(m_pzoid)
+	char  m_pzTimeStamp[1];		// storage takes prescedence over m_TimeStamp if the value  is < sizeof(m_pzTimeStamp) 
+	// - For apps that use TimeStamp: it is a special token - it MUST appear as the 2nd attribute following OID.
+	// Only if OID is found as the first attribute, will the parser look for a second special token-attribute named UpdateTime.
+	//	
+	// Changing the keyword is as simple as a rebuild.  search for "UpdateTime" in xmlObjectFactory.cpp to see the implementation.
+	// The 2 attribute ordering rules that broke the XML specification - or fixed it depending on how you see things.
+	// 
+	// Alternatively we COULD implement this using a delimiter in the OID value for example 
+	// <Object OID="521-18-7735----------------DELIMITER:777" color='deep purple' size='XXL'>
+	// I would put that out there for industry concensus at [xml-dev] but all the noise on the thread knocked the list servers 
+	// offline last time i tried that.  Maybe the folks at IETF have an opinion, sometimes its easier to just do it first then ask later.
+	//
+	// NCIS used UpdateTime as a 2nd special XML token - either implementation will work.  Most apps that use OID do not use UpdateTime.
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// GList   *m_lstOIDKeyParts; // in 2014 this was moved to static storage.
 
 	// MemberDescriptor is a structure that describes each member
 	friend class MemberDescriptor;
@@ -81,7 +104,6 @@ private:
 	virtual int GetMemberMapCount(char bIncrement){return 0;}; 
 
 
-	GString *m_TimeStamp;
 	GString *m_pToXMLStorage;
 
 	// Custom object data handler - see <ObjectDataHandler.h> for full description and example.  
@@ -169,7 +191,6 @@ protected:
 
 	virtual void MapXMLTagsToMembers(){};
 	virtual const char *GetVirtualTag(){return 0;};
-	virtual GList *GetOIDKeyPartList(bool bNew){return 0;}
 
 	// internal helper functions to the ToXML* methods
 	void GenerateSubsetXML(MemberDescriptor* btRoot, GString& xml, int nTabs, StackFrameCheck *pStack, int nSerializeFlags, const char *pzSubsetOfObjectByTagName);
@@ -194,6 +215,9 @@ protected:
 public:
 
 	XMLObject();
+
+	// if bNew=1 this ALWAYS returns the list, if bNew=0 it only returns it if there is one.
+	virtual GList *GetOIDKeyPartList(bool bNew){return 0;}
 
 	// assign all the members possible in this object from the source object
 	int CopyState(XMLObject *pCopyFrom);
@@ -265,13 +289,22 @@ public:
 	// (that is cast from derived toward the base), either base in the 
 	// case of multiple inheritance.  COM/CORBA use MI.
 	virtual void RegisterObject(){}
-	virtual const char *GetVirtualType(){return 0;};
+	virtual const char *GetVirtualType() = 0; // {return 0;}; 
 
-	// This resolves implicit upcasting to the object that is multiply
-	// derived from CORBA::Object and XMLObject. When called from the
-	// derived class the value returned will equal the 'this' pointer
-	// of the outermost derived class, that can be then safely downcast
-	// to any one of it's multiply inherited base classes.
+	// This resolves implicit upcasting to the object that is multiply derived from CORBA::Object 
+	// and XMLObject. When called from the derived class the value returned will equal the 'this' pointer
+	// of the outermost derived class, that can be then safely downcast to any one of it's multiply inherited 
+	// base classes.
+	//
+	// Outside of a COM/CORBA setting it's a way for the base class to hold a pointer to the object derived from itself, 
+	// essential for objects multiply derived from XMLObject that cannot upcast from a base class pointer without this, 
+	// and also has template class uses.  For example:
+	// 
+	// MyO *pO = new MyO(); // where MyO is derived from XMLObject
+	// if (pO->GetInterfaceObject() != pO)
+	// {
+	//     printf("dont show me this."); // you'll never see that, therefore the XMLObject base class has access to ObjectFromFile's this.
+	// }
 	void *GetUntypedThisPtr() {return m_pDerivedAddress;}
 	void *GetInterfaceObject() {if (!m_pDerivedAddress) RegisterObject(); return m_pDerivedAddress;}
 	virtual ~XMLObject();
@@ -287,7 +320,11 @@ public:
 	// If the runtime instance of 'this' is contained in an object that
 	// used MapMember() to define the type relationship, then calling
 	// GetParentObject() will return a pointer to the instance of the owner.
+	//
+	// If the runtime instance of 'this' is NOT contained in an object via MapMember()
+	// you can call RegisterObject() in your 'ctor to enable this and RTTI for non factory created objects.
 	XMLObject *GetParentObject();
+
 	// if the refcount on 'this' is > 1 and the 'owning' objects are not the same
 	// for example this 'Item' is on several 'Invoice' objects all referring to 
 	// the same 'this'(Item), this method will allow you to call a 'Changed'
@@ -372,6 +409,10 @@ public:
 	void MapAttribute(GString0 *pstrValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 	void MapAttribute(GString32 *pstrValue,const char *pTag, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
 	void MapAttribute(void *pValue,const char *pTag,StringAbstraction *pHandler, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
+
+	// New in 2016 - map attribute to a char[n] array - a char string but not in a string class like GString or CString and it uses less memory
+	void MapAttribute(char *pValue,const char *pTag,int nMaxLen, const char *pzTranslationMapIn = 0, const char *pzTranslationMapOut = 0,int nTranslationFlags = 0);
+
 
 	// Map a bool, char, short, int ,long int, or very long int
 	// nBoolReadability =   0=Yes/No       1=True/False       2=On/Off		3=1/0
@@ -769,7 +810,8 @@ void class_name::RegisterObject()										\
 XMLObject* class_name::FactoryCreate()									\
 {																		\
 	class_name *pTemp = new class_name();								\
-	pTemp->RegisterObject();											\
+	if (pTemp)															\
+		pTemp->RegisterObject();										\
 	return (XMLObject*)pTemp;											\
 }																		\
 

@@ -291,19 +291,29 @@ XMLObject *XMLObjectCache::getObject(const char *pzXMLTag, const char* oid,
 			if (bDidCreate)
 				*bDidCreate = 1;
 
-			// create a new object 
-			pObject = (*(rFM.GetFactory(pzXMLTag)))();
 
-			if (oid && oid[0])
+			// create a new object in 1 line of code 
+			// pObject = (*(rFM.GetFactory(pzXMLTag)))();
+			// or in 2 lines of code.
+			ObjectFactory of = (*(rFM.GetFactory(pzXMLTag)));
+			pObject = of();
+
+
+			if (pObject) // if pObject is null we could be out of memory
 			{
-				pObject->Init( oid, pzUpdateTime );
-				if ( !(pObject->GetObjectBehaviorFlags() & PREVENT_AUTO_CACHE) )
+				if (oid && oid[0]) // if there was an OID in the XML
 				{
-					GString strKey;
-					strKey << oid << pzClassName;
-					m_cache->Insert((const char *)strKey, pObject);
+					pObject->Init( oid, pzUpdateTime );
+					if ( !(pObject->GetObjectBehaviorFlags() & PREVENT_AUTO_CACHE) )
+					{
+						GString strKey;
+						strKey << oid << pzClassName;
+						m_cache->Insert((const char *)strKey, pObject);
+					}
 				}
 			}
+
+
 		}
 		else
 		{

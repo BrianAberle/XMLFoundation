@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2016  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -25,6 +25,10 @@ class ObjQueryParameter : public XMLObject, public XMLObjectDataHandler
 	GString m_ObjTag;
 	GString m_ObjVal;
 public:
+	virtual const char *GetVirtualType()  {return "ObjQueryParameter";};
+
+
+	
 	ObjQueryParameter(){ }
 	// used by XMLProcedureCall for a memberless object
 	void SetObjectValue(const char *pVal, __int64 nLen, int nType);

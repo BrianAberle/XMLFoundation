@@ -1,0 +1,22 @@
+CC = g++
+CPPFLAGS = -c -O3 -w -D_LINUX 
+INCDIR = -I../../../Libraries/XMLFoundation/inc 
+
+TransactXML: \
+	clear \
+	Threading.o
+	 
+	$(CC) \
+		-o Threading \
+		-L../../../Libraries/XMLFoundation/Build \
+		Threading.o \
+		-lnsl -lXMLFoundation -ldl
+
+Threading.o: ./Threading.cpp
+	$(CC) $(CPPFLAGS) $(INCDIR) ./Threading.cpp -o ./Threading.o
+
+clean: 	- rm -f a.out ./ObjFiles/*.o *.cgi core   
+
+clear:
+	clear
+

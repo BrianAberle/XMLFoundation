@@ -18,6 +18,7 @@
 
 #include "GList.h"
 #include "GListNodeCache.h"
+#include "GException.h"
 
 
 GList::Node* GlobalNodeCache(GList::Node*pNode, int nNewNode = -1, int *nStateQuery = 0) 
@@ -232,6 +233,11 @@ void GList::AddBeforeCurrent( void * Data )
 	// Add maintains list integrity by adding the new node before the current node
 	// if the current node is the first node, the new node becomes the first node.
 	Node *pN = (pNodeCache) ? pNodeCache->Get(CurrentNode, 0) : ::new Node(CurrentNode, 0);
+	if (!pN)
+	{
+		throw GException("GList", 0);
+	
+	}
 
 	if (FirstNode == 0)
 		FirstNode = LastNode = CurrentNode = pN;
@@ -247,6 +253,11 @@ void GList::AddAfterCurrent( void * Data )
 // node, if the current node is the last node, the new node becomes the last node.
 
 	Node *pN  = (pNodeCache) ? pNodeCache->Get(CurrentNode, 1) : ::new Node(CurrentNode);
+	if (!pN)
+	{
+		throw GException("GList", 0);
+	
+	}
 
 	if (FirstNode == 0)
 		FirstNode = LastNode = CurrentNode = pN;
@@ -260,6 +271,11 @@ void GList::AddAfterCurrent( void * Data )
 void GList::AddHead( void * Data)
 {
 	Node *pN = (pNodeCache) ? pNodeCache->Get(FirstNode, 0) : ::new Node(FirstNode, 0);
+	if (!pN)
+	{
+		throw GException("GList", 0);
+	
+	}
 
 	if (LastNode == 0)
 		LastNode = CurrentNode = pN;
@@ -272,6 +288,12 @@ void GList::AddHead( void * Data)
 void GList::AddLast(void * Data)
 {
 	Node *pN  = (pNodeCache) ? pNodeCache->Get(LastNode, 1) : ::new Node(LastNode);
+	if (!pN)
+	{
+		throw GException("GList", 0);
+	
+	}
+
 	if (FirstNode == 0)
 		FirstNode = CurrentNode = pN;
 	iSize++;

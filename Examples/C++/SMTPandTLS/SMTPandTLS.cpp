@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 #include <"Do.not.compile">  // add your own Gmail account in the next two lines..... then delete this line   (and set the recipient)
 
 	// Note about GMail - login, then under "My Account" go to "Sign-In & Security" and set "Allow Less Secure Apps": to ON.  
-	mail.SetLogin("MyOwnGmailAddress@gmail.com");
-	mail.SetPassword("MyOwnPassword");
+//	mail.SetLogin("MyOwnGmailAddress@gmail.com");
+//	mail.SetPassword("MyOwnPassword");
 
 
 	mail.SetSenderName("My Application");

@@ -1,3 +1,8 @@
+// --------------------------------------------------------------------------------
+//  --    On 10/27/2015 this source file was updated within the XMLFoundation 
+//  --    to the most recent version (Rev 2.4, published 2015/10/22) here:
+//  --    http://www.codeproject.com/Articles/98355/SMTP-Client-with-SSL-TLS
+// --------------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 // Original class CFastSmtp written by 
 // christopher w. backen <immortal@cox.net>
@@ -21,6 +26,17 @@
 // PLAIN, CRAM-MD5 and DIGESTMD5 authentication added by David Johns
 //
 // Revision History:
+// - Version 2.4: Updated with fixes reported as of 22 Oct 2015
+//     > Fixed issues with files being left opened and buffer not being deleted if an error occurs as discussed here: http://www.codeproject.com/Messages/4651730/Re-File-attachment.aspx
+//       - Thanks to Josep Solà
+//     > Fixed issue with opening attachments as discussed here: http://www.codeproject.com/Messages/4640325/File-path-mistakenly-ommitted-from-file-name-when-.aspx
+//       - Thanks to Graham
+//     > Fixed potential memory leak as discussed here: http://www.codeproject.com/Messages/5010012/Memory-leaks.aspx
+//       - Thanks to LahPo
+//     > Made total message size limit larger as recommended here: http://stackoverflow.com/questions/22426686/csmtp-wont-send-an-e-mail-attachment-but-without-the-attachment-it-works-fine/28333737#28333737
+//       - Thanks to Stanislav
+//     > Fixed an issue with incomplete attachment file paths as discussed here: http://www.codeproject.com/Messages/5127588/Re-Attachment-does-not-come.aspx
+//       - Thanks to Member 11508846 and Member 11887128
 // - Version 2.3: Updated with fixes reported as of 17 Aug 2013
 //     > Removed Bcc header so that recipients don't see who it was Bcc'd to as discussed here: http://www.codeproject.com/Messages/4633562/Bcc-and-mail-header.aspx
 //       - Thanks to o15s19
@@ -82,7 +98,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-//
+//////////////////////////////////////////////////////////////////////////////////////
 // --UBT
 // As noted above, This most excellent implementation was developed outside the XMLFoundation.  Although the XMLFoundation has its 
 // own md5 and base64, CSmtp was built on the same utilities with slightly different interfaces that are issues of performance and memory use as well as style and dependencies.
@@ -93,6 +109,7 @@
 #ifndef _LIBRARY_IN_1_FILE
 	static char SOURCE_FILE[] = __FILE__;
 #endif
+//////////////////////////////////////////////////////////////////////////////////////
 
 #include "CSmtp.h"
 #include "Base64Alternate.h"
@@ -100,12 +117,11 @@
 #include "md5Alternate.h"
 #include "md5Alternate.cpp"
 
-
+// ------------------------------------------------------------------------------------------------
 // -- UBT In VS2013, we need the definition for struct sockaddr_storage. #include <winsock2.h> does not help.
 // Try to, #include <ws2def.h> and we get errors about <winsock.h> and <ws2def.h> in the same module.
-// Therefore we include neither header file and add the definition here, 
-
-// for Visual Studio newer than VC6
+// Therefore we include neither header file and add the definition here, for Visual Studio newer than VC6
+//	search for "REMOVED WINSOCK2.H" in CSmtp.h
 #if defined(_MSC_VER) && _MSC_VER > 1200 
 
 				//
@@ -145,6 +161,7 @@
 				} SOCKADDR_STORAGE_LH, *PSOCKADDR_STORAGE_LH, FAR *LPSOCKADDR_STORAGE_LH;
 				//////////// end from <ws2def.h> /////////////////////////////
 #endif
+// ------------------------------------------------------------------------------------------------
 
 
 #include "openssl/err.h"
@@ -154,7 +171,7 @@ using std::string;
 
 
 #include <cassert>
-
+// --UBT added these two lines
 #pragma warning (disable:4244) // conversion from 'SOCKET' to 'int', possible loss of data
 #pragma warning (disable:4127) // warning C4127: conditional expression is constant in each use of FD_SET
 
@@ -176,8 +193,8 @@ using std::string;
 	#ifdef _WIN32
 		#ifdef _WIN64
 			#  if defined(_MSC_VER) && _MSC_VER < 1900 // for VS2003 VS2005 VS2012 and VS2013 
-				#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")	
-				#pragma comment(lib,    "../../Libraries/openssl/bin-win64/ssleay32.lib")
+				#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/libeay32.lib")	
+				#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/ssleay32.lib")
 			#else
 				// VS2015 apparently no longer supports relative linking in a pragma 
 				// Is this a VS2015 Bug?  Hardcoding the path is a workaround that works - but VS2015 users MUST unzip the source to C:\ 
@@ -190,8 +207,8 @@ using std::string;
 			#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib")
 			#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/ssleay32.lib")
 		#else
-			#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
-			#pragma comment(lib,    "../../Libraries/openssl/bin-win32/ssleay32.lib")
+			#pragma comment(lib,    "../../../Libraries/openssl/bin-win32/libeay32.lib")
+			#pragma comment(lib,    "../../../Libraries/openssl/bin-win32/ssleay32.lib")
 		#endif
 
 //  --UBT Note:  openssl uses _iob.   // It has gone missing from the C Runtime.  Read about it:
@@ -236,6 +253,9 @@ using std::string;
 	#endif // _win32
 #endif
 
+
+// -- UBT from this point down to the end of this source file this is a direct cut and paste from the origin source code
+// EXCEPT that MD5 was changed to MD5Alt
 
 Command_Entry command_list[] = 
 {
@@ -661,8 +681,6 @@ void CSmtp::ClearMessage()
 	DelMsgLines();
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: Send
 // DESCRIPTION: Sending the mail. .
@@ -718,6 +736,7 @@ void CSmtp::Send()
 				throw ECSmtp(ECSmtp::MSG_TOO_BIG);
 
 			fclose(hFile);
+			hFile=NULL;
 		}
 
 		// ***** SENDING E-MAIL *****
@@ -789,9 +808,9 @@ void CSmtp::Send()
 #else
 			pos = Attachments[FileId].find_last_of("/");
 #endif
-			if(pos == string::npos) continue;
+			if(pos == string::npos) FileName = Attachments[FileId];
+			else FileName = Attachments[FileId].substr(pos+1);
 
-            FileName = Attachments[FileId].substr(pos+1);
             //RFC 2047 - Use UTF-8 charset,base64 encode.
             EncodedFileName = "=?UTF-8?B?";
             EncodedFileName += base64_encode((unsigned char *) FileName.c_str(), FileName.size());
@@ -810,7 +829,7 @@ void CSmtp::Send()
 			SendData(pEntry);
 
 			// opening the file:
-			hFile = fopen(FileName.c_str(), "rb");
+			hFile = fopen(Attachments[FileId].c_str(), "rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
 			
@@ -838,8 +857,10 @@ void CSmtp::Send()
 				SendData(pEntry); // FileBuf, FileName, fclose(hFile);
 			}
 			fclose(hFile);
+			hFile=NULL;
 		}
 		delete[] FileBuf;
+		FileBuf=NULL;
 		
 		// sending last message block (if there is one or more attachments)
 		if(Attachments.size())
@@ -856,6 +877,8 @@ void CSmtp::Send()
 	}
 	catch(const ECSmtp&)
 	{
+		if(hFile) fclose(hFile);
+		if(FileBuf) delete[] FileBuf;
 		DisconnectRemoteServer();
 		throw;
 	}
@@ -880,7 +903,7 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 								const char* password/*=NULL*/)
 {
 	unsigned short nPort = 0;
-//	LPSERVENT lpServEnt;
+	LPSERVENT lpServEnt;
 	SOCKADDR_IN sockAddr;
 	unsigned long ul = 1;
 	fd_set fdwrite,fdexcept;
@@ -897,17 +920,16 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 		if((hSocket = socket(PF_INET, SOCK_STREAM,0)) == INVALID_SOCKET)
 			throw ECSmtp(ECSmtp::WSA_INVALID_SOCKET);
 
-//		if(nPort_ != 0)
-			nPort = htons(nPort_);  
-//			nPort = nPort_;  
-//		else
-//		{
-//			lpServEnt = getservbyname("mail", 0);
-//			if (lpServEnt == NULL)
-//				nPort = htons(25);
-//			else 
-//				nPort = lpServEnt->s_port;
-//		}	
+		if(nPort_ != 0)
+			nPort = htons(nPort_);
+		else
+		{
+			lpServEnt = getservbyname("mail", 0);
+			if (lpServEnt == NULL)
+				nPort = htons(25);
+			else 
+				nPort = lpServEnt->s_port;
+		}
 				
 		sockAddr.sin_family = AF_INET;
 		sockAddr.sin_port = nPort;
@@ -1057,7 +1079,6 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				snprintf(SendBuf, BUFFER_SIZE, "%s\r\n",encoded_password.c_str());
 				SendData(pEntry);
 				ReceiveResponse(pEntry);
-
 			}
 			else if(IsKeywordSupported(RecvBuf, "PLAIN") == true)
 			{
@@ -2564,6 +2585,7 @@ void CSmtp::CleanupOpenSSL()
 	{
 		SSL_CTX_free (m_ctx);	
 		m_ctx = NULL;
+		ERR_remove_state(0);
 		ERR_free_strings();
 		EVP_cleanup();
 		CRYPTO_cleanup_all_ex_data();

@@ -1020,6 +1020,8 @@ public class MainActivity
                 @Override
                 public void onClick(View view) {
 
+                    // testing audio capture
+                    GAppGlobal.serverInteract(4, "", "");
                     GAppGlobal.messageMe("Button1");
 
 

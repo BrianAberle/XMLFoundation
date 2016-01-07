@@ -74,8 +74,8 @@ CXMLAttribute::~CXMLAttribute()
 {
 	if (m_bOwnsMemory)
 	{
-		delete m_tag;
-		delete m_value;
+		delete [] m_tag;
+		delete [] m_value;
 	}
 }
 

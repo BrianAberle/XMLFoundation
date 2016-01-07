@@ -133,7 +133,7 @@ XMLObject* XMLObjectFactory::CreateObject(const char *pzTag,MemberDescriptor *pM
 				// Request it from the Object Cache, create it if it does not already 
 				// exist - and place it into the cache if the ObjectID is known
 				pObject = cacheManager.getObject(pzTag,m_pzLastFoundOID,m_pzLastUpdateTime,&bDidCreate);
-				if ( pObject->GetObjectBehaviorFlags() & USE_STATE_CACHE )
+				if ( pObject && pObject->GetObjectBehaviorFlags() & USE_STATE_CACHE )
 				{
 					GString *pState = cacheManager.getState(pzTag,m_pzLastFoundOID);
 					if (pState)

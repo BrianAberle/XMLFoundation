@@ -1,62 +1,9 @@
-#define _NO_SYS_BTIME_
-#define _LIBRARY_IN_1_FILE
-#include "ServerCore.cpp"
-#include "Utils/GSocketHelpers.cpp"
-#include "Utils/GArray.cpp"
-#include "Utils/CSmtp.cpp"
-#include "Utils/GBTree.cpp"
-#include "Utils/GException.cpp"
-#include "Utils/GHash.cpp"
-#include "Utils/GList.cpp"
-#include "Utils/GProfile.cpp"
-#include "Utils/GProcess.cpp"
-#include "Utils/GStack.cpp"
-#include "Utils/GString.cpp"
-#include "Utils/GString0.cpp"
-#include "Utils/GString32.cpp"
-#include "Utils/GStringList.cpp"
-#include "Utils/GDirectory.cpp"
-#include "Utils/GPerformanceTimer.cpp"
-#include "Utils/TwoFish.cpp"
-#include "Utils/SHA256.cpp"
-#include "Utils/BZip.cpp"
-#include "Utils/GZip.cpp"
-#include "Utils/Base64.cpp"
-#include "Utils/PluginBuilderLowLevelStatic.cpp"
-#include "Utils/GHTTPMultiPartPOST.cpp"
-#include "AttributeList.cpp"
-#include "CacheManager.cpp"
-#include "FactoryManager.cpp"
-#include "FrameworkAuditLog.cpp"
-#include "MemberDescriptor.cpp"
-#include "FileDataSource.cpp"
-#include "ObjQueryParameter.cpp"
-#include "ProcedureCall.cpp"
-#include "Schema.cpp"
-#include "SocketHTTPDataSource.cpp"
-#include "StackFrameCheck.cpp"
-#include "xmlAttribute.cpp"
-#include "xmlDataSource.cpp"
-#include "xmlElement.cpp"
-#include "xmlElementTree.cpp"
-#include "XMLException.cpp"
-#include "xmlLex.cpp"
-#include "xmlObject.cpp"
-#include "xmlObjectFactory.cpp"
-#include "XMLProcedureDescriptor.cpp"
-#include "SwitchBoard.cpp"
-#include "DynamicLibrary.cpp"
-#include "IntegrationBase.cpp"
-#include "IntegrationLanguages.cpp"
-//
-// note - .cpp files are only included 1 time - unlike header files which are included from multiple locations.
 
-#include "JavaFoundation.cpp" // includes <jni.h>
-
+#include "XMLFoundation.cpp" // this must only appear 1 time.
 
 // The next includes are redundant (since we included the cpp's above)  if we had built the .so with ndk-build and linked to it
 // as was typical in Eclipse projects and even in lesser integrated Android Studio projects - in those cases we would NEED the
-// next three includes - but in this project they are redundant.
+// includes - but in this file they are redundant, the .h files may appear as many times as they are needed in your application.
 #include "GString.h"
 #include "GProfile.h"
 #include "TwoFish.h"
@@ -152,6 +99,7 @@ extern void SetServerCoreInfoLog( void (*pfn) (int, GString &) ); // in ServerCo
 
 
 GProfile *g_SavedProfile = 0;
+int testAudioCapture();
 
 extern "C" JNIEXPORT jstring JNICALL Java_gapp_GAppGlobal_serverInteract  (JNIEnv *env, jobject obj, jint nOperation, jstring jsArg1, jstring jsArg2)
 {
@@ -488,5 +436,6 @@ extern "C" JNIEXPORT jint JNICALL Java_gapp_GAppGlobal_serverStart  (JNIEnv *env
 	}
 	return nRet;
 }
+
 
 #endif // _G_APP_SERVER_INCLUDED_
