@@ -36,8 +36,10 @@
 #define NET_FLAG_REDUCE_INFO			0x01 // reduced information set with labels in the data - not as good to parse - better to view directly
 #define NET_FLAG_NO_UDP4				0x02 // exclude UDP4 from the results
 #define NET_FLAG_NO_UDP6				0x04 // exclude UDP6 from the results
+#define NET_FLAG_NO_UDP                 NET_FLAG_NO_UDP4|NET_FLAG_NO_UDP6
 #define NET_FLAG_NO_TCP4				0x08 // exclude TCP4 from the results
 #define NET_FLAG_NO_TCP6				0x10 // exclude TCP6 from the results
+#define NET_FLAG_NO_TCP					NET_FLAG_NO_TCP4|NET_FLAG_NO_TCP6
 #define NET_FLAG_NEXT					0x20 
 
 bool GetNetworkConnections(GString &strResults, int nFlags);

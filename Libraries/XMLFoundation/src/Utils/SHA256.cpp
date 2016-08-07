@@ -23,7 +23,9 @@
 #ifndef _LIBRARY_IN_1_FILE
 static char SOURCE_FILE[] = __FILE__;
 #endif
-
+#ifdef _ANDROID
+#define LTC_NO_ROLC
+#endif
 
 #include <memory.h>
 #include <string.h> // needed for memcpy() definition on Android build

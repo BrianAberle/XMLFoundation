@@ -321,6 +321,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "Threading"=".\Examples\C++\Threading\Threading.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name XMLFoundationLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "TranslatingXML"=".\Examples\C++\TranslatingXML\TranslatingXML.dsp" - Package Owner=<4>
 
 Package=<5>

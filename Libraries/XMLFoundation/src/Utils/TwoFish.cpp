@@ -884,10 +884,10 @@ else
 		{							/* compute round subkeys for PHT */
 		F32(A,q        ,k32e);		/* A uses even key dwords */
 		F32(B,q+SK_BUMP,k32o);		/* B uses odd  key dwords */
-		B = ROL(B,8);
+		B = ROL1(B,8);
 		key->subKeys[2*i  ] = A+B;	/* combine with a PHT */
 		B = A + 2*B;
-		key->subKeys[2*i+1] = ROL(B,SK_ROTL);
+		key->subKeys[2*i+1] = ROL1(B,SK_ROTL);
 		}
 #if !defined(ZERO_KEY)
 	switch (keyLen)	/* case out key length for speed in generating S-boxes */
@@ -963,9 +963,9 @@ else
 		{
 		A = f32(i*SK_STEP        ,k32e,keyLen);	/* A uses even key dwords */
 		B = f32(i*SK_STEP+SK_BUMP,k32o,keyLen);	/* B uses odd  key dwords */
-		B = ROL(B,8);
+		B = ROL1(B,8);
 		assert(key->subKeys[2*i  ] == A+  B);
-		assert(key->subKeys[2*i+1] == ROL(A+2*B,SK_ROTL));
+		assert(key->subKeys[2*i+1] == ROL1(A+2*B,SK_ROTL));
 		}
   #if !defined(ZERO_KEY)			/* any S-boxes to check? */
 	for (i=q=0;i<256;i++,q+=0x01010101)
@@ -1182,10 +1182,10 @@ int BlockEncrypt(cipherInstance *cipher, keyInstance *key,BYTE *input,
 #define	EncryptRound(K,R,id)	\
 			t0	   = Fe32##id(x[K  ],0);					\
 			t1	   = Fe32##id(x[K^1],3);					\
-			x[K^3] = ROL(x[K^3],1);							\
+			x[K^3] = ROL1(x[K^3],1);							\
 			x[K^2]^= t0 +   t1 + sk[ROUND_SUBKEYS+2*(R)  ];	\
 			x[K^3]^= t0 + 2*t1 + sk[ROUND_SUBKEYS+2*(R)+1];	\
-			x[K^2] = ROR(x[K^2],1);							\
+			x[K^2] = ROR1(x[K^2],1);							\
 
 #define		Encrypt2(R,id)	{ EncryptRound(0,R+1,id); EncryptRound(2,R,id); }
 
@@ -1349,10 +1349,10 @@ int BlockDecrypt(cipherInstance *cipher, keyInstance *key, BYTE *input,
 #define	DecryptRound(K,R,id)								\
 			t0	   = Fe32##id(x[K  ],0);					\
 			t1	   = Fe32##id(x[K^1],3);					\
-			x[K^2] = ROL (x[K^2],1);						\
+			x[K^2] = ROL1 (x[K^2],1);						\
 			x[K^2]^= t0 +   t1 + sk[ROUND_SUBKEYS+2*(R)  ];	\
 			x[K^3]^= t0 + 2*t1 + sk[ROUND_SUBKEYS+2*(R)+1];	\
-			x[K^3] = ROR (x[K^3],1);						\
+			x[K^3] = ROR1 (x[K^3],1);						\
 
 #define		Decrypt2(R,id)	{ DecryptRound(2,R+1,id); DecryptRound(0,R,id); }
 
@@ -1994,9 +1994,9 @@ int reKey(keyInstance *key)
 		{
 		A = f32(i*SK_STEP        ,k32e,keyLen);	/* A uses even key dwords */
 		B = f32(i*SK_STEP+SK_BUMP,k32o,keyLen);	/* B uses odd  key dwords */
-		B = ROL(B,8);
+		B = ROL1(B,8);
 		key->subKeys[2*i  ] = A+  B;			/* combine with a PHT */
-		key->subKeys[2*i+1] = ROL(A+2*B,SK_ROTL);
+		key->subKeys[2*i+1] = ROL1(A+2*B,SK_ROTL);
 		}
 
 //	DebugDumpKey(key);
@@ -2192,21 +2192,21 @@ int BlockEncrypt(cipherInstance *cipher, keyInstance *key,BYTE *input,
 		for (r=0;r<rounds;r++)			/* main Twofish encryption loop */
 			{	
 #if FEISTEL
-			t0	 = f32(ROR(x[0],  (r+1)/2),key->sboxKeys,key->keyLen);
-			t1	 = f32(ROL(x[1],8+(r+1)/2),key->sboxKeys,key->keyLen);
+			t0	 = f32(ROR1(x[0],  (r+1)/2),key->sboxKeys,key->keyLen);
+			t1	 = f32(ROL1(x[1],8+(r+1)/2),key->sboxKeys,key->keyLen);
 										/* PHT, round keys */
-			x[2]^= ROL(t0 +   t1 + key->subKeys[ROUND_SUBKEYS+2*r  ], r    /2);
-			x[3]^= ROR(t0 + 2*t1 + key->subKeys[ROUND_SUBKEYS+2*r+1],(r+2) /2);
+			x[2]^= ROL1(t0 +   t1 + key->subKeys[ROUND_SUBKEYS+2*r  ], r    /2);
+			x[3]^= ROR1(t0 + 2*t1 + key->subKeys[ROUND_SUBKEYS+2*r+1],(r+2) /2);
 
 			DebugDump(x,"",r+1,2*(r&1),1,1,0);
 #else
 			t0	 = f32(    x[0]   ,key->sboxKeys,key->keyLen);
-			t1	 = f32(ROL(x[1],8),key->sboxKeys,key->keyLen);
+			t1	 = f32(ROL1(x[1],8),key->sboxKeys,key->keyLen);
 
-			x[3] = ROL(x[3],1);
+			x[3] = ROL1(x[3],1);
 			x[2]^= t0 +   t1 + key->subKeys[ROUND_SUBKEYS+2*r  ]; /* PHT, round keys */
 			x[3]^= t0 + 2*t1 + key->subKeys[ROUND_SUBKEYS+2*r+1];
-			x[2] = ROR(x[2],1);
+			x[2] = ROR1(x[2],1);
 
 //			DebugDump(x,"",r+1,2*(r&1),0,1,0);/* make format compatible with optimized code */
 #endif
@@ -2217,10 +2217,10 @@ int BlockEncrypt(cipherInstance *cipher, keyInstance *key,BYTE *input,
 				}
 			}
 #if FEISTEL
-		x[0] = ROR(x[0],8);                     /* "final permutation" */
-		x[1] = ROL(x[1],8);
-		x[2] = ROR(x[2],8);
-		x[3] = ROL(x[3],8);
+		x[0] = ROR1(x[0],8);                     /* "final permutation" */
+		x[1] = ROL1(x[1],8);
+		x[2] = ROR1(x[2],8);
+		x[3] = ROL1(x[3],8);
 #endif
 		for (i=0;i<BLOCK_SIZE/32;i++)	/* copy out, with whitening */
 			{
@@ -2321,13 +2321,13 @@ int BlockDecrypt(cipherInstance *cipher, keyInstance *key,BYTE *input,
 		for (r=rounds-1;r>=0;r--)			/* main Twofish decryption loop */
 			{
 			t0	 = f32(    x[0]   ,key->sboxKeys,key->keyLen);
-			t1	 = f32(ROL(x[1],8),key->sboxKeys,key->keyLen);
+			t1	 = f32(ROL1(x[1],8),key->sboxKeys,key->keyLen);
 
 //			DebugDump(x,"",r+1,2*(r&1),0,1,0);/* make format compatible with optimized code */
-			x[2] = ROL(x[2],1);
+			x[2] = ROL1(x[2],1);
 			x[2]^= t0 +   t1 + key->subKeys[ROUND_SUBKEYS+2*r  ]; /* PHT, round keys */
 			x[3]^= t0 + 2*t1 + key->subKeys[ROUND_SUBKEYS+2*r+1];
-			x[3] = ROR(x[3],1);
+			x[3] = ROR1(x[3],1);
 
 			if (r)									/* unswap, except for last round */
 				{

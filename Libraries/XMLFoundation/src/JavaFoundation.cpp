@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //			       Copyright United Business Technologies, Inc
-// 				      (c) 1998 - 2015  All Rights Reserved.
+// 				      (c) 1998 - 2016  All Rights Reserved.
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
 //	Java Native Integration Interface for Object Oriented XML Serialization
@@ -15,27 +15,62 @@
 // This article has some good ideas that will be applied to this code
 // http://www.ibm.com/developerworks/library/j-jni/
 //
-#include "XMLObject.h"
+#include "xmlObject.h"
 #include "GString.h"
 #include "GStringList.h"
 #include "DynamicXMLObject.h"
 #include "CacheManager.h"
 #include "GException.h"
+#include "GProfile.h"
 #include <stdio.h>		// for : sscanf()
 #include <stdlib.h>		// for : atof() 
 #include <jni.h>
+#include <openssl/md5.h>
 
 
-JavaVM* gJavaVM = 0;
+//JavaVM* gJavaVM = 0;
 void ExchangeMembers(JNIEnv *env, const char *pzDir, DynamicXMLObject *pDO,	jobject jOb, DynamicXMLObject *pDOOwner);
 void BuildMemberMaps(JNIEnv *env, DynamicXMLObject *pDO, jobject jOb);
 
-extern JavaVM* g_javaVM; // in GAppServer.cpp
+#ifndef __JavaFoundation__cpp
+#define __JavaFoundation__cpp
+
+JavaVM* g_javaVM = 0;
 jclass g_activityClassXXX = 0;
 jobject g_activityObjXXX = 0;
 
+GString g_JNIFoundationClass;
+void setFoundationJNIClass(const char *pzClass)
+{
+	// "a777/root/GApp/GAppGlobal"
+	g_JNIFoundationClass = pzClass;
+}
 
-logit(const char *pzLog){
+// Android has no popen() implemented, so we will JNI up to the Java bootloader application
+// which executes the same as popen() via code in the JVM.
+void JavaShellExec(GString &strCommand, GString &strResult)
+{
+	JNIEnv *env;
+	if (g_javaVM)	{
+		g_javaVM->AttachCurrentThread(&env, NULL);
+		// Get the instance of [public class GAppGlobal], then find the [String ShellExec(String)]
+		jclass java_class = env->FindClass(g_JNIFoundationClass);
+		if (java_class) {
+			jmethodID shellexec = env->GetStaticMethodID(java_class, "ShellExec",	 "(Ljava/lang/String;)Ljava/lang/String;");
+			if (shellexec) {
+				// Construct a JNI String from the GString - then pass it to the java code in the 3rd arg to CallStaticObjectMethod()
+				jstring jstr = env->NewStringUTF(strCommand.Buf());
+				jstring strJava = (jstring) env->CallStaticObjectMethod(java_class, shellexec, jstr);
+				// put the JNI String into the a GString strResult
+				const char *strCpp = env->GetStringUTFChars(strJava, 0);
+				strResult = strCpp;
+				env->ReleaseStringUTFChars(strJava, strCpp);
+			}
+		}
+	}
+}
+
+void logit(const char *pzLog){
 	GString g(pzLog);
 	g.ToFileAppend(GetProfile().GetStringOrDefault("System","LogFile",""),0);
 }
@@ -67,11 +102,11 @@ jint CastDXMLO(DynamicXMLObject * p)
 }
 
 
-extern "C" JNIEXPORT jint JNICALL Java_gapp_XMLObject_JavaConstruct  (JNIEnv *env, jobject jOb, jint n, jstring js, jint nAutoSync)
+extern "C" JNIEXPORT jint JNICALL Java_a777_root_GApp_XMLObject_JavaConstruct  (JNIEnv *env, jobject jOb, jint n, jstring js, jint nAutoSync)
 {
-	if (!gJavaVM)
+	if (!g_javaVM)
 	{
-		env->GetJavaVM(&gJavaVM);
+		env->GetJavaVM(&g_javaVM);
 	}
 	
 	jboolean isCopy;
@@ -109,7 +144,7 @@ void JavaDestructHelper(JNIEnv *env,DynamicXMLObject *pDXO)
 	}
 }
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaDestruct
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaDestruct
   (JNIEnv *env, jobject jOb, jint iDO)
 {
 	DynamicXMLObject *pDXO = CastDXMLO(iDO);
@@ -769,7 +804,7 @@ void DoExchange(JNIEnv *env, jobject jobParent, DynamicXMLObject *pDXOApply, con
 				fid = env->GetFieldID(clazz, pzVarName, "Ljava/lang/String;");
 				job = env->GetObjectField(jobParent, fid);
 				if (job) {
-					strSrcValue = (char *) env->GetStringUTFChars(job, &isCopy);
+					strSrcValue = (char *) env->GetStringUTFChars((jstring)job, &isCopy);
 				}
 				else{
 					logit("string object is NULL\n");
@@ -953,7 +988,7 @@ void ExchangeMembers(JNIEnv *env, const char *pzDir, DynamicXMLObject *pDXO, job
 
 
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaExchange
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaExchange
   (JNIEnv *env, jobject jObBase, jobject jOb2, jint iDO, jstring strDirection, 
    jint nDataType, jstring strVarName, jstring strTag, 
    jstring strNestedInTag, jstring strObjectType, jstring strContainerType,   jint nSource)
@@ -971,7 +1006,7 @@ extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaExchange
 	DoExchange(env, jOb2, pDO, pzDir, nDataType, pzVarName, pzTag, pzNestedTag,	pzObjectType, pzContainerType, pDO, nSource);
 }
 
-extern "C" JNIEXPORT jobject JNICALL Java_gapp_XMLObject_getSubObj  (JNIEnv *env, jobject thisObj)
+extern "C" JNIEXPORT jobject JNICALL Java_a777_root_GApp_XMLObject_getSubObj  (JNIEnv *env, jobject thisObj)
 {
 	// call the virtual test on the 'this'
     jclass clazz = env->GetObjectClass(thisObj);
@@ -991,7 +1026,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_gapp_XMLObject_getSubObj  (JNIEnv *env
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaMapCacheDisable
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaMapCacheDisable
   (JNIEnv *, jobject, jint iDO)
 {
 	DynamicXMLObject *pDO = CastDXMLO(iDO);
@@ -1033,8 +1068,11 @@ void BuildMemberMaps(JNIEnv *env, DynamicXMLObject *pDO, jobject jOb)
 
 
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaFromXML  (JNIEnv *env, jobject jOb, jint iDO, jstring strXML)
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaFromXML  (JNIEnv *env, jobject jOb, jint iDO, jstring strXML)
 {
+	logit("--inC++_JavaFromXML_1\n");
+
+
 	env->GetJavaVM(&g_javaVM);
 //	g_javaVM->AttachCurrentThread(&env, NULL);
 	jclass clsXXX = env->GetObjectClass(jOb);
@@ -1086,7 +1124,7 @@ extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaFromXML  (JNIEnv *env,
 
 
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaMap  (JNIEnv *env, jobject jOb, jint iDO, jint DataType, jstring strName,	jstring strTag,
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaMap  (JNIEnv *env, jobject jOb, jint iDO, jint DataType, jstring strName,	jstring strTag,
 																jstring strWrapper, jstring strObjectType, jstring strContainerType, jint nSource)
 {
 	DynamicXMLObject *pDO = CastDXMLO(iDO);
@@ -1103,7 +1141,7 @@ extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaMap  (JNIEnv *env, job
 	pDO->AddMemberDescriptor(pJD);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaMapOID    (JNIEnv *env, jobject job, jint iDO, jobject jobThis, jstring k1, jstring k2, jstring k3, jstring k4, jstring k5)
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaMapOID    (JNIEnv *env, jobject job, jint iDO, jobject jobThis, jstring k1, jstring k2, jstring k3, jstring k4, jstring k5)
 {
 	DynamicXMLObject *pDO = CastDXMLO(iDO);
 
@@ -1134,7 +1172,7 @@ extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaMapOID    (JNIEnv *env
 }
 
 
-extern "C" JNIEXPORT jstring JNICALL Java_gapp_XMLObject_JavaToXML  (JNIEnv *env, jobject jOb, jint iDO)
+extern "C" JNIEXPORT jstring JNICALL Java_a777_root_GApp_XMLObject_JavaToXML  (JNIEnv *env, jobject jOb, jint iDO)
 {
 	env->GetJavaVM(&g_javaVM);
 //	g_javaVM->AttachCurrentThread(&env, NULL);
@@ -1154,9 +1192,10 @@ extern "C" JNIEXPORT jstring JNICALL Java_gapp_XMLObject_JavaToXML  (JNIEnv *env
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_gapp_XMLObject_JavaRemoveAll
+extern "C" JNIEXPORT void JNICALL Java_a777_root_GApp_XMLObject_JavaRemoveAll
   (JNIEnv *, jobject, jint iDO)
 {
 	DynamicXMLObject *pDXO = CastDXMLO(iDO);
 	pDXO->ClearPreviousMembers();
 }
+#endif // __JavaFoundation__cpp

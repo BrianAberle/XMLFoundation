@@ -1,0 +1,146 @@
+// GApp
+apply plugin: 'com.android.model.application'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('XMLFoundationBuildPath.properties').newDataInputStream())
+def xmlfPath = properties.getProperty('XMLFoundation.dir')
+
+model {
+
+    repositories {
+        libs(PrebuiltLibraries) {
+            ssllib {
+                //  NOTE: headers.srcDir "${xmlfPath}/Libraries/openssl/bin-android-${targetPlatform.getName()}/"
+                // attaching library files, one for each platform
+                binaries.withType(StaticLibraryBinary) {
+  //                  println("*****repositories:ssllib ****** ${targetPlatform.getName()} ************************ ${xmlfPath} **************************************")
+
+                    def libsslPath = "${xmlfPath}/Libraries/openssl/bin-android-${targetPlatform.getName()}/libssl.a"
+                    staticLibraryFile = file("${libsslPath}")
+                }
+            }
+
+        } // end of 1st libs entry, cryptolib
+
+        libs(PrebuiltLibraries) {
+            cryptolib {
+                binaries.withType(StaticLibraryBinary) {
+//                    println("*****repositories:cryptolib ****** ${targetPlatform.getName()} ************************ ${xmlfPath} **************************************")
+                    def cryptoPath = "${xmlfPath}/Libraries/openssl/bin-android-${targetPlatform.getName()}/libcrypto.a"
+                    staticLibraryFile = file("${cryptoPath}")
+                }
+            }
+        } // end of 2nd libs entry, cryptolib
+
+    } // end of repositories
+
+
+
+    android {
+        compileSdkVersion 23
+        buildToolsVersion '23.0.2'
+
+        defaultConfig.with {
+                minSdkVersion.apiLevel 15
+                targetSdkVersion.apiLevel 23
+            }
+
+        ndk {
+            platformVersion = 9
+            moduleName = 'GApp'
+            toolchain = 'clang'
+            stl = 'gnustl_static'
+
+            // add multiple compiler flags
+            cppFlags.addAll(['-frtti', '-fexceptions', '-c', '-O3', '-w', '-D_LINUX', '-D_ANDROID', '-fpermissive'])
+
+            println("***** model.android.ndk ***** ${xmlfPath} *****************************")
+
+//   When I know the syntax to add it properly in this build system, it will be something like this....
+            println("-I${xmlfPath}/Libraries/XMLFoundation/inc")
+
+// in the current expiramental plugin, this causes another problem, therefore its easy to setup your build.
+
+//            def xmlfPath1 = "-I${xmlfPath}/Libraries/XMLFoundation/inc"
+//            cppFlags.add("${xmlfPath1}")
+//
+//            cppFlags.add("-I${xmlfPath}/Libraries/XMLFoundation/inc")
+//
+//            cppFlags.add('${xmlfIncPath}')
+///////////////////////////////////////////////////////////////////////////////////////////////
+//
+// SETUP-YOUR-BUILD
+//
+//      // This is what i use in the linux build
+//
+//          cppFlags.add('-I/home/user/XMLFoundation/Libraries/XMLFoundation/inc')
+//          cppFlags.add('-I/home/user/XMLFoundation/Libraries/XMLFoundation/src')
+//          cppFlags.add('-I/home/user/XMLFoundation/Servers/Core')
+//          cppFlags.add('-I/home/user/XMLFoundation/Libraries/openssl/bin-android-x86')
+//
+//      // This is what i use in the windows build
+          cppFlags.add('-IC:\\XMLFoundation/Libraries/XMLFoundation/inc')
+          cppFlags.add('-IC:\\XMLFoundation/Libraries/XMLFoundation/src')
+          cppFlags.add('-IC:\\XMLFoundation/Servers/Core')
+          cppFlags.add('-IC:\\XMLFoundation/Libraries/openssl/bin-android-armeabi-v7a')
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          cppFlags.add('-IC:\\XMLFoundation/Libraries/openssl/bin-android-x86')
+            // this sets the path so that #include <openssl/file.h> will be found where the declarations used on the armv7 build of openssl
+            // this happens to work with the x86 binaries, but for technical correctness during the build, the headers should match the binary.
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//           NOTE:the sources.main.jni.dependencies (below) causes a link to : (the proper two libs per build architecture )
+//             We could select a single platform and force the path like this....
+//            ldLibs.addAll(['c:\\XMLFoundation\\Libraries\\openssl\\bin-android-armeabi-v7a\\libssl.a',
+//                           'c:\\XMLFoundation\\Libraries\\openssl\\bin-android-armeabi-v7a\\libcrypto.a'])//
+//            abiFilters.addAll(['armeabi-v7a'] )
+//                                           ...or like this for x86
+//          ldLibs.addAll(['c:\\XMLFoundation\\Libraries\\openssl\\bin-android-x86\\libssl.a',
+//                         'c:\\XMLFoundation\\Libraries\\openssl\\bin-android-x86\\libcrypto.a'])
+//            abiFilters.addAll(['x86'] )
+// NOTE: if you were to build for just a single platform, and specify the libs, you would want to remove the following static links from dependencies.
+//            library "ssllib" linkage "static"
+//            library "cryptolib" linkage "static"
+//
+//
+            // however we will not specify the openssl libs here.....
+            ldLibs.addAll(['android', 'log', 'EGL', 'GLESv2','atomic'])
+
+            // ....because there is one set (libssl and libcrypto) per platform   see: sources.main.jni.dependencies and cooresponding model.repositories.
+            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'])
+
+        }
+
+
+        sources.main {
+            println("*****sources.main ************* ${xmlfPath} **************************************")
+
+            jni {
+                source {
+                    println("****sources.main.jni*********** ${xmlfPath} **************************************")
+                    // we can specify source files here - but all .cpp files in src/main/jni/ are automatically added
+//                    file('src/main/jni/GApp.cpp')
+                }
+                dependencies {
+                    library "ssllib" linkage "static"
+                    library "cryptolib" linkage "static"
+                }
+            }
+        }
+
+
+
+        dependencies {
+
+            compile files('src/main/jni/httpcore-4.1.jar')
+            compile files('src/main/jni/httpclient-4.1.1.jar')
+
+            compile fileTree(dir: 'libs', include: ['*.jar'])
+            compile 'com.android.support:appcompat-v7:23.4.0'
+            compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha4'
+        }
+    }
+}
+
+

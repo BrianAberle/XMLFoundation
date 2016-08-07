@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2010  All Rights Reserved.
+//			  Copyright (c) 2000 - 2016  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -23,7 +23,7 @@ const char *pzBoundErrorDescriptions =
 "\r\n"
 "[String]\r\n"
 "SubSystem=2\r\n"
-"0=Not enough memory for resize.\r\n"
+"0=Not enough memory for GString resize.\r\n"
 "1=Subscript out of range.\r\n"
 "2=Could not read file[%s].\r\n"
 "3=Could not write file[%s].\r\n"
@@ -131,19 +131,31 @@ const char *pzBoundErrorDescriptions =
 "26=External markup specified but no callback registered to handle it.(Line %ld, Position %ld)\r\n"
 "27=XML document is not well-formed.(Line %ld, Position %ld)\r\n"
 "\r\n"
+
 "[XML Object]\r\n"
 "SubSystem=8\r\n"
 "0=Failed to open input file [%s].\r\n"
 "1=Failed to Serialize Object [%s].\r\n"
 "2=Object[%s] contains an invalid object in the [%s] mapped to [%s]\r\n"
+"3=Out of Memory during MapMember to [%s] in object [%s].\r\n"
+"4=Out of Memory during SetDefaultXMLTag [%s] in object [%s].\r\n"
+"5=Out of Memory during RegisterMember in object [%s].\r\n"
+"6=Out of Memory during SetObjectTypeName [%s] in object [%s].\r\n"
+"7=Out of Memory during getOID in object [%s].\r\n"
+"8=Out of Memory for AttributeHash in object [%s].\r\n"
+"9=Out of Memory during Init oid=[%s] in object [%s].\r\n"
+"10=Out of Memory during Init timestamp=[%s] in object [%s].\r\n"
 "\r\n"
+
 "[XML Object Factory]\r\n"
 "SubSystem=9\r\n"
 "0=The list mapped to tag [%s] has an invalid list handler.\r\n"
 "1=[%s] returned the following error:\n%s\r\n"
 "2=Invalid XML.  Failed to create objects.\r\n"
 "3=Missing ObjectID on type [%s] mapped to tag [%s] - Use of Keyed Data Structures require OID\r\n"
+"4=Null Sub-Object assigning [%s] mapped to tag [%s] - Check available memory and proper MemberMapping\r\n"
 "\r\n"
+
 "[Server Administration]\r\n"
 "SubSystem=10\r\n"
 "0=No 'user' and 'pass' were provided with this request.\nAccess denied.\r\n"
@@ -423,4 +435,12 @@ const char *pzBoundErrorDescriptions =
 "[GDirectoryListing]\r\n"
 "SubSystem=27\r\n"
 "0=Directory [%s] does not exist or cannot be accessed OS code[%d].\r\n"
+"\r\n"
+"[GBTree]\r\n"
+"SubSystem=28\r\n"
+"0=Out of Memory inserting key [%s]\r\n"
+"\r\n"
+"[GList]\r\n"
+"SubSystem=29\r\n"
+"0=Out of Memory inserting into list\r\n"
 "\r\n";

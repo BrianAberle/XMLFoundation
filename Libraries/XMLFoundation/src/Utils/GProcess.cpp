@@ -110,6 +110,18 @@
 
 
 
+#ifdef _ANDROID
+	#ifdef _NO_JAVA_DEPENDENCIES
+		void JavaShellExec(GString &strCommand, GString &strResult)
+		{
+			//stub out for dynamic lib builds
+		}
+	#else
+		#include "JavaFoundation.cpp"
+		extern void JavaShellExec(GString &strCommand, GString &strResult); // in JavaFoundation.cpp
+	#endif
+#endif
+
 //--------------------------------------------------------------------------------------------------------------------
 
 #ifdef _WIN32
@@ -629,8 +641,6 @@ void ParseAndroidProcessInfo(GString &g,GString &strResult)
 
 #endif
 
-
-extern void JavaShellExec(GString &strCommand, GString &strResult); // in GAppServer.cpp
 
 
 

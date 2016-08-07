@@ -1,0 +1,31 @@
+1st You need to open the file [XMLFoundation/Examples/Android/XMLFoundationProject/XMLFoundationBuildPath.properties]
+
+		XMLFoundation.dir=C:\\XMLFoundation
+				or
+		XMLFoundation.dir=/home/user/XMLFoundation
+
+
+next you need to open 2 files,  [XMLFoundation/Examples/Android/XMLFoundationProject/GApp/Build.gradle] and 
+				[XMLFoundation/Examples/Android/XMLFoundationProject/XMLFLibrary/build.gradle]
+to setup your local build include paths to XMLFoundation 
+
+search for:
+// SETUP-YOUR-BUILD
+
+            cppFlags.add('-I/home/user/XMLFoundation/Libraries/XMLFoundation/inc')
+            cppFlags.add('-I/home/user/XMLFoundation/Libraries/XMLFoundation/src')
+            cppFlags.add('-I/home/user/XMLFoundation/Servers/Core')
+            cppFlags.add('-I/home/user/XMLFoundation/Libraries/openssl/bin-android-x86')
+
+//          cppFlags.add('-IC:\\XMLFoundation/Libraries/XMLFoundation/inc')
+//          cppFlags.add('-IC:\\XMLFoundation/Libraries/XMLFoundation/src')
+//          cppFlags.add('-IC:\\XMLFoundation/Servers/Core')
+//          cppFlags.add('-IC:\\XMLFoundation\\Libraries\\openssl\\bin-android-armeabi-v7a')
+
+
+
+
+then... Open XMLFoundationProject in the Graphical IDE
+
+
+

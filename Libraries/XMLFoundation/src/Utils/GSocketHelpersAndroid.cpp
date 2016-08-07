@@ -230,12 +230,12 @@ struct ifaddrs *get_interface(const char *name, sa_family_t family)
     if ((family == AF_INET) && (addr == 0))
         return NULL;
 
-    ifa = malloc(sizeof(struct ifaddrs));
+    ifa = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
     if (!ifa)
         return NULL;
     memset(ifa, 0, sizeof(struct ifaddrs));
 
-    ifa->ifa_name = malloc(strlen(name)+1);
+    ifa->ifa_name = (char *)malloc(strlen(name)+1);
     if (!ifa->ifa_name) {
         free(ifa);
         return NULL;
@@ -244,7 +244,7 @@ struct ifaddrs *get_interface(const char *name, sa_family_t family)
     ifa->ifa_flags = flags;
 
     if (family == AF_INET) {
-        saddr = malloc(sizeof(struct sockaddr_in));
+        saddr = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
         if (saddr) {
             saddr->sin_addr.s_addr = addr;
             saddr->sin_family = family;
@@ -252,7 +252,7 @@ struct ifaddrs *get_interface(const char *name, sa_family_t family)
         ifa->ifa_addr = (struct sockaddr *)saddr;
 
         if (masklen != 0) {
-            smask = malloc(sizeof(struct sockaddr_in));
+            smask = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
             if (smask) {
                 smask->sin_addr.s_addr = prefixLengthToIpv4Netmask(masklen);
                 smask->sin_family = family;
@@ -261,7 +261,7 @@ struct ifaddrs *get_interface(const char *name, sa_family_t family)
         ifa->ifa_netmask = (struct sockaddr *)smask;
     } else if (family == AF_PACKET) {
         if (!ifc_get_hwaddr(name, hwbuf)) {
-            hwaddr = malloc(sizeof(struct sockaddr_ll));
+            hwaddr =(struct sockaddr_ll *) malloc(sizeof(struct sockaddr_ll));
             if (hwaddr) {
                 memset(hwaddr, 0, sizeof(struct sockaddr_ll));
                 hwaddr->sll_family = family;

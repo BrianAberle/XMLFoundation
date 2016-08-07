@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GApp</string>
+    <string name="next_section_text">Section %1d placeholder</string>
+</resources>

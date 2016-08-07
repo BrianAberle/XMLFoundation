@@ -1,3 +1,4 @@
+// all changes to the origional source are marked wit "--UBT"
 // CSmtp.h: interface for the Smtp class.
 //
 //////////////////////////////////////////////////////////////////////
@@ -33,6 +34,7 @@
 	#define _strnicmp strncasecmp
 #endif
 
+//--UBT
 //	#define OutputDebugStringA(buf)
 
 	typedef unsigned short WORD;
@@ -45,6 +47,8 @@
 
 	#define LINUX
 #else
+// --UBT removed the following include - search for "REMOVED WINSOCK2.H" in CSmtp.cpp
+//	#include <winsock2.h>
 	#include <time.h>
 	#pragma comment(lib, "ws2_32.lib")
 
@@ -57,12 +61,12 @@
 		#define snprintf sprintf_s
 	#endif
 #endif
-
+//--UBT
 //#include "md5.h"
 
-#define TIME_IN_SEC		3*60		// how long client will wait for server response in non-blocking mode
-#define BUFFER_SIZE 10240	  // SendData and RecvData buffers sizes
-#define MSG_SIZE_IN_MB 5		// the maximum size of the message with all attachments
+#define TIME_IN_SEC		3*60	// how long client will wait for server response in non-blocking mode
+#define BUFFER_SIZE		10240	// SendData and RecvData buffers sizes
+#define MSG_SIZE_IN_MB	25		// the maximum size of the message with all attachments
 #define COUNTER_VALUE	100		// how many times program will try to receive data
 
 const char BOUNDARY_TEXT[] = "__MESSAGE__ID__54yg6f6h6y456345";

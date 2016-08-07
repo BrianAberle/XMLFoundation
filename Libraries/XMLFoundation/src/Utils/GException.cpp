@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2014  All Rights Reserved.
+//			  Copyright (c) 2000 - 2016  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -27,7 +27,7 @@
 
 static char *g_pzStaticErrMap = 0;
 static GString g_strErrorFile;
-static GString *g_pstrErrorFileContents = 0;
+//GString *g_pstrErrorFileContents = 0;
 
 // When building a 32 bit target with VC6 or when building for legacy XP support with new Visual Studio 
 #ifndef _WIN64
@@ -38,6 +38,10 @@ static GString *g_pstrErrorFileContents = 0;
 	#define SymGetLineFromAddr64	SymGetLineFromAddr
 #endif
 
+
+//static GProfile g_ErrorProfile(g_pstrErrorFileContents->StrVal(), (int)g_pstrErrorFileContents->Length(), 0);
+static GProfile *g_pErrorProfile = 0;
+
 void SetErrorDescriptions(const char *pzErrData)
 {
 
@@ -45,6 +49,9 @@ void SetErrorDescriptions(const char *pzErrData)
 		delete[] g_pzStaticErrMap;
 	g_pzStaticErrMap = new char[strlen(pzErrData)+1];
 	memcpy(g_pzStaticErrMap,pzErrData,strlen(pzErrData)+1);
+//	g_pstrErrorFileContents = new GString(g_pzStaticErrMap,strlen(g_pzStaticErrMap));
+
+	g_pErrorProfile = new GProfile(g_pzStaticErrMap,strlen(g_pzStaticErrMap), 0);
 }
 
 GlobalErrorLanguage::GlobalErrorLanguage()
@@ -58,11 +65,11 @@ GlobalErrorLanguage::~GlobalErrorLanguage()
 		delete g_pzStaticErrMap;
 		g_pzStaticErrMap = 0;
 	}
-	if (g_pstrErrorFileContents)
-	{
-		delete g_pstrErrorFileContents;
-		g_pstrErrorFileContents = 0;
-	}
+//	if (g_pstrErrorFileContents)
+//	{
+//		delete g_pstrErrorFileContents;
+//		g_pstrErrorFileContents = 0;
+//	}
 }
 GlobalErrorLanguage _GEL;
 
@@ -72,12 +79,14 @@ GlobalErrorLanguage _GEL;
 
 GProfile &GetErrorProfile()
 {
+/*
 	if (g_strErrorFile.IsEmpty())
 	{
 		if (g_pzStaticErrMap)
 		{
 			g_strErrorFile = "Static Load";
-			g_pstrErrorFileContents = new GString(g_pzStaticErrMap,strlen(g_pzStaticErrMap));
+			*g_pstrErrorFileContents = g_pzStaticErrMap;
+
 		}
 		else
 		{
@@ -100,8 +109,9 @@ GProfile &GetErrorProfile()
 			}
 		}
 	}
-	static GProfile ErrorProfile(g_pstrErrorFileContents->StrVal(), (int)g_pstrErrorFileContents->Length(), 0);
-	return ErrorProfile;
+	*/
+
+	return *g_pErrorProfile;
 }
 
 
@@ -737,25 +747,36 @@ GException::GException(const char* szSystem, int error, ...)
 	}
 
 #if defined ( _WIN32) && defined (_DEBUG) && !defined(__WINPHONE)
-	_se_translator_function	f;
-	f = _set_se_translator(_stack_se_translator);
-	try
+
+	// this can only be executed if we are NOT out of memory
+	char *pMemTest = new char[128000];
+	if (pMemTest)
 	{
-		int div = 0;
-		#ifdef _MyOwnSlash // breakin the law.  Intentionally dividing by 0 to invoke the exception handler.
-			int crash = 1\div;
-		#else
-			int crash = 1/div;
-		#endif
-		crash++; // so that the local variable is used.
-	}
-	catch (GCallStack *gcs)// Note: if the library is not built with the /EHa flag == (Enable C++ Exceptions - Yes with Structured Exceptions) THEN this catch is ignored
-	{
-		_stk.AppendList( gcs->GetStack() );
+		delete pMemTest;
+
+
+		_se_translator_function	f;
+		f = _set_se_translator(_stack_se_translator);
+		try
+		{
+			int div = 0;
+			#ifdef _MyOwnSlash // breakin the law.  Intentionally dividing by 0 to invoke the exception handler.
+				int crash = 1\div;
+			#else
+				int crash = 1/div;
+			#endif
+			crash++; // so that the local variable is used.
+		}
+		catch (GCallStack *gcs)// Note: if the library is not built with the /EHa flag == (Enable C++ Exceptions - Yes with Structured Exceptions) THEN this catch is ignored
+		{
+			_stk.AppendList( gcs->GetStack() );
+			_set_se_translator(f);
+			delete gcs;
+		}
 		_set_se_translator(f);
-		delete gcs;
 	}
-	_set_se_translator(f);
+
+
 #endif
 }
 

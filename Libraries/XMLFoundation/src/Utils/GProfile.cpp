@@ -424,7 +424,7 @@ void GProfile::ProfileParse(const char *szBuffer, __int64 dwSize)
 void GProfile::Load()
 {
 	// if there is no external config file, there is nothing to load.
-	if (m_strFile == "NONE")
+	if (m_strFile.IsEmpty() || m_strFile == "NONE")
 		return;	
 
 	if (m_bCached)

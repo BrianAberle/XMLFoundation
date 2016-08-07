@@ -1,10 +1,10 @@
-//#define ___XFER		    // Xfer binary created on 8/18/2015
+//#define ___XFER		    // Xfer binary created on 10/8/2015
 //#define ___XFER_SRC
 
 
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2014  ((All Rights Reserved))
+//			  Copyright (c) 2000 - 2015  ((All Rights Reserved))
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------

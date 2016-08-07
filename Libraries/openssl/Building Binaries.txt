@@ -51,8 +51,25 @@ http://wiki.openssl.org/index.php/Android
 
 These binaries were built using 
 --------------------------------------------------------
-Android NDK r10e (2015 August) 
-openssl-1.0.1p   (2015-Jul-09 08:42:53)
+Android NDK r12b (2016-July)  from the Android Studio 2.2 preview 6 release
+openssl-1.0.1i   (2016-July)
+
+
+see the folder containing a bash shell script used to build openssl for Android
+
+./openssl-build /root/Android/Sdk/ndk-bundle /home/user/Desktop/openssl-OpenSSL_1_0_2i 23 armeabi-v7a 4.9 /home/user/OSSL/armeabi-v7a
+
+
+
+setenv-android.sh
+----------------
+_ANDROID_API="android-23"
+_ANDROID_EABI="arm-linux-androideabi-4.9"
+
+
+
+
+
 
 
 

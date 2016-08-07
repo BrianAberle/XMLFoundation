@@ -1,3 +1,30 @@
-If this folder does contain "bin-androidARM"  and "bin-androidX86"  and "bibn-ios"  and "bin-linux64" and "bin-win32" and "bin-win-64" and "bin-winphone"  then
-this is a minimal source code download to optimize bandwidth usage and it does not contain the openssl libraries.  You may obtain them here:
- http://www.codeproject.com/Articles/37850/XMLFoundation 
+C:\XMLFoundation\Libraries\openssl
+This folder should contain subfolders  
+
+bin-android-arm64-v8a
+bin-android-armeabi
+bin-android-armeabi-v7a
+bin-android-x86
+bin-android-x86_64
+
+and
+
+bin-ios
+bin-linux64
+bin-win32
+bin-win64
+bin-winphone
+
+If those sub-folders are missing then this is a minimal source code download to 
+optimize bandwidth usage and it does not contain the openssl libraries.  
+
+		    You may obtain them here:
+
+http://www.codeproject.com/KB/XML/XMLFoundation/opensslDroid.zip
+
+http://www.codeproject.com/KB/XML/XMLFoundation/openssl.zip
+-----------------------------------------------------------------------------
+                 or get the same thing here:
+
+https://www.dropbox.com/s/oj9678jys09c1pz/openssl.zip?dl=0
+-----------------------------------------------------------------------------

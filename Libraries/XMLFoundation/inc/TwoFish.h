@@ -62,26 +62,26 @@ INCLUDE IMPLEMENTATION SPECIFIC INFORMATION.
 ***************************************************************************/
 
 /* use intrinsic rotate if possible */
-#define	ROL(x,n) (((x) << ((n) & 0x1F)) | ((x) >> (32-((n) & 0x1F))))
-#define	ROR(x,n) (((x) >> ((n) & 0x1F)) | ((x) << (32-((n) & 0x1F))))
+#define	ROL1(x,n) (((x) << ((n) & 0x1F)) | ((x) >> (32-((n) & 0x1F))))
+#define	ROR1(x,n) (((x) >> ((n) & 0x1F)) | ((x) << (32-((n) & 0x1F))))
 
 #if (0) && defined(__BORLANDC__) && (__BORLANDC__ >= 0x462)
 #error "!!!This does not work for some reason!!!"
 #include	<stdlib.h>					/* get prototype for _lrotl() , _lrotr() */
 #pragma inline __lrotl__
 #pragma inline __lrotr__
-#undef	ROL								/* get rid of inefficient definitions */
+#undef	ROL1								/* get rid of inefficient definitions */
 #undef	ROR
-#define	ROL(x,n)	__lrotl__(x,n)		/* use compiler intrinsic rotations */
+#define	ROL1(x,n)	__lrotl__(x,n)		/* use compiler intrinsic rotations */
 #define	ROR(x,n)	__lrotr__(x,n)
 #endif
 
 #ifdef _MSC_VER
 #include	<stdlib.h>					/* get prototypes for rotation functions */
-#undef	ROL
+#undef	ROL1
 #undef	ROR
 #pragma intrinsic(_lrotl,_lrotr)		/* use intrinsic compiler rotations */
-#define	ROL(x,n)	_lrotl(x,n)			
+#define	ROL1(x,n)	_lrotl(x,n)
 #define	ROR(x,n)	_lrotr(x,n)
 #endif
 
@@ -104,7 +104,7 @@ INCLUDE IMPLEMENTATION SPECIFIC INFORMATION.
 #define		Bswap(x)			(x)		/* NOP for little-endian machines */
 #define		ADDR_XOR			0		/* NOP for little-endian machines */
 #else
-#define		Bswap(x)			((ROR(x,8) & 0xFF00FF00) | (ROL(x,8) & 0x00FF00FF))
+#define		Bswap(x)			((ROR(x,8) & 0xFF00FF00) | (ROL1(x,8) & 0x00FF00FF))
 #define		ADDR_XOR			3		/* convert byte address in dword */
 #endif
 

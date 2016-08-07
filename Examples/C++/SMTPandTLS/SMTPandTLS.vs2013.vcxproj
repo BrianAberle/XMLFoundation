@@ -204,6 +204,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Midl>
       <TypeLibraryName>.\Release\SMTPandTLS.tlb</TypeLibraryName>
@@ -221,6 +222,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\SMTPandTLS.exe</OutputFile>
       <AdditionalDependencies>..\..\..\Libraries\Release\XmlFoundation.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

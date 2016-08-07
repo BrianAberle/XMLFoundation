@@ -3,129 +3,134 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BigData.vs2013", "Examples\C++\BigData\BigData.vs2013.vcxproj", "{DC092D02-9873-4E82-B39E-49449E62D1B4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BigData", "Examples\C++\BigData\BigData.vs2013.vcxproj", "{DC092D02-9873-4E82-B39E-49449E62D1B4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ContainOrInherit.vs2013", "Examples\C++\ContainOrInherit\ContainOrInherit.vs2013.vcxproj", "{AAC37B15-75D3-4CE7-A3EA-6C2A22071AC0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ContainOrInherit", "Examples\C++\ContainOrInherit\ContainOrInherit.vs2013.vcxproj", "{AAC37B15-75D3-4CE7-A3EA-6C2A22071AC0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5Loaves.vs2013", "Servers\5Loaves\5Loaves.vs2013.vcxproj", "{3B12760B-7CB7-4DE0-AE58-3B7E4613108F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5Loaves", "Servers\5Loaves\5Loaves.vs2013.vcxproj", "{3B12760B-7CB7-4DE0-AE58-3B7E4613108F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5LoavesSvc.vs2013", "Servers\5Loaves\5LoavesSvc.vs2013.vcxproj", "{6790B355-E7EA-4C28-BD3C-BC05CBDB0CE6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5LoavesSvc", "Servers\5Loaves\5LoavesSvc.vs2013.vcxproj", "{6790B355-E7EA-4C28-BD3C-BC05CBDB0CE6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5LoavesDLL.vs2013", "Servers\5LoavesDLL\5LoavesDLL.vs2013.vcxproj", "{E7078622-72EE-4896-9960-F0080FB4A95A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "5LoavesDLL", "Servers\5LoavesDLL\5LoavesDLL.vs2013.vcxproj", "{E7078622-72EE-4896-9960-F0080FB4A95A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomHTTPService.vs2013", "Servers\CustomHTTPService\CustomHTTPService.vs2013.vcxproj", "{5F7413E3-8F5A-4A1C-BEF9-A16B8650D683}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomHTTPService", "Servers\CustomHTTPService\CustomHTTPService.vs2013.vcxproj", "{5F7413E3-8F5A-4A1C-BEF9-A16B8650D683}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExIndexObjects.vs2013", "Examples\C++\ExIndexObjects\ExIndexObjects.vs2013.vcxproj", "{2BA36734-E7F1-4A99-BEF3-C9DEBF3A6CCF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExIndexObjects", "Examples\C++\ExIndexObjects\ExIndexObjects.vs2013.vcxproj", "{2BA36734-E7F1-4A99-BEF3-C9DEBF3A6CCF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExObjsFromXML.vs2013", "Examples\C++\ExObjsFromXML\ExObjsFromXML.vs2013.vcxproj", "{92D40C0C-B16C-4F99-9527-EFE9E8354430}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExObjsFromXML", "Examples\C++\ExObjsFromXML\ExObjsFromXML.vs2013.vcxproj", "{92D40C0C-B16C-4F99-9527-EFE9E8354430}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilePoster.vs2013", "Examples\C++\FilePoster\FilePoster.vs2013.vcxproj", "{D307DE8F-E692-429F-85C9-CA859D50B2BD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FilePoster", "Examples\C++\FilePoster\FilePoster.vs2013.vcxproj", "{D307DE8F-E692-429F-85C9-CA859D50B2BD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LexTest.vs2013", "Examples\C++\LexTest\LexTest.vs2013.vcxproj", "{AB14DBC5-6CC5-4529-A003-F1345CDFA38D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LexTest", "Examples\C++\LexTest\LexTest.vs2013.vcxproj", "{AB14DBC5-6CC5-4529-A003-F1345CDFA38D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCTypesFromXML.vs2013", "Examples\C++\MFCTypesFromXML\MFCTypesFromXML.vs2013.vcxproj", "{796169E2-1879-4465-8F10-C8B815959438}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFCTypesFromXML", "Examples\C++\MFCTypesFromXML\MFCTypesFromXML.vs2013.vcxproj", "{796169E2-1879-4465-8F10-C8B815959438}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NoLibraryLink.vs2013", "Examples\C++\NoLibraryLink\NoLibraryLink.vs2013.vcxproj", "{8A7E3D53-EA03-4AB6-8957-A07500F73D1F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NoLibraryLink", "Examples\C++\NoLibraryLink\NoLibraryLink.vs2013.vcxproj", "{8A7E3D53-EA03-4AB6-8957-A07500F73D1F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjectCache.vs2013", "Examples\C++\ObjectCache\ObjectCache.vs2013.vcxproj", "{57C0A9FC-C173-470D-A55A-6702E407F746}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjectCache", "Examples\C++\ObjectCache\ObjectCache.vs2013.vcxproj", "{57C0A9FC-C173-470D-A55A-6702E407F746}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginExample.vs2013", "Examples\C++\PluginExample\PluginExample.vs2013.vcxproj", "{0746A263-4AFA-4081-AD44-421BC4A756EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PluginExample", "Examples\C++\PluginExample\PluginExample.vs2013.vcxproj", "{0746A263-4AFA-4081-AD44-421BC4A756EB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RareUseExamples.vs2013", "Examples\C++\RareUseExamples\RareUseExamples.vs2013.vcxproj", "{B0609373-F8EC-4AB7-BED3-33A78FB029B8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RareUseExamples", "Examples\C++\RareUseExamples\RareUseExamples.vs2013.vcxproj", "{B0609373-F8EC-4AB7-BED3-33A78FB029B8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartHere.vs2013", "Examples\C++\StartHere\StartHere.vs2013.vcxproj", "{BE223198-E662-46EF-B859-8C843BD4EA33}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartHere", "Examples\C++\StartHere\StartHere.vs2013.vcxproj", "{BE223198-E662-46EF-B859-8C843BD4EA33}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartHere0.vs2013", "Examples\C++\StartHere0\StartHere0.vs2013.vcxproj", "{0F5ABD2D-D05F-4A03-9244-1B73799DC02A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StartHere0", "Examples\C++\StartHere0\StartHere0.vs2013.vcxproj", "{0F5ABD2D-D05F-4A03-9244-1B73799DC02A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STL.vs2013", "Examples\C++\STL\STL.vs2013.vcxproj", "{D29798FF-A591-4107-BE95-0495371DFBBB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STL", "Examples\C++\STL\STL.vs2013.vcxproj", "{D29798FF-A591-4107-BE95-0495371DFBBB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TheOIDProtocol.vs2013", "Examples\C++\XMLObjectProtocol\TheOIDProtocol.vs2013.vcxproj", "{2A01454E-0B71-4C6D-89D7-6094EDE99305}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TheOIDProtocol", "Examples\C++\XMLObjectProtocol\TheOIDProtocol.vs2013.vcxproj", "{2A01454E-0B71-4C6D-89D7-6094EDE99305}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TranslatingXML.vs2013", "Examples\C++\TranslatingXML\TranslatingXML.vs2013.vcxproj", "{0A15D0BC-7323-4381-836E-92A54C793ED2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TranslatingXML", "Examples\C++\TranslatingXML\TranslatingXML.vs2013.vcxproj", "{0A15D0BC-7323-4381-836E-92A54C793ED2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLDialog.vs2013", "Examples\C++\XMLDialog\XMLDialog.vs2013.vcxproj", "{0892861B-87AB-40B0-82B9-FB045268B1E7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLDialog", "Examples\C++\XMLDialog\XMLDialog.vs2013.vcxproj", "{0892861B-87AB-40B0-82B9-FB045268B1E7}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WebServerService.vs2013", "Servers\WebServerService\WebServerService.vs2013.vcxproj", "{7F667C2C-1419-48CC-8CB1-2DBA173572D7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WebServerService", "Servers\WebServerService\WebServerService.vs2013.vcxproj", "{7F667C2C-1419-48CC-8CB1-2DBA173572D7}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLFoundationLib.vs2013", "Libraries\XMLFoundation\Build\XMLFoundationLib.vs2013.vcxproj", "{2A98FD5A-64E4-4DAD-9855-E99FC73533E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMLFoundationLib", "Libraries\XMLFoundation\Build\XMLFoundationLib.vs2013.vcxproj", "{2A98FD5A-64E4-4DAD-9855-E99FC73533E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ATLExample.vs2013", "Examples\C++\ATLExample2012\ATLExample.vs2013.vcxproj", "{2E0C7363-1433-4FBF-925F-542475EE7B93}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ATLExample", "Examples\C++\ATLExample2012\ATLExample.vs2013.vcxproj", "{2E0C7363-1433-4FBF-925F-542475EE7B93}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HTTPProxyService.vs2013", "Servers\HTTPProxyService\HTTPProxyService.vs2013.vcxproj", "{7B8D827E-D83D-4DB7-B1C9-3A2F277E72B7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HTTPProxyService", "Servers\HTTPProxyService\HTTPProxyService.vs2013.vcxproj", "{7B8D827E-D83D-4DB7-B1C9-3A2F277E72B7}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMTPandTLS.vs2013", "Examples\C++\SMTPandTLS\SMTPandTLS.vs2013.vcxproj", "{237D1E69-48BA-4790-A374-D6C56E46CBB2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMTPandTLS", "Examples\C++\SMTPandTLS\SMTPandTLS.vs2013.vcxproj", "{237D1E69-48BA-4790-A374-D6C56E46CBB2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Threading", "Examples\C++\Threading\Threading.vs2013.vcxproj", "{1A006314-246B-4B80-A7E1-5748B8A29B40}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2A98FD5A-64E4-4DAD-9855-E99FC73533E9} = {2A98FD5A-64E4-4DAD-9855-E99FC73533E9}
 	EndProjectSection
@@ -1622,6 +1627,62 @@ Global
 		{237D1E69-48BA-4790-A374-D6C56E46CBB2}.Unicode Release MinSize|Win32.Build.0 = Release|Win32
 		{237D1E69-48BA-4790-A374-D6C56E46CBB2}.Unicode Release MinSize|x64.ActiveCfg = Release|x64
 		{237D1E69-48BA-4790-A374-D6C56E46CBB2}.Unicode Release MinSize|x64.Build.0 = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|Win32.Build.0 = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|x64.ActiveCfg = Debug|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Debug|x64.Build.0 = Debug|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|Any CPU.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|Mixed Platforms.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|Mixed Platforms.Build.0 = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|Win32.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|Win32.Build.0 = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|x64.ActiveCfg = Debug|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.DebugStaticCRT|x64.Build.0 = Debug|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|Any CPU.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|Win32.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|Win32.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|x64.ActiveCfg = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Release|x64.Build.0 = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|Any CPU.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|Mixed Platforms.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|Mixed Platforms.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|Win32.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|Win32.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|x64.ActiveCfg = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.ReleaseStaticCRT|x64.Build.0 = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|Any CPU.ActiveCfg = Template|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|Mixed Platforms.ActiveCfg = Template|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|Mixed Platforms.Build.0 = Template|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|Win32.ActiveCfg = Template|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|Win32.Build.0 = Template|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|x64.ActiveCfg = Template|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Template|x64.Build.0 = Template|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|Any CPU.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|Win32.Build.0 = Debug|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|x64.ActiveCfg = Debug|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Debug|x64.Build.0 = Debug|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|Any CPU.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|Mixed Platforms.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|Mixed Platforms.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|Win32.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|Win32.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|x64.ActiveCfg = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinDependency|x64.Build.0 = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|Any CPU.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|Mixed Platforms.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|Mixed Platforms.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|Win32.ActiveCfg = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|Win32.Build.0 = Release|Win32
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|x64.ActiveCfg = Release|x64
+		{1A006314-246B-4B80-A7E1-5748B8A29B40}.Unicode Release MinSize|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,26 +3,26 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
---------------------Configuration: SMTPandTLS - Win32 Release--------------------
+--------------------Configuration: SMTPandTLS - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPB6ED.tmp" with contents
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPD4A9.tmp" with contents
 [
-/nologo /MD /W3 /GX /O2 /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c 
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../../libraries/XMLFoundation/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\XMLFoundation\Examples\C++\SMTPandTLS\SMTPandTLS.cpp"
 ]
-Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPB6ED.tmp" 
-Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPB6EE.tmp" with contents
+Creating command line "cl.exe @C:\Users\theboss\AppData\Local\Temp\RSPD4A9.tmp" 
+Creating temporary file "C:\Users\theboss\AppData\Local\Temp\RSPD4AA.tmp" with contents
 [
-..\..\..\Libraries\Release\XmlFoundation.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"Release/SMTPandTLS.pdb" /machine:I386 /out:"Release/SMTPandTLS.exe" 
-".\Release\SMTPandTLS.obj"
-"\XMLFoundation\Libraries\Release\XMLFoundation.lib"
+..\..\..\Libraries\Debug\XmlFoundation.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/SMTPandTLS.pdb" /debug /machine:I386 /out:"Debug/SMTPandTLS.exe" /pdbtype:sept 
+".\Debug\SMTPandTLS.obj"
+"\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
 ]
-Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSPB6EE.tmp"
+Creating command line "link.exe @C:\Users\theboss\AppData\Local\Temp\RSPD4AA.tmp"
 <h3>Output Window</h3>
 Compiling...
 SMTPandTLS.cpp
-C:\XMLFoundation\Examples\C++\SMTPandTLS\SMTPandTLS.cpp(42) : fatal error C1083: Cannot open include file: '"Do.not.compile"': Invalid argument
+c:\xmlfoundation\examples\c++\smtpandtls\smtpandtls.cpp(42) : fatal error C1083: Cannot open include file: '"Do.not.compile"': Invalid argument
 Error executing cl.exe.
 
 

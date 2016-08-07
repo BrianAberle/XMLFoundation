@@ -17,6 +17,8 @@ static char SOURCE_FILE[] = __FILE__;
 
 #include "GBTree.h"
 #include "GString.h" // only needed for stricmp() definition under WinCE
+#include "GException.h" 
+
 #include <string.h> // for:strlen(), strcpy(), strcmp()
 
 #ifdef _WIN32
@@ -150,28 +152,31 @@ void GBTree::insertNode(GBTreeStruct * &rootPtr, const char *szKey, void *value)
 		rootPtr = new GBTreeStruct;
 		if (!rootPtr)
 		{
-			// throw GException();
+			throw GException("GBTree", 0,  szKey); // added 2016
 		}
+		else
+		{
 
-		// copy data
-		rootPtr->m_dataNode = value;
-		rootPtr->m_leftPtr  = 0;
-		rootPtr->m_rightPtr = 0;
-		rootPtr->m_balance  = noTilt;
-		rootPtr->m_szKey    = new char[strlen(szKey) + 1];
-		strcpy(rootPtr->m_szKey, szKey);
+			// copy data
+			rootPtr->m_dataNode = value;
+			rootPtr->m_leftPtr  = 0;
+			rootPtr->m_rightPtr = 0;
+			rootPtr->m_balance  = noTilt;
+			rootPtr->m_szKey    = new char[strlen(szKey) + 1];
+			strcpy(rootPtr->m_szKey, szKey);
 
-		if (!m_First)
-			m_First = rootPtr;
+			if (!m_First)
+				m_First = rootPtr;
 
-		rootPtr->m_Prev = m_Last;
-		rootPtr->m_Next = 0;
-		if (m_Last)
-			m_Last->m_Next = rootPtr;
-		m_Last = rootPtr;
+			rootPtr->m_Prev = m_Last;
+			rootPtr->m_Next = 0;
+			if (m_Last)
+				m_Last->m_Next = rootPtr;
+			m_Last = rootPtr;
 
-		m_numNodes++;
-		m_insertedOK = 1;
+			m_numNodes++;
+			m_insertedOK = 1;
+		}
 	}
 	else if (TreeStrCmp(szKey, rootPtr->m_szKey) < 0)
 	{

@@ -101,17 +101,23 @@ GList g_lstActivePlugins;
 			#elif __WINPHONE
 				#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib") // the extra .. needs to be there for the WindowsPhone example
 			#else
-//				#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
 
 				//  openssl uses _iob
 				//	https://social.msdn.microsoft.com/Forums/vstudio/en-US/4a1c9610-fa41-45f6-ad39-c9f6795be6f2/msvcrt-iob-disappeared?forum=vclanguage#page:2
 				//
-				// for Visual Studio newer than VC6
 				#if defined(_MSC_VER) && _MSC_VER > 1200 
+				// for Visual Studio newer than VC6 making a 32 bit build
+
+//					#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+
 					// unless _NO_IOB__ is defined _iob is added
 					#ifndef _NO_IOB__
 						extern "C" { FILE _iob[3] = { __iob_func()[0], __iob_func()[1], __iob_func()[2] }; }
 					#endif
+				#else
+					// relative path linking works fine in the VC6 build
+					#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+
 				#endif
 			#endif
 		#endif
@@ -298,7 +304,7 @@ GString g_strHTTPProxyCacheBlocked;
 GString g_strHTTPProxyNotBlocked;
 bool g_bHTTPProxyRestrictToSubnet = 1;	 // g_pstrHTTPProxyRestrictList will be in effect when true
 GStringList *g_pstrHTTPProxyRestrictList;// LAN subnet prefix, semicolon seperated list. like 192.168;10.10.1  block all but connections from 10.10.1.* and 192.168.*
-bool g_bEnforceNTLMv2Timestamp;			 // A Windows CE device may not have a real-time clock, therefore NTLMv2 from those devices has no timestamp.
+bool g_bEnforceNTLMv2Timestamp = 1;		 // A Windows CE device may not have a real-time clock, therefore NTLMv2 from those devices has no timestamp.
 int  g_nAuthTimeoutSeconds = 7200;		 // 7200 seconds is 2 hours.  NTLM authenticates connections for this amount of time.
 bool g_bTraceHTTPProxy = 0;
 bool g_bTraceHTTPProxyReturn = 0;

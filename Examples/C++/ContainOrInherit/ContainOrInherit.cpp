@@ -53,7 +53,7 @@ IMPLEMENT_FACTORY(INIEntry, setting);
 // over "B" in GProfile ONLY because even when privately inherited from XMLObject my C++
 // development IDE lists all the members/methods of XMLObject in GProfile, so for example
 // when I type "GetProfile." the IDE shows a list of methods in GProfile and ONLY because
-// I don't want to see XMLObject members/methods in my GProfile, I switched from "B" to "C"
+// I don't want to see XMLObject base class members/methods in my GProfile, I switched from "B" to "C"
 
 
 

@@ -154,6 +154,8 @@ const char *XMLObject::GetObjectTag()
 	// who they think they are, but to who the controlling call to 
 	// MapMember() says they are.  Objects created in this manner know 
 	// the xml tag that caused their creation.
+	if(m_pzXMLTag[0])
+		return m_pzXMLTag;
 	if (m_strXMLTag)
 		return (const char *)*m_strXMLTag; 
 
@@ -172,33 +174,61 @@ const char *XMLObject::GetObjectTag()
 // same as above but for the RTTI Object class name
 const char *XMLObject::GetObjectType() 
 {
+	if(m_pzObjectType[0])
+		return m_pzObjectType;
 	if (m_strObjectType)
 		return (const char *)*m_strObjectType; 
 	// user created objects only have RTTI info if RegisterObject() was called
 	return GetVirtualType();
 }
 
-void XMLObject::SetObjectTypeName( const char *pzNewValue ) //*
+void XMLObject::SetObjectTypeName( const char *pzNewValue ) 
 {
-	if (m_strObjectType)
-		delete m_strObjectType;
-	m_strObjectType = new GString;
-	(*m_strObjectType) = pzNewValue;
+	if (strlen(pzNewValue) < sizeof(m_pzObjectType))
+	{
+		strcpy(m_pzObjectType,pzNewValue);
+	}
+	else
+	{
+		m_pzObjectType[0] = 0;
+
+		if (!m_strObjectType)
+			m_strObjectType = new GString(pzNewValue);
+
+		if (!m_strObjectType)
+		{
+			//"6=Out of Memory during SetObjectTypeName [%s] in object [%s].\r\n"
+			throw GException("XML Object", 6, pzNewValue, GetObjectTag());
+		}
+	}
 }
 
 
 void XMLObject::SetDefaultXMLTag( const char *pzNewValue ) //*
 {
-	if (m_strXMLTag)
-		delete m_strXMLTag;
-	m_strXMLTag = new GString;
-	(*m_strXMLTag) = pzNewValue;
+
+	if (strlen(pzNewValue) < sizeof(m_pzXMLTag))
+	{
+		strcpy(m_pzXMLTag,pzNewValue);
+	}
+	else
+	{
+		if (!m_strXMLTag)
+			m_strXMLTag = new GString(pzNewValue);
+		if (!m_strXMLTag)
+		{
+			//"4=Out of Memory during SetDefaultXMLTag [%s] in object [%s].\r\n"
+			throw GException("XML Object", 4, pzNewValue, GetObjectTag());
+		}
+	}
 }
 
 const char *XMLObject::getOID()
 { 
 	// The OID cannot change, so if we already know it, return it.
-	if (m_oid && m_oid->Length()) 
+	if ( m_pzoid[0] )
+		return m_pzoid;
+	if ( m_oid && m_oid->Length() )
 		return (const char *)*m_oid; 
 
 	// The OID key parts are defined by the virtual MapXMLTagsToMembers()
@@ -210,7 +240,8 @@ const char *XMLObject::getOID()
 	GList   *lstOIDKeyParts = GetOIDKeyPartList(0);
 	if (lstOIDKeyParts)
 	{
-		m_oid = new GString;
+		GString strTempOnStack;
+
 		GListIterator Iter(lstOIDKeyParts);
 		while ( Iter() )																
 		{																				
@@ -224,7 +255,7 @@ const char *XMLObject::getOID()
 			Member.mbrVoid = Iter++;
 			GString strKeyPart;
 
-// considering byteordering independence, the void pointer is cast according, 32 or 64 bit
+// considering byte ordering independence, the void pointer is cast according, 32 or 64 bit
 #if defined(_LINUX64) || defined(_WIN64)  || defined(_IOS)
 			if (Member.mbrInt64 == 1)
 #else
@@ -243,10 +274,25 @@ const char *XMLObject::getOID()
 				// use the specified attribute value as the key part
 				FindAttribute( pzTag, strKeyPart );
 			}
-			*m_oid += (const char *)strKeyPart;
+			strTempOnStack += (const char *)strKeyPart;
 		}
-		if (m_oid->Length())
-			return (const char *)*m_oid;
+		if (strTempOnStack._len < sizeof(m_pzoid) )
+		{
+			strcpy(m_pzoid,strTempOnStack._str);
+			return m_pzoid;
+		}
+		else
+		{
+			m_oid = new GString(strTempOnStack);
+			if (!m_oid)
+			{
+				//"7=Out of Memory during getOID in object [%s].\r\n"
+				throw GException("XML Object", 7, GetObjectTag());		
+			}
+
+			if (m_oid->Length())
+				return (const char *)*m_oid;
+		}
 	}
 	return 0;
 }
@@ -727,7 +773,17 @@ void XMLObject::MapMember(void *pValue,const char *pTag,StringAbstraction *pHand
 		{
 			pNewMD = ::new MemberDescriptor(this,pTag,pValue,pHandler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
 		}
+
+		if (!pNewMD)
+		{
+
+			// "3=Out of Memory during MapMember to [%s] in object [%s].\r\n"
+			// consider MapMember()  native char[] arrays inplace of GStrings in the object definition to reduce runtime object model memory use.
+			throw GException("XML Object", 3, pTag, GetObjectTag());
+		}
+
 		RegisterMember(pNewMD);
+
 	}
 	else
 	{
@@ -1187,12 +1243,65 @@ void XMLObject::MapAttribute(GString32 *pstrValue,const char *pTag, const char *
 	MapAttribute(pstrValue,pTag,&gGenericStr32Handler,pzTranslationMapIn,pzTranslationMapOut,nTranslationFlags);
 }
 
+// 2016
+void XMLObject::MapAttribute(char *pValue,const char *pTag,int nMaxLen, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
+{
+	if(m_bCountingMemberMaps)
+	{
+		GetMemberMapCount(1);
+		return;
+	}
+
+	if (!m_pMappedAttributeHash)
+	{		
+		// Create the hash with a small prime number
+		m_pMappedAttributeHash = new GHash(7);
+		if (!m_pMappedAttributeHash)
+		{
+			//"8=Out of Memory for AttributeHash in object [%s].\r\n"
+			throw GException("XML Object", 8,  GetObjectTag());
+		}
+
+	}
+
+	if (pValue)
+	{
+		MemberDescriptor *pNewMD = 0;
+		if ( !(m_nBehaviorFlags & NO_MEMBER_MAP_PRECOUNT) )
+		{
+			pNewMD = new( ((char *)m_pMemberDescriptorArray) + (sizeof(MemberDescriptor) * m_nMappedCount++)  ) MemberDescriptor(this, pTag, pValue, nMaxLen, pzTranslationMapIn, pzTranslationMapOut,nTranslationFlags);
+		}
+		else
+		{
+			pNewMD = ::new MemberDescriptor(this, pTag, pValue, nMaxLen, pzTranslationMapIn, pzTranslationMapOut,nTranslationFlags);
+		}
+
+		GString strUpper(pTag);
+		strUpper.MakeUpper();
+		m_pMappedAttributeHash->Insert((const char *)strUpper, pNewMD);
+	}
+	else
+	{
+		char szTemp[64];
+		sprintf(szTemp, "Cannot map %s to Null member.", pTag);
+		TRACE_ERROR(szTemp);
+	}
+}
+
+
+
 void XMLObject::MapAttribute(void *pValue,const char *pTag,StringAbstraction *pHandler, const char *pzTranslationMapIn, const char *pzTranslationMapOut,int nTranslationFlags)
 {
 	if (!m_pMappedAttributeHash)
 	{		
 		// Create the hash with a small prime number
 		m_pMappedAttributeHash = new GHash(7);
+		if (!m_pMappedAttributeHash)
+		{
+			//"8=Out of Memory for AttributeHash in object [%s].\r\n"
+			throw GException("XML Object", 8,  GetObjectTag());
+		}
+
 	}
 
 	if (pValue)
@@ -1225,6 +1334,12 @@ void XMLObject::MapAttribute(int *pValue,const char *pTag, const char *pzTransla
 	{		
 		// Create the hash with a small prime number
 		m_pMappedAttributeHash = new GHash(7);
+		if (!m_pMappedAttributeHash)
+		{
+			//"8=Out of Memory for AttributeHash in object [%s].\r\n"
+			throw GException("XML Object", 8,  GetObjectTag());
+		}
+
 	}
 	if (pValue)
 	{
@@ -1892,8 +2007,15 @@ void XMLObject::Dump(GString &strDest, int nTabs/* = 0*/, StackFrameCheck *pStac
 	if (strTypeDescription != "List<XMLObject *>")
 	{
 		strDest << "string\tOID = ";
-		if (m_oid && m_oid->Length()) 
-			strDest << *m_oid;
+		if(m_pzoid[0])
+		{
+			strDest << m_pzoid;
+		}
+		else
+		{
+			if (m_oid && m_oid->Length()) 
+				strDest << *m_oid;
+		}
 		strDest << "\n";
 		if (nTabs)
 			strDest << strTabs;
@@ -2539,6 +2661,13 @@ MemberDescriptor* XMLObject::GetEntry( MemberDescriptor* btRoot, void * pToFind 
 
 void XMLObject::RegisterMember(MemberDescriptor *pNewMember)
 {
+	if (!pNewMember)	
+	{
+		//"5=Out of Memory during RegisterMember in object [%s].\r\n"
+		throw GException("XML Object", 5,  GetObjectTag());
+		
+	}
+
 	// added 11/05/2009:  Replace &"'></ with an _
 	pNewMember->strTagName.ReplaceChars("&<>/\"' ",'_');
 
@@ -2651,7 +2780,7 @@ XMLObject::~XMLObject()
 {
 	// if this active instance is cached, make sure we don't 
 	// keep any references to it after it's deleted.
-	if ( m_oid && m_strObjectType && !(m_nBehaviorFlags & IS_TEMP_OBJECT) )
+	if ( (m_pzoid[0] || m_oid) && (m_pzObjectType[0] || m_strObjectType) && !(m_nBehaviorFlags & IS_TEMP_OBJECT) )
 	{
 		cacheManager.releaseObject(GetObjectType(),getOID());
 	}
@@ -2820,9 +2949,10 @@ long XMLObject::DecRef(int nUserOwnsObject/* = false*/, StackFrameCheck *pStack 
 	if (nRefs == 0)
 	{
 		// If this object is in the cache, remove it. 
-		if ( m_oid && !(m_nBehaviorFlags & IS_TEMP_OBJECT) && !nUserOwnsObject)
+		if ( (m_pzoid[0] || m_oid) && !(m_nBehaviorFlags & IS_TEMP_OBJECT) && !nUserOwnsObject)
 		{
-			cacheManager.releaseObject(GetObjectType(), (const char *)*m_oid );
+//			cacheManager.releaseObject(GetObjectType(), (const char *)*m_oid );
+			cacheManager.releaseObject(GetObjectType(), getOID() );
 		}
 	}
 	
@@ -2839,6 +2969,7 @@ long XMLObject::DecRef(int nUserOwnsObject/* = false*/, StackFrameCheck *pStack 
 
 XMLObject::XMLObject() :
 	m_ValidObjectBeg(777),
+	m_pDerivedAddress(0),    // this line added in 2016 makes GetInterfaceObject() work outside CORBA/COM where it always worked.
 	m_pMappedAttributeHash(0),
 	m_MRUObjectDescriptor(0),
 	m_nRefCount(1),
@@ -2858,28 +2989,59 @@ XMLObject::XMLObject() :
 	m_nBehaviorFlags(0),
 	m_pDefaultDataHandler(0)
 {
+	m_pzObjectType[0] = 0;
+	m_pzXMLTag[0] = 0;
+	m_pzoid[0] = 0;
+
 }
 
 
 void XMLObject::Init(const char* oid, const char* pzUpdateTime)
 {
-	if (m_oid && oid)
-		delete m_oid;
-
-	if (m_TimeStamp && pzUpdateTime)
-		delete m_TimeStamp;
-
 	if (oid)
-		m_oid = new GString;
+	{
+		if(m_oid)
+		{
+			delete m_oid;
+			m_oid = 0;
+		}
+		if (strlen(oid) < sizeof(m_pzoid))
+		{
+			strcpy(m_pzoid,oid);
+		}
+		else
+		{
+			m_oid = new GString(oid);
+			if (!m_oid)
+			{
+				//"9=Out of Memory during Init oid=[%s] in object [%s].\r\n"
+				throw GException("XML Object", 9, oid, GetObjectTag() );
+			}
+		}
+	}
 
 	if (pzUpdateTime)
-		m_TimeStamp = new GString;
-	
-	if (oid)
-		(*m_oid) = oid;
+	{
+		if (m_TimeStamp)
+		{
+			delete m_TimeStamp;
+			m_TimeStamp = 0;
+		}
 
-	if (pzUpdateTime)
-		(*m_TimeStamp) = pzUpdateTime;
+		if (strlen(pzUpdateTime) < sizeof(m_pzTimeStamp))
+		{
+			strcpy(m_pzTimeStamp,pzUpdateTime);
+		}
+		else
+		{
+			m_TimeStamp = new GString(pzUpdateTime);
+			if (!m_TimeStamp)
+			{
+				//"10=Out of Memory during Init timestamp=[%s] in object [%s].\r\n"
+				throw GException("XML Object", 10, pzUpdateTime, GetObjectTag() );
+			}
+		}
+	}
 }
 
 

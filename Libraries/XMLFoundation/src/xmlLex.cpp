@@ -1707,29 +1707,33 @@ xml::entity::entity() :
 
 xml::entity::~entity()
 {
-	delete [] m_tag;
-	delete [] m_value;
+	if (m_tag)
+		delete [] m_tag;
+	if (m_value)
+		delete [] m_value;
 }
 
 void xml::entity::setTag(token *tok)
 {
-	delete m_tag;
+	if (m_tag)
+		delete [] m_tag;
 	m_tag = new char [tok->length() + 1];
 	memcpy(m_tag,tok->get(),tok->length());
 	m_tag[tok->length()] = 0;
 }
 
-const char *xml::entity::getTag()
-{
-	return (m_tag != 0) ? m_tag : "";
-}
-
 void xml::entity::setValue(token *tok)
 {
-	delete m_value;
+	if (m_value)
+		delete [] m_value;
 	m_value = new char [tok->length() + 1];
 	memcpy(m_value,tok->get(),tok->length());
 	m_value[tok->length()] = 0;
+}
+
+const char *xml::entity::getTag()
+{
+	return (m_tag != 0) ? m_tag : "";
 }
 
 const char *xml::entity::getValue()

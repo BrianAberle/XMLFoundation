@@ -33,31 +33,36 @@ StackFrameCheck::StackFrameCheck( void *pCurrentFrame, StackFrameCheck *pStack )
 		m_pStack = new GStack(512,512);
 		m_bOwner = true;		// only frame 0 is the owner of the stack
 	}
-	m_bNestedFrame = false;
-	__int64 nFrames = m_pStack->Size();
-	if (nFrames)
+	if (m_pStack)
 	{
-		for(__int64 i=0;i<nFrames-1; i++)
+		m_bNestedFrame = false;
+		__int64 nFrames = m_pStack->Size();
+		if (nFrames)
 		{
-			if (m_pStack->m_arrPtr[i] == pCurrentFrame)
+			for(__int64 i=0;i<nFrames-1; i++)
 			{
-				m_bNestedFrame = true;
-				break;
+				if (m_pStack->m_arrPtr[i] == pCurrentFrame)
+				{
+					m_bNestedFrame = true;
+					break;
+				}
 			}
+
 		}
-
+		GStackPush( (*m_pStack) , pCurrentFrame  );
 	}
-
-	GStackPush( (*m_pStack) , pCurrentFrame  );
 
 }
 
 StackFrameCheck::~StackFrameCheck(  )
 {
-	GStackPop( (*m_pStack) );
-
-	if ( m_bOwner )
+	if (m_pStack)
 	{
-		delete m_pStack;
+		GStackPop( (*m_pStack) );
+
+		if ( m_bOwner )
+		{
+			delete m_pStack;
+		}
 	}
 }

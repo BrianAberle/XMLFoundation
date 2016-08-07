@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //			John E. Bossom and United Business Technologies
-//			  Copyright (c) 2013-2014  All Rights Reserved.
+//			  Copyright (c) 2013-2016  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -28,6 +28,8 @@
 
 #include "GlobalInclude.h"
 #include "GThread.h"
+#include "GException.h"
+#include "FrameworkAuditLog.h"
 #ifndef WINCE
 	#include "errno.h"
 	#include <sys/timeb.h> // for _ftime
@@ -2252,6 +2254,30 @@ static DWORD ExceptionFilter (EXCEPTION_POINTERS * ep, DWORD * ei)
 
 #endif /* _MSC_VER */
 
+
+
+
+typedef void *(*_startFn) (void *);
+
+void *_gthread_threadStartInternal(_startFn f, void *p)
+{
+	  try
+	  {
+			//Run the caller's routine;
+			return f(p);
+	  }
+	  catch(GException &r)
+	  {
+		// if this code is ever executed - you should have caught this in the main() of your thread
+		// printf(r.GetDescription());
+		TRACE_ERROR(r.GetDescription());
+		throw;  // throw from HERE >> ----------------- >> ----------------------.
+	  }																		//   |
+																			//   V
+}
+
+
+
 //   'unsigned int (__stdcall *)(ThreadParms *)' changes to 
 //	DWORD (WINAPI *GTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
 DWORD WINAPI _gthread_threadStart (void *p)
@@ -2287,13 +2313,25 @@ DWORD WINAPI _gthread_threadStart (void *p)
 
   __try
   {
-    /*
-     * Run the caller's routine;
-     */
-    status = (*start) (arg);
-  }
-  __except (ExceptionFilter(GetExceptionInformation(), ei))
-  {
+	  status = _gthread_threadStartInternal(start, arg);
+
+//	  try
+//	  {
+//		  //Run the caller's routine;
+//		  status = (*start) (arg);
+//	  }
+//	  catch(GException &r)
+//	  {
+//		// if this code is ever executed - you should have caught this in the main() of your thread
+//		printf(r.GetDescription());
+//		UBTAuditLog( r.GetDescription(),1 );
+//		throw;  // throw from HERE >> ----------------- >> ----------------------.
+//	  }																		//   |
+																			//   |
+  }																			//   |
+  __except (ExceptionFilter(GetExceptionInformation(), ei))					//   |
+  {																			//   |
+	// to right HERE <--------------------------------- << -----------------------.
     DWORD ec = GetExceptionCode();
 
     if (ec == EXCEPTION_GTHREAD_SERVICES)
@@ -2319,6 +2357,11 @@ DWORD WINAPI _gthread_threadStart (void *p)
 	status = GTHREAD_CANCELED;
       }
   }
+
+
+
+
+
 
 #else /* _MSC_VER */
 
@@ -2763,15 +2806,17 @@ gthread_key_create (gthread_key_t * key, void (*destructor) (void *))
        * to gain exclusive access to the key->threads list
        */
       result = gthread_mutex_init (&((*key)->threadsLock), NULL);
-
       if (result != 0)
-        {
+	  {
           TlsFree ((*key)->key);
 
           free (*key);
           *key = NULL;
-        }
-      (*key)->destructor = destructor;
+	  }
+	  else
+	  {
+		(*key)->destructor = destructor;
+	  }
     }
 
   return (result);
