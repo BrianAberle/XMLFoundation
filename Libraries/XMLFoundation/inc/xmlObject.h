@@ -812,7 +812,11 @@ XMLObject* class_name::FactoryCreate()									\
 	class_name *pTemp = new class_name();								\
 	if (pTemp)															\
 		pTemp->RegisterObject();										\
+<<<<<<< HEAD
 	return (XMLObject*)(base_class *)pTemp;								\
+=======
+	return (XMLObject*)pTemp;											\
+>>>>>>> origin/master
 }																		\
 
 // ***********		IMPLEMENT_FACTORY	**************

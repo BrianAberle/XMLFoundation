@@ -227,14 +227,22 @@ void *XMLParseThread(void *arg)
 	// each thread of execution gets a number between 0 and g_nThreadCount
 	int nThreadIndex = (int)arg;
 
+<<<<<<< HEAD
 	MyCustomObjectContainer *ObjectFromFile = new MyCustomObjectContainer(nThreadIndex);
 
+=======
+>>>>>>> origin/master
 	// ----------------------------------------------------------------------
 	// wait here until we get the command to start
 	// ----------------------------------------------------------------------
 	gthread_cond_wait(&cond[nThreadIndex], &lock[nThreadIndex]);
 
 
+<<<<<<< HEAD
+=======
+	MyCustomObjectContainer *ObjectFromFile = new MyCustomObjectContainer(nThreadIndex);
+
+>>>>>>> origin/master
 	printf("%din+\n", nThreadIndex);
 	ObjectFromFile->FromXMLFile("Data.xml");
 	printf("%din-\n", nThreadIndex);
@@ -288,10 +296,17 @@ void MyAppInit()
 		gthread_cond_init(&cond[i], 0);
 		gthread_mutex_lock(&lock[i]); // lock mutex so the XMLParseThread hangs at gthread_cond_wait() 
 
+<<<<<<< HEAD
 	  // Creating threads is VERY slow (relative to a non-threaded function call) as the OS allocates a new heap, 
 	  // sets up the stack, registers handles, and makes the function call on the new thread.
 	  // This "Ready - Set - (awaiting go)" design approach avoids the penalty for all of that without 
 	  // complicating this example with a thread pool which is a preferrable design with respect to overall flexibility.
+=======
+									  // Creating threads is VERY slow (relative to a non-threaded function call) as the OS allocates a new heap, 
+									  // sets up the stack, registers handles, and makes the function call on the new thread.
+									  // This "Ready - Set - (awaiting go)" design approach avoids the penalty for all of that without 
+									  // complicating this example with a thread pool which is a preferrable design with respect to overall flexibility.
+>>>>>>> origin/master
 		gthread_t parse_thread;
 		gthread_create(&parse_thread, NULL, XMLParseThread, (void *)i);
 	}

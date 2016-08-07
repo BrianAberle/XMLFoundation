@@ -254,6 +254,7 @@ Jan 2016 - added new Threads example showing a 3X performance improvement by usi
 Jan 2016 - fixed an error in GException affecting 32 bit apps with not enough memory remaining to capture the callstack
 Jan 2016 - Added a GException catch onto the bottom of the gthread callstack
 Jan 2016 - added more checks for NULL results after calling new()
+<<<<<<< HEAD
 July 25 2016 - 
 All for AndroidStudio 2.2 and the Gradle build, the following files have small changes: XMLFoundation.cpp
       JavaFoundation.cpp   GSocketHelpersAndroid.cpp   GProcess.cpp    GStringList.cpp   XMLFoundation.cpp    TwoFish.h    TwoFish.cpp    Sha256.cpp
@@ -262,3 +263,6 @@ July 25  - Added XMLFoundationProject to the Examples/Android folder
 July 25  - updated android OpenSSL build and build process - see script in C:\XMLFoundation\Libraries\openssl\BuildingOsslForAndroid
 JULY 25 - Added IMPLEMENT_FACTORY_MI() support to xmlObject. See: http://www.codeproject.com/Articles/37850/XMLFoundation?msg=5192883#xx5192883xx
 July 29 -  added the return 0 to Java_a777_root_GApp_GAppGlobal_emailSend() in GApp.cpp so it sends emails from the Android device.
+=======
+
+>>>>>>> origin/master

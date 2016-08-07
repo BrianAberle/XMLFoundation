@@ -1,4 +1,9 @@
+<<<<<<< HEAD:Examples/Android/XMLFoundationProject/GApp/src/main/jni/GApp.cpp
 #include "XMLFoundation.cpp"
+=======
+
+#include "XMLFoundation.cpp" // this must only appear 1 time.
+>>>>>>> origin/master:Examples/Android/GApp/app/src/main/jni/GAppServer.cpp
 
 // The next includes are redundant (since we included the cpp's above)  if we had built the .so with ndk-build and linked to it
 // as was typical in Eclipse projects and even in lesser integrated Android Studio projects - in those cases we would NEED the

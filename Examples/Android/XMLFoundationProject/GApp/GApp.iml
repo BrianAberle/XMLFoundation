@@ -81,7 +81,11 @@
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/renderscript" isTestSource="true" />
+<<<<<<< HEAD:Examples/Android/XMLFoundationProject/GApp/GApp.iml
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
+=======
+      <excludeFolder url="file://$MODULE_DIR$/build/NOintermediates" />
+>>>>>>> origin/master:Examples/Android/GApp/app/app.iml
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/assets" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/binaries" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/blame" />
