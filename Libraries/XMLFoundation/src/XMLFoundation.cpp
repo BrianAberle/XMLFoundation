@@ -4,11 +4,8 @@
 	#define _NO_SYS_BTIME_
 #endif
 
-<<<<<<< HEAD
 #ifndef _INCLUDED_XMLFOUNDATION_INLINE_STATIC_LIBRARY_
 #define _INCLUDED_XMLFOUNDATION_INLINE_STATIC_LIBRARY_
-=======
->>>>>>> origin/master
 
 #include "ServerCore.cpp"
 
@@ -60,7 +57,6 @@
 #include "IntegrationBase.cpp"
 #include "IntegrationLanguages.cpp"
 
-<<<<<<< HEAD
 
 
 #ifdef _ANDROID
@@ -80,9 +76,3 @@
 
 
 #endif //_INCLUDED_XMLFOUNDATION_INLINE_STATIC_LIBRARY_
-=======
-// this can be included on ANY platform - not just Android - however it requires that <jni.h> be in path.
-#ifdef _ANDROID
-	#include "JavaFoundation.cpp" // includes <jni.h>
-#endif
->>>>>>> origin/master

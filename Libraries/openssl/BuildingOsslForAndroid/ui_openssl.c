@@ -425,16 +425,13 @@ static volatile sig_atomic_t intr_signal;
 
 static int read_string_inner(UI *ui, UI_STRING *uis, int echo, int strip_nl)
 {
-// i added this on 7/21/2016 for Android
-#if 1
-	return 0;
-#else
-
     static int ps;
     int ok;
     char result[BUFSIZ];
     int maxsize = BUFSIZ - 1;
 
+// i added this on 7/21/2016 for Android
+#if 0
 
 #if !defined(OPENSSL_SYS_WIN16) && !defined(OPENSSL_SYS_WINCE)
     char *p;
@@ -489,10 +486,8 @@ static int read_string_inner(UI *ui, UI_STRING *uis, int echo, int strip_nl)
 #endif
 
     OPENSSL_cleanse(result, BUFSIZ);
-
-
-    return ok;
 #endif // 0
+    return ok;
 }
 
 /* Internal functions to open, handle and close a channel to the console.  */

@@ -2,10 +2,7 @@
 //  --    On 10/27/2015 this source file was updated within the XMLFoundation 
 //  --    to the most recent version (Rev 2.4, published 2015/10/22) here:
 //  --    http://www.codeproject.com/Articles/98355/SMTP-Client-with-SSL-TLS
-<<<<<<< HEAD
 //  --    On  7/25/2016 it was verified that rev 2.4 is the most recent.
-=======
->>>>>>> origin/master
 // --------------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 // Original class CFastSmtp written by 
@@ -32,11 +29,7 @@
 // Revision History:
 // - Version 2.4: Updated with fixes reported as of 22 Oct 2015
 //     > Fixed issues with files being left opened and buffer not being deleted if an error occurs as discussed here: http://www.codeproject.com/Messages/4651730/Re-File-attachment.aspx
-<<<<<<< HEAD
 //       - Thanks to Josep Solï¿½
-=======
-//       - Thanks to Josep Solà
->>>>>>> origin/master
 //     > Fixed issue with opening attachments as discussed here: http://www.codeproject.com/Messages/4640325/File-path-mistakenly-ommitted-from-file-name-when-.aspx
 //       - Thanks to Graham
 //     > Fixed potential memory leak as discussed here: http://www.codeproject.com/Messages/5010012/Memory-leaks.aspx
