@@ -122,8 +122,7 @@ GProfile &GetErrorProfile()
 	#include <eh.h>
 #endif
 
-#include <string>
-#include <vector>
+
 #pragma comment( lib, "imagehlp" )
 //#pragma comment(lib, "dbghelp.lib")  
 
@@ -169,6 +168,26 @@ GCallStack::GCallStack(const GCallStack &src)
 {
 	_stk = src._stk;
 }
+#define __USE_GTYPES 1
+
+
+#ifdef __USE_GTYPES
+	#include <GString.h>
+	#include <GStack.h>  // GStack is a more memory lightweight data structure than GList
+
+	struct ModuleEntry
+	{
+		GString imageName;
+		GString moduleName;
+		DWORD baseAddress;
+		DWORD size;
+	};
+	typedef GStack ModuleList;
+
+#else
+	#include <string>
+	#include <vector>
+
 
 struct ModuleEntry
 {
@@ -177,32 +196,41 @@ struct ModuleEntry
 	DWORD baseAddress;
 	DWORD size;
 };
-typedef std::vector< ModuleEntry > ModuleList;
-typedef ModuleList::iterator ModuleListIter;
 
-// miscellaneous toolhelp32 declarations; we cannot #include the header
-// because not all systems may have it
-#define MAX_MODULE_NAME32 255
-#define TH32CS_SNAPMODULE   0x00000008
-#pragma pack( push, 8 )
-typedef struct tagMODULEENTRY32
-{
-    DWORD   dwSize;
-    DWORD   th32ModuleID;       // This module
-    DWORD   th32ProcessID;      // owning process
-    DWORD   GlblcntUsage;       // Global usage count on the module
-    DWORD   ProccntUsage;       // Module usage count in th32ProcessID's context
-    BYTE  * modBaseAddr;        // Base address of module in th32ProcessID's context
-    DWORD   modBaseSize;        // Size in bytes of module starting at modBaseAddr
-    HMODULE hModule;            // The hModule of this module in th32ProcessID's context
-    char    szModule[MAX_MODULE_NAME32 + 1];
-    char    szExePath[MAX_PATH];
-} MODULEENTRY32;
-typedef MODULEENTRY32 *  PMODULEENTRY32;
-typedef MODULEENTRY32 *  LPMODULEENTRY32;
-#pragma pack( pop )
+	typedef std::vector< ModuleEntry > ModuleList;
+	typedef ModuleList::iterator ModuleListIter;
 
-bool fillModuleListTH32( ModuleList& modules, DWORD pid )
+#endif	
+
+
+// miscellaneous toolhelp32 declarations
+#include <tlhelp32.h>
+// Note: this is what we need from <tlhelp32.h>
+/*
+	#define MAX_MODULE_NAME32 255
+	#define TH32CS_SNAPMODULE   0x00000008
+	#pragma pack( push, 8 )
+	typedef struct tagMODULEENTRY32
+	{
+		DWORD   dwSize;
+		DWORD   th32ModuleID;       // This module
+		DWORD   th32ProcessID;      // owning process
+		DWORD   GlblcntUsage;       // Global usage count on the module
+		DWORD   ProccntUsage;       // Module usage count in th32ProcessID's context
+		BYTE  * modBaseAddr;        // Base address of module in th32ProcessID's context
+		DWORD   modBaseSize;        // Size in bytes of module starting at modBaseAddr
+		HMODULE hModule;            // The hModule of this module in th32ProcessID's context
+		char    szModule[MAX_MODULE_NAME32 + 1];
+		char    szExePath[MAX_PATH];
+	} MODULEENTRY32;
+	typedef MODULEENTRY32 *  PMODULEENTRY32;
+	typedef MODULEENTRY32 *  LPMODULEENTRY32;
+	#pragma pack( pop )
+*/
+
+
+
+bool fillModuleListTH32( ModuleList* modules, DWORD pid )
 {
 	// CreateToolhelp32Snapshot()
 	typedef HANDLE (__stdcall *tCT32S)( DWORD dwFlags, DWORD th32ProcessID );
@@ -259,7 +287,7 @@ bool fillModuleListTH32( ModuleList& modules, DWORD pid )
 		e.moduleName = me.szModule;
 		e.baseAddress = (DWORD) me.modBaseAddr;
 		e.size = me.modBaseSize;
-		modules.push_back( e );
+		modules->push_back( &e );
 		keepGoing = !!pM32N( hSnap, &me );
 	}
 
@@ -267,7 +295,7 @@ bool fillModuleListTH32( ModuleList& modules, DWORD pid )
 
 	FreeLibrary( hToolhelp );
 
-	return modules.size() != 0;
+	return modules->size() != 0;
 }
 
 // miscellaneous psapi declarations; we cannot #include the header
@@ -348,7 +376,7 @@ bool fillModuleListPSAPI( ModuleList& modules, DWORD pid, HANDLE hProcess )
 		pGMBN( hProcess, hMods[i], tt, TTBUFLEN );
 		e.moduleName = tt;
 
-		modules.push_back( e );
+		modules.push_back( &e );
 	}
 
 cleanup:
@@ -363,7 +391,7 @@ cleanup:
 bool fillModuleList( ModuleList& modules, DWORD pid, HANDLE hProcess )
 {
 	// try toolhelp32 first
-	if ( fillModuleListTH32( modules, pid ) )
+	if ( fillModuleListTH32( &modules, pid ) )
 		return true;
 	// nope? try psapi, then
 	return fillModuleListPSAPI( modules, pid, hProcess );
@@ -372,11 +400,18 @@ bool fillModuleList( ModuleList& modules, DWORD pid, HANDLE hProcess )
 void enumAndLoadModuleSymbols( HANDLE hProcess, DWORD pid )
 {
 	ModuleList modules;
-	ModuleListIter it;
-	char *img, *mod;
 
 	// fill in module list
 	fillModuleList( modules, pid, hProcess );
+
+	#ifdef __USE_GTYPES
+
+
+
+#else
+
+	ModuleListIter it;
+	char *img, *mod;
 
 	for ( it = modules.begin(); it != modules.end(); ++ it )
 	{
@@ -391,6 +426,7 @@ void enumAndLoadModuleSymbols( HANDLE hProcess, DWORD pid )
 		delete [] img;
 		delete [] mod;
 	}
+#endif
 }
 
 

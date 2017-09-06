@@ -76,9 +76,17 @@ char convertCharacterRef(const char * szXML)
 
 // lex parsing MACROS
 #define isWhitespace(ch) ( ch == 0x20 || ch == 0x09 || ch == 0x0D || ch == 0x0A)
+#ifdef isLetter
+	#undef isLetter
+#endif
 #define isLetter(ch) ((ch >= 0x41 && ch <= 0x5A) || (ch >= 0x61 && ch <= 0x7A))
-#define isDigit(ch) (ch >= 0x30 && ch <= 0x39)
+
+#ifdef isNameChar
+	#undef isNameChar
+#endif
 #define isNameChar(ch)	(ch >= 0x41 && ch <= 0x5A) || (ch >= 0x61 && ch <= 0x7A) ||	(ch >= 0x30 && ch <= 0x39) ||	ch == '.' ||	ch == '-' ||	ch == '_' ||	ch == ':'
+
+#define isDigit(ch) (ch >= 0x30 && ch <= 0x39)
 #define qappend(token,ptr,copy){	if ((copy == false) && (token->m_heap == false))	{		if (token->m_gp == 0)			token->m_gp = (char *)ptr;			token->m_len++;		}	else		{		token->append(ptr,copy);	}}
 #define isNewLine() { if ((m_streamStack.m_nNext == 1) && (m_s->m_xml[m_s->m_offset] == 0x0D)) { m_line++; m_byte = 0; } }
 #define offsetLine() { if (m_streamStack.m_nNext == 1) m_byte++; }

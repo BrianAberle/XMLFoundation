@@ -220,6 +220,11 @@ public:
 	void Write(unsigned char *pSource,__int64 nBytes){write((const char *)pSource,nBytes);}; // upper case for Development tools method sorting
 
 	
+	// When the entire XMLFoundation is compiled inline into an MFC app, not linked as a library  "write" may become defined as "_write" in MFC code somewhere.
+	// In that case, by adding this method that behaves exactly the same as "write", the frameworks work well together.  Do not ever call str._write()
+	void _write(const char *pSource, __int64 nBytes){ write(pSource, nBytes); }; 
+
+
 	// Load this GString from a file and replace any contents in this GString - returns 1 for success, 0 for fail
 	bool FromFile(const char* pzFileName, bool bThrowOnFail = 1);
 	// Append the contents of the specified file to the end of this GString - returns 1 for success, 0 for fail

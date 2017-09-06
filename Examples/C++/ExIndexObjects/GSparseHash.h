@@ -41,6 +41,15 @@
 #include <vector>               // a sparsetable is a vector of groups
 
 
+
+#define STD_UCOPY std::uninitialized_copy
+
+
+
+//#define STD_UCOPY memcpy
+// error C2664: 'void *memcpy(void *,const void *,::size_t)': cannot convert argument 3 from 'std::pair<const Key,T> *' to '::size_t'
+
+
 // This source code makes an assumption about the application that is not true - 
 // Its sort of like a compiler warning about doing pointer arithmetic with a type cast - the warning is wrong if the code is intentional and safe.
 // but its actually much worse than than an erroneous warning because it fires off a debug interrupt and hangs the application.
@@ -2280,7 +2289,7 @@ template <class V, class K, class HF, class ExK, class SetK, class EqK, class A>
 	  sparsegroup(const sparsegroup& x) : group(0), settings(x.settings) {
 		if ( settings.num_buckets ) {
 		  group = allocate_group(x.settings.num_buckets);
-		  std::uninitialized_copy(x.group, x.group + x.settings.num_buckets, group);
+		  STD_UCOPY(x.group, x.group + x.settings.num_buckets, group);
 		}
 		memcpy(bitmap, x.bitmap, sizeof(bitmap));
 	  }
@@ -2295,7 +2304,7 @@ template <class V, class K, class HF, class ExK, class SetK, class EqK, class A>
 		  free_group();
 		} else {
 		  pointer p = allocate_group(x.settings.num_buckets);
-		  std::uninitialized_copy(x.group, x.group + x.settings.num_buckets, p);
+		  STD_UCOPY(x.group, x.group + x.settings.num_buckets, p);
 		  free_group();
 		  group = p;
 		}
@@ -2384,9 +2393,8 @@ template <class V, class K, class HF, class ExK, class SetK, class EqK, class A>
 	  void set_aux(size_type offset, false_type) {
 		// This is valid because 0 <= offset <= num_buckets
 		pointer p = allocate_group(settings.num_buckets + 1);
-		std::uninitialized_copy(group, group + offset, p);
-		std::uninitialized_copy(group + offset, group + settings.num_buckets,
-								p + offset + 1);
+		STD_UCOPY(group, group + offset, p);
+		STD_UCOPY(group + offset, group + settings.num_buckets,p + offset + 1);
 		free_group();
 		group = p;
 	  }
@@ -2451,9 +2459,8 @@ template <class V, class K, class HF, class ExK, class SetK, class EqK, class A>
 	  void erase_aux(size_type offset, false_type) {
 		// This is valid because 0 <= offset < num_buckets. Note the inequality.
 		pointer p = allocate_group(settings.num_buckets - 1);
-		std::uninitialized_copy(group, group + offset, p);
-		std::uninitialized_copy(group + offset + 1, group + settings.num_buckets,
-								p + offset);
+		STD_UCOPY(group, group + offset, p);
+		STD_UCOPY(group + offset + 1, group + settings.num_buckets,p + offset);
 		free_group();
 		group = p;
 	  }

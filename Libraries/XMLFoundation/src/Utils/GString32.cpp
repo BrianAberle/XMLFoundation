@@ -50,6 +50,9 @@ long round(const char *value);
 #endif
 
 
+#ifdef CommonConstruct
+	#undef CommonConstruct
+#endif
 
 #define CommonConstruct(nInitialSize)				\
 	_str = 0;										\

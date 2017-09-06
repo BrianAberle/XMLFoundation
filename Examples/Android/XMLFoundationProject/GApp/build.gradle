@@ -108,7 +108,7 @@ model {
             ldLibs.addAll(['android', 'log', 'EGL', 'GLESv2','atomic'])
 
             // ....because there is one set (libssl and libcrypto) per platform   see: sources.main.jni.dependencies and cooresponding model.repositories.
-            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'])
+            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
 
         }
 

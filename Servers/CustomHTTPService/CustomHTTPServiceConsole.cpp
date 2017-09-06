@@ -56,8 +56,18 @@ int g_doneCount;
 // The core server
 #define __CUSTOM_CORE__				// for all ServerCore.cpp hooks to be enabled
 // #define SERVERCORE_CUSTOM_HTTP	// for only the most common hook - ServerCoreCustomHTTP.cpp
-#include "../Core/ServerCore.cpp"
 
+
+#if defined(_MSC_VER)
+#ifdef _WIN32
+#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+#endif
+#ifdef _WIN64
+#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")
+#endif
+#endif
+
+#include "../Core/ServerCore.cpp"
 
 #ifdef ___XFER
 	char g_szAppName[] = "Xfer";

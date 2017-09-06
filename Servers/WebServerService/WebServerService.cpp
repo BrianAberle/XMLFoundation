@@ -14,7 +14,6 @@
 
 
 
-
 #define dimof(A)  (sizeof(A) / sizeof(A[0]))
 HANDLE g_hIOCP = NULL;
 enum COMPKEY 
@@ -36,6 +35,16 @@ enum COMPKEY
 
 #include <conio.h>
 #include <winsock.h>
+
+
+#if defined(_MSC_VER)
+#ifdef _WIN32
+#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+#endif
+#ifdef _WIN64
+#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")
+#endif
+#endif
 
 #include "../Core/ServerCore.cpp"
 

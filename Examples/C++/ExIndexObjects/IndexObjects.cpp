@@ -77,12 +77,16 @@ bool bSmallTest = 0;
 		#define NO_SPARSE_HASH  1
 
 	#else
-		int g_UseSparseHash = 1;
+// removed for VS2017 compatibility due to missing std::uninitialized_copy
+int g_UseSparseHash = 0;
+#define NO_SPARSE_HASH  1
+
+//		int g_UseSparseHash = 1;
 
 		// The Google SparseHash project contains several hash-map implementations in use at Google.
 		// Sparse Hash is very fast.  GHash and xmlLex are very fast too.
 		// XMLFoundation uses templates too. Look at ObjQuery<> to see how templates can deliver data to the application layer.
-		#include "GSparseHash.h"
+//		#include "GSparseHash.h"
 
 	#endif
 #endif
@@ -363,7 +367,7 @@ int main(int argc, char* argv[])
 
 				// Walk through all the memory objects, output the object count
 				GPerformanceTimer *profIter = new GPerformanceTimer("Iterate All  ",0);
-				printf("%d objects in ",Example.Iterate());
+				printf("%lld objects in ",Example.Iterate());
 				delete profIter;
 
 
@@ -470,7 +474,7 @@ int main(int argc, char* argv[])
 
 				// Walk through all the memory objects(again), output the object count see that the count did not change
 				GPerformanceTimer *profIter2 = new GPerformanceTimer("Iterate All  ",0);
-				printf("%d objs in ",Example.Iterate());
+				printf("%lld objs in ",Example.Iterate());
 				delete profIter2;
 
 

@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Gf /Gy /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/Win32" /I "../../Libraries/XFer/inc" /D "WIN32" /FR /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Gf /Gy /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/osslWin32" /I "../../Libraries/XFer/inc" /D "WIN32" /FR /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -67,7 +67,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /GX /Zi /Od /I "../vncapi" /I "../../Library\inc" /I "../../Library\inc\Win32" /D "_NO_EXCEPT" /D "_INTEL" /D "__NOTRACE_STACK__" /D "_STATIC_LINK_LIB" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE" /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/Win32" /I "../../Libraries/XFer/inc" /D "_NO_EXCEPT" /D "__NOTRACE_STACK__" /D "_STATIC_LINK_LIB" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE" /I "../../Libraries/XMLFoundation/inc" /I "../../Libraries/XMLFoundation/inc/osslWin32" /I "../../Libraries/XFer/inc" /D "_NO_EXCEPT" /D "__NOTRACE_STACK__" /D "_STATIC_LINK_LIB" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"

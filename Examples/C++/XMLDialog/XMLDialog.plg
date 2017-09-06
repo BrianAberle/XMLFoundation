@@ -6,6 +6,19 @@
 --------------------Configuration: XMLDialog - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
+Creating temporary file "C:\Users\hp\AppData\Local\Temp\RSPE9B2.tmp" with contents
+[
+..\..\..\Libraries\Debug\XmlFoundation.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/XMLDialog.pdb" /debug /machine:I386 /out:"Debug/XMLDialog.exe" /pdbtype:sept 
+".\Debug\ObjectModel.obj"
+".\Debug\StdAfx.obj"
+".\Debug\XMLDialog.obj"
+".\Debug\XMLDialogDlg.obj"
+".\Debug\XMLDialog.res"
+"\XMLFoundation\Libraries\Debug\XMLFoundation.lib"
+]
+Creating command line "link.exe @C:\Users\hp\AppData\Local\Temp\RSPE9B2.tmp"
+<h3>Output Window</h3>
+Linking...
 
 
 

@@ -243,7 +243,8 @@ __int64 GBTree::getOccurCount(const char *szKey)
 		{
 			// found a match
 			count++;
-			p = p->m_leftPtr;
+			p = (p->m_rightPtr) ? p->m_rightPtr : p->m_leftPtr; // duplicates on right, ~ a balancing act
+			
 		}
 	}
 	return count;
@@ -319,7 +320,10 @@ void *GBTree::searchTree(const char *szKey, __int64 occur /* = 1 */)
 			count++;
 			if (count < occur)
 			{
-				p = p->m_leftPtr;
+//				p = p->m_leftPtr;
+
+				p = (p->m_rightPtr) ? p->m_rightPtr : p->m_leftPtr; // duplicates on right, ~ a balancing act
+
 			}
 		}
 	}

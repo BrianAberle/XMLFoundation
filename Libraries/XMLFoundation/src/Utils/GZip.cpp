@@ -10619,6 +10619,9 @@ int ZEXPORT uncompress (Bytef *dest,uLongf * destLen,const Bytef * source,uLong 
    termination of the result -- however this is only used in gzlib.c where
    the result is assured to fit in the space provided */
 #ifdef _MSC_VER
+	#ifdef snprintf
+		#undef snprintf
+	#endif
 #  define snprintf _snprintf
 #endif
 

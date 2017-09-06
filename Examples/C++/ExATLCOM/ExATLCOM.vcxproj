@@ -264,7 +264,7 @@
     <CustomBuildStep>
       <Command>if "%OS%"=="" goto NOTNT 
 if not "%OS%"=="Windows_NT" goto NOTNT 
-regsvr32 /s /c "$(TargetPath)" 
+
 echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg" 
 goto end 
 :NOTNT 
@@ -316,7 +316,7 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <CustomBuildStep>
       <Command>if "%OS%"=="" goto NOTNT 
 if not "%OS%"=="Windows_NT" goto NOTNT 
-regsvr32 /s /c "$(TargetPath)" 
+
 echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg" 
 goto end 
 :NOTNT 

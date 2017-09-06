@@ -40,8 +40,15 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-// The "pascal" calling convention is out dated, 
-// this allows the DLL to be built as 16/32/64 bit.
+
+#if defined(_MSC_VER)
+	#ifdef _WIN32
+		#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+	#endif
+	#ifdef _WIN64
+		#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")
+	#endif
+#endif
 
 
 

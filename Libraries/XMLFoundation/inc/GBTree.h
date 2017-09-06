@@ -65,7 +65,10 @@ public:
 	__int64	getOccurCount(const char *szKey);
 
 	void insert(const char *szKey, void *value);
+	
+	// note :occur is 1 based - 1 is the first occurrance, 2 is the second
 	void *search(const char *szKey, __int64 occur = 1)	{ return searchTree(szKey, occur); }
+
 	bool remove(const char *szKey, void *pOldData);
 	bool remove(const char *szKey, __int64 occur = 1);
 	int reassignKeyPair(const char *szKey, void *pOldData, void*pNewData);

@@ -59,6 +59,14 @@ int g_doneCount;
 // the runtime path and file name of this executable == argv[0]
 char g_ThisEXE[512];
 
+#if defined(_MSC_VER)
+ #ifdef _WIN32
+  #pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+ #endif
+ #ifdef _WIN64
+   #pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")
+ #endif
+#endif
 
 // The core server
 // #define SERVERCORE_CUSTOM_HTTP right here to build a Custom HTTP Server using ServerCoreCustomHTTP.cpp

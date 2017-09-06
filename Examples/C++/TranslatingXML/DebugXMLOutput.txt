@@ -1,0 +1,38 @@
+<Thing Color="Black and White">
+	<String>Still untranslated</String>
+	<String2>One</String2>
+	<String3>Two</String3>
+	<String4>Root</String4>
+	<String5>anyVALUE</String5>
+	<String6>anyVALUE</String6>
+	<String7>best</String7>
+	<String8>xmlFoundation</String8>
+	<String9>xxxxxx</String9>
+	<String10/>
+	<String11>Unchanged</String11>
+	<String12/>
+	<Wrapper>
+		<StringList>Bloody Red</StringList>
+		<StringList>Bloody Red</StringList>
+		<StringList>Grass</StringList>
+		<StringList>G.G.G.Green</StringList>
+		<StringList>Purp</StringList>
+		<StringList>Blue</StringList>
+	</Wrapper>
+	<FixedBuffer>so native</FixedBuffer>
+	<FixedBuffer2>012345678</FixedBuffer2>
+	<Number>21</Number>
+	<Number2></Number2>
+	<Number3>100</Number3>
+	<Number4>21</Number4>
+	<Number5>100</Number5>
+	<Number6>10777</Number6>
+	<Number7>0</Number7>
+	<Number8>0</Number8>
+	<Wrapper2>
+		<IntArray>Three Sevens &gt; Numbers</IntArray>
+		<IntArray>Three Sevens &gt; Numbers</IntArray>
+		<IntArray>-777</IntArray>
+		<IntArray>7777777</IntArray>
+	</Wrapper2>
+</Thing>

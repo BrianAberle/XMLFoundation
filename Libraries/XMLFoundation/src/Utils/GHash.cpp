@@ -83,6 +83,26 @@ void *GHash::Lookup(void *key, __int64 nOccurance/* = 1*/) const
 
 }
 
+
+//
+__int64 GHash::GetCountByKey(const char *key) const
+{
+	if (!m_table)
+	{
+		// throw an exception - could not allocate hash table
+		throw GException("Hash", 0);
+	}
+
+	unsigned int nHashKey = HashKey(key);
+	unsigned int nHash = nHashKey % m_nHashTableSize;
+
+
+	GBTree &rAssoc = m_table[nHash];
+	return rAssoc.getOccurCount(key);
+}
+
+
+
 // Lookup
 void *GHash::Lookup(const char *key, __int64 nOccurance/* = 1*/) const
 {

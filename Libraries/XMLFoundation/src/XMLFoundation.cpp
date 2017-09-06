@@ -7,7 +7,8 @@
 #ifndef _INCLUDED_XMLFOUNDATION_INLINE_STATIC_LIBRARY_
 #define _INCLUDED_XMLFOUNDATION_INLINE_STATIC_LIBRARY_
 
-#include "ServerCore.cpp"
+//#include "ServerCore.cpp"
+#include "../../../Servers/Core/ServerCore.cpp" // as long as you have [\XMLFoundation\Libraries\XMLFoundation\inc] in the build path - this works and does not force you to add Servers/Core to your build path
 
 #include "Utils/GSocketHelpers.cpp"
 #include "Utils/GArray.cpp"
@@ -25,6 +26,7 @@
 #include "Utils/GStringList.cpp"
 #include "Utils/GDirectory.cpp"
 #include "Utils/GPerformanceTimer.cpp"
+#include "Utils/GThread.cpp"
 #include "Utils/TwoFish.cpp"
 #include "Utils/SHA256.cpp"
 #include "Utils/BZip.cpp"

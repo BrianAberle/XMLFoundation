@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------------
 //						United Business Technologies
-//			  Copyright (c) 2000 - 2015  All Rights Reserved.
+//			  Copyright (c) 2000 - 2017  All Rights Reserved.
 //
 // Source in this file is released to the public under the following license:
 // --------------------------------------------------------------------------
@@ -95,28 +95,54 @@ GList g_lstActivePlugins;
 	#ifndef NO_PRAGMA_CRYPTO_LINK
 		#ifdef _WIN32
 			#ifdef _WIN64
-				//#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/libeay32.lib")	
-				#pragma comment(lib,    "c:/XMLFoundation/Libraries/openssl/bin-win64/libeay32.lib")	
+				// You can always hardcode the openssl libs with a full path like this:
+				//#pragma comment(lib,    "c:/XMLFoundation/Libraries/openssl/bin-win64/libeay32.lib")	
+
 
 			#elif __WINPHONE
 				#pragma comment(lib, "../../../Libraries/openssl/bin-winphone/libeay32.lib") // the extra .. needs to be there for the WindowsPhone example
 			#else
+                // this preprocessor condition is for 32 bit Windows builds
 
 				//  openssl uses _iob
 				//	https://social.msdn.microsoft.com/Forums/vstudio/en-US/4a1c9610-fa41-45f6-ad39-c9f6795be6f2/msvcrt-iob-disappeared?forum=vclanguage#page:2
 				//
 				#if defined(_MSC_VER) && _MSC_VER > 1200 
-				// for Visual Studio newer than VC6 making a 32 bit build
 
-//					#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
-
-					// unless _NO_IOB__ is defined _iob is added
+					// unless _NO_IOB__ is defined,     _iob is added.
+					// on August 22, 2017 using the latest openssl obtained from [https://github.com/Microsoft/openssl/] along with the latest version of VS2017 causes these unresolved items that are resolved here.
+					// This is true building for 32 bit targets only, the 64 bit Windows Runtime with VS2017 on does have these symbols (as of August 22, 2017)
 					#ifndef _NO_IOB__
+						FILE* __cdecl __iob_func(void)
+						{
+							return stdout;
+						}
 						extern "C" { FILE _iob[3] = { __iob_func()[0], __iob_func()[1], __iob_func()[2] }; }
+						#define _NO_IOB__
+
+						// likewise with the __iob issues resolved above - _fprintf went missing - resolved here under its own preprocessor condition so that it could be isolated out independant of _iob should you be linking with a c-runtime that has it
+						#ifndef _NO_FPRINTF__
+							extern "C" int __cdecl _fprintf(FILE* file, const char *format, ...)
+							{
+								va_list _ArgList;
+								__crt_va_start(_ArgList, format);
+								int _Result = fprintf(file, format, _ArgList);
+								__crt_va_end(_ArgList);
+								return _Result;
+							}
+
+							// __vsnprintf is referenced in function _OPENSSL_showfatal and does not exist in the VS2017 C Runtime
+							int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
+							#define _NO_FPRINTF__
+						#endif			
+
 					#endif
 				#else
-					// relative path linking works fine in the VC6 build
-					#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+					// this preprocessor condition is a 32 bit windows build - VC6 where relative linking was also moved to the application layer.
+
+					// #pragma comment(lib,       "../../Libraries/openssl/bin-win32/libeay32.lib")
+					// #pragma comment(lib,    "../../../Libraries/openssl/bin-win32/libeay32.lib")
+
 
 				#endif
 			#endif

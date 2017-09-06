@@ -323,11 +323,11 @@ void GStringList::RemoveAll()
 }
 
 
-#ifdef _ANDROID
+//#ifdef _ANDROID
 	GList::Node* GlobalNodeCache(GList::Node*pNode, int nNewNode, int *nStateQuery);
-#else
-	GList::Node* GlobalNodeCache(GList::Node*pNode, int nNewNode = -1, int *nStateQuery = 0);
-#endif
+//#else
+//	GList::Node* GlobalNodeCache(GList::Node*pNode, int nNewNode = -1, int *nStateQuery = 0);
+//#endif
 
 
 GStringList::~GStringList()

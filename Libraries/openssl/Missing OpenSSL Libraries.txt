@@ -1,11 +1,11 @@
 C:\XMLFoundation\Libraries\openssl
 This folder should contain subfolders  
 
-bin-android-arm64-v8a
+
 bin-android-armeabi
 bin-android-armeabi-v7a
 bin-android-x86
-bin-android-x86_64
+
 
 and
 

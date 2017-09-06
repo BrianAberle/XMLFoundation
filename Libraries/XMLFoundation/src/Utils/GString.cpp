@@ -199,6 +199,9 @@ unsigned short Ghtons(unsigned short x)
 }
 
 
+#ifdef CommonConstruct
+	#undef CommonConstruct
+#endif
 
 #define CommonConstruct(nInitialSize)				\
 	_str = 0;										\

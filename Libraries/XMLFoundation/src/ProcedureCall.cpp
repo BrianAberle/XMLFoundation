@@ -357,8 +357,12 @@ void XMLProcedureCall::AddParameter( const char * pzTag, __int64 value )
 	AddParameter(pzTag, (const char *)strTemp);
 }
 
-#define isLetter(ch) ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z'))
-#define isNameChar(ch) ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) || (ch >= '0' && ch <= '9') || (ch == '.') || (ch == '-') || (ch == '_') || (ch == ':')
+//#define isLetter(ch) ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z'))
+#define isLetter(ch) ((ch >= 0x41 && ch <= 0x5A) || (ch >= 0x61 && ch <= 0x7A))
+
+//#define isNameChar(ch) ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) || (ch >= '0' && ch <= '9') || (ch == '.') || (ch == '-') || (ch == '_') || (ch == ':')
+#define isNameChar(ch)	(ch >= 0x41 && ch <= 0x5A) || (ch >= 0x61 && ch <= 0x7A) ||	(ch >= 0x30 && ch <= 0x39) ||	ch == '.' ||	ch == '-' ||	ch == '_' ||	ch == ':'
+
 const char *XMLProcedureCall::MakeValid(const char *pzName, GString &strDestination)
 {
 	if ( !isLetter(pzName[0]) )

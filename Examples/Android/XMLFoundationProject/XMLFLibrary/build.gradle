@@ -113,7 +113,7 @@ model {
             // however we will not specify the openssl libs here.....
             ldLibs.addAll(['c', 'android', 'dl', 'log','atomic'])
             // ....because there is one set per platform   see: sources.main.jni.dependencies and cooresponding model.repositories.
-            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'])
+            abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
 
         }
 

@@ -27,16 +27,22 @@
 		#include <shlwapi.h>	// for SHDeleteKey()
 		#include <iphlpapi.h>   // for GetIpAddrTable()  // within <iphlpapi>, this documents the undocumented:  http://www.pinvoke.net/default.aspx/iphlpapi/GetExtendedTcpTable.html
 		#include <Iprtrmib.h>   // for MIB_TCPTABLE_OWNER_PID structure needed by GetExtendedTcpTable() and in some versions PMIB_TCP6TABLE_OWNER_PID Argument 1 struct for GetExtendedTcpTable()
+// VS2017
+#if defined(_MSC_VER) && _MSC_VER > 1900
+		#include <winsock2.h>   // VS2017 for AF_INET6
+		#include <ws2tcpip.h>   // for AF_INET6
+		#include <tcpmib.h>     // PMIB_TCP6TABLE_OWNER_PID was defined in <Iprtrmib.h> VS2003-VS2005, in VS2013 its in <tcpmib.h>, and by default not compiled in by preprocessor directive.
+		#include <udpmib.h>     // PMIB_UDP6TABLE_OWNER_PID was defined in <Iprtrmib.h> VS2003-VS2005, in VS2013 its in <tcpmib.h>, and by default not compiled in by preprocessor directive.
 
+		//...even still _MIB_TCP6ROW_OWNER_PID is indefined
+
+#endif
 
 // VC6 requires Winsock libraries newer than what was available in Service Pack 6,  For VC6 builds, AF_INET6 was already defined in <winsock.h> in the VC6Winsock2 folder of /XMLFoundation
-#if defined(_MSC_VER) && _MSC_VER > 1200		// for Visual Studio newer than VC6
-	#include <ws2tcpip.h>   // for AF_INET6
-//	#include <tcpmib.h>     // PMIB_TCP6TABLE_OWNER_PID was defined in <Iprtrmib.h> VS2003-VS2005, in VS2013 its in <tcpmib.h>, and by default not compiled in by preprocessor directive.
-//	#include <udpmib.h>     // PMIB_UDP6TABLE_OWNER_PID was defined in <Iprtrmib.h> VS2003-VS2005, in VS2013 its in <tcpmib.h>, and by default not compiled in by preprocessor directive.
-
-	///////////////////////////////////////////////////// from <tcpmib.h>
-	typedef struct _MIB_TCP6ROW_OWNER_PID
+// for Visual Studio newer than VC6 - for VS2017 the _TCPMIB_ preprocessor condition was dropped
+// #if defined(_MSC_VER) && _MSC_VER > 1200  && !defined(_TCPMIB_)	
+#if defined(_MSC_VER) && _MSC_VER > 1200 	
+typedef struct _MIB_TCP6ROW_OWNER_PID 
 	{
 		UCHAR           ucLocalAddr[16];
 		DWORD           dwLocalScopeId;
@@ -135,7 +141,7 @@ struct ProcessWindowTitle
 	HWND hWnd;
 };
 
-BOOL CALLBACK EnumWindowsProc(   HWND hwnd,    DWORD lParam   )
+BOOL CALLBACK EnumWindowsProc(   HWND hwnd,    LPARAM lParam   )
 { 
     DWORD             pid = 0; 
     TCHAR             buf[64]; 

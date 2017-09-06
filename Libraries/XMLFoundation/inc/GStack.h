@@ -48,9 +48,11 @@ public:
 
 	// Empty the stack, does not do memory cleanup of the items in the stack.
 	void RemoveAll(void) { m_nNext = 0; }
+	void clear(void){ RemoveAll();} // for std::vector inter-compatibility
 	
 	// Returns the number of entries in the stack
 	inline __int64 Size(void) const { return m_nNext; } 
+	inline __int64 size(void) const { return Size(); } // for std::vector inter-compatibility
 	
 	// Returns TRUE if the stack is empty, otherwise FALSE
 	inline bool isEmpty(void) const { return m_nNext == 0; } 
@@ -84,7 +86,8 @@ public:
 
 		m_arrPtr[m_nNext] = p;
 		m_nNext++;
-	} 
+	}
+	inline void push_back(void *p){Push(p);} // for std::vector inter-compatibility.
 	
 	// Returns the item at the top of the stack, or returns NULL if the stack is empty
 	inline void * Top(void)

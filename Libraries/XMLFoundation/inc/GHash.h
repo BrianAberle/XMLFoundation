@@ -32,6 +32,11 @@ protected:
 public:
 	   // number of elements in the hash table
 	   __int64  GetCount() const;
+
+	   // Number of elements at the given key
+	   __int64  GetCountByKey(const char *szKey) const;
+		
+
 	   bool IsEmpty() const;
 
 	   // The memory address Object 

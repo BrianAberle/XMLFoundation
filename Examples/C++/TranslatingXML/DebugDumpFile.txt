@@ -1,0 +1,181 @@
+
+Object Instance name: MyCustomObject
+{
+	string	OID = 
+	string	UpdateTime = 
+			References = 1	
+	--------------------------------
+	Type  :string
+	Tag   :Color
+	Value :Black and White
+	State :(Dirty | Valid | Uncached)
+	Kind  :Mapped Attribute
+	--------------------------------
+	Type  :char [10]
+	Tag   :FixedBuffer
+	Value :Red
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :char [10]
+	Tag   :FixedBuffer2
+	Value :012345678
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number
+	Value :1984
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number2
+	Value :1234567
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number3
+	Value :20
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number4
+	Value :777
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number5
+	Value :1234567
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number6
+	Value :21
+	State :(Clean | Null | Uncached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number7
+	Value :-777
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :int
+	Tag   :Number8
+	Value :10777
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String
+	Value :Untranslated
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String10
+	Value :
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String11
+	Value :We Know 
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String12
+	Value :Blue
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String2
+	Value :Red
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String3
+	Value :Red
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String4
+	Value :Green
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String5
+	Value :Mary jane
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String6
+	Value :Green
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String7
+	Value :Green
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String8
+	Value :Blue
+	State :(Clean | Valid | Cached)
+	Kind  :Element
+	--------------------------------
+	Type  :string
+	Tag   :String9
+	Value :MyNullValue
+	State :(Clean | Null | Uncached)
+	Kind  :Element
+	--------------------------------
+	Type  :XMLObject
+	Tag   :Wrapper
+	
+	Object Instance name: Wrapper
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		List Entry Name: StringList
+		Entry Values:
+		Red
+		Red
+		Grass
+		Green
+		purple
+		Blue
+
+	}
+	--------------------------------
+	Type  :XMLObject
+	Tag   :Wrapper2
+	
+	Object Instance name: Wrapper2
+	{
+		string	OID = 
+		string	UpdateTime = 
+				References = 1		
+		Array Entry Name: IntArray
+		Entry Values:
+		777
+		777
+		-777
+		7777777
+
+	}
+}

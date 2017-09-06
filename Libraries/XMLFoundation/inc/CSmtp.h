@@ -52,12 +52,14 @@
 	#include <time.h>
 	#pragma comment(lib, "ws2_32.lib")
 
-	//Add "openssl-0.9.8l\inc32" to Additional Include Directories
 	#include "openssl\ssl.h"
 
 	#if _MSC_VER < 1400
 		#define snprintf _snprintf
 	#else
+		#ifdef snprintf
+			#undef snprintf
+		#endif
 		#define snprintf sprintf_s
 	#endif
 #endif

@@ -18,6 +18,17 @@
 #include "GProcess.h"
 
 
+#if defined(_MSC_VER)
+	#ifdef _WIN32
+		#pragma comment(lib,    "../../../Libraries/openssl/bin-win32/libeay32.lib")
+	#endif
+	#ifdef _WIN64
+		#pragma comment(lib,    "../../../Libraries/openssl/bin-win64/libeay32.lib")
+	#endif
+#endif
+
+	#include "../../../Servers/Core/ServerCore.cpp"
+
 int main(int argc, char* argv[])
 {
 
@@ -28,7 +39,8 @@ int main(int argc, char* argv[])
 	ExternalIP(&strWanIP, &strNoWanIPError);
 
 	CSmtp mail;
-	GString strMailServer("smtp.gmail.com");
+//	GString strMailServer("smtp.gmail.com");
+	GString strMailServer("smtp-mail.outlook.com");
 
 
 	// ------- GMail TLS --------
@@ -39,23 +51,38 @@ int main(int argc, char* argv[])
 	mail.SetSMTPServer(strMailServer,587);
 	mail.SetSecurityType(USE_TLS);
 
-#include <"Do.not.compile">  // add your own Gmail account in the next two lines..... then delete this line   (and set the recipient)
+//#include <"Do.not.compile">  // add your own Gmail account in the next two lines..... then delete this line   (and set the recipient)
 
 	// Note about GMail - login, then under "My Account" go to "Sign-In & Security" and set "Allow Less Secure Apps": to ON.  
+
+
+//  ************************************************************************
 //	mail.SetLogin("MyOwnGmailAddress@gmail.com");
 //	mail.SetPassword("MyOwnPassword");
+//  ************************************************************************
 
 
 	mail.SetSenderName("My Application");
-	mail.SetSenderMail("No-reply@nowhere.com");
-	mail.SetReplyTo("No-reply@nowhere.com");
+
+//  ************************************************************************
+//	mail.SetSenderMail("No-reply@nowhere.com");
+	mail.SetSenderMail("YourEmail@yours.com");
+//  ************************************************************************
+
+//  ************************************************************************
+//	mail.SetReplyTo("No-reply@nowhere.com");
+	mail.SetSenderMail("YourEmail@yours.com");
+//  ************************************************************************
+
 	
 	GString strSubject(g_strThisHostName);
 	strSubject << " Stats";
 	mail.SetSubject(strSubject);
 
+//  ************************************************************************
 	mail.AddRecipient("somebody@yahoo.com");   //<---------------------------------------------------------- Who to send the email to
 //	mail.AddRecipient("AnotherRecipient@gmail.com");
+//  ************************************************************************
 
 
   	mail.SetXPriority(XPRIORITY_NORMAL);
@@ -104,6 +131,7 @@ int main(int argc, char* argv[])
   	//mail.AddAttachment("../test1.jpg");
   	//mail.AddAttachment("c:\\test2.exe");
 	//mail.AddAttachment("c:\\test3.txt");
+	
 	mail.Send();
 
 

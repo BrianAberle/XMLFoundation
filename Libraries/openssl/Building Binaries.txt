@@ -1,7 +1,10 @@
+Windows binary built Sept 2017
+
 For each build, the .h files necessary to interface with the binary static library were collected into the respective openssl folder 
 found in Libraries/XMLFoundation/inc/openssl
 
-Therefore, every project that is already setup to link to XMLFoundation and use it's header files is now setup to use openssl and the standard crypto lib without making any changes to the headerfile search path in any project.
+Therefore, every project that is already setup to link to XMLFoundation and use it's header files is now setup to use openssl and the 
+standard crypto lib without making any changes to the headerfile search path in any project.
 
 Any project setup to use XMLFoundation is also setup to use openssl in its native path form like this
 
@@ -78,10 +81,10 @@ _ANDROID_EABI="arm-linux-androideabi-4.9"
 
 Windows
 ------------------------------------------------------------------------------------------------
-The windows openssl libraries were built using the included source, which is an official Microsoft fork(which i predict will one day become merged with the openssl.org branch)
+The windows openssl libraries were built using the included source, which is an official Microsoft fork
 for now the project is frequently "merged" with the openssl.org code.  
 
-Obtain the source here: https://github.com/Microsoft/openssl/   ( I got it on November 23, 2014 )
+Obtain the source here: https://github.com/Microsoft/openssl/   ( I obtained it August 15, 2017 )
 
 Unzip the source. In the root folder read ( INSTALL.W32, INSTALL.W64, and INSTALL.WINAPP ) for building the Windows32, Windows64, and Windows Phone respectively.
 ------------------------------------------------------------------------------------------------

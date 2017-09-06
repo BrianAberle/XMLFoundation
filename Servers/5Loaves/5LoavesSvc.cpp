@@ -49,6 +49,15 @@ enum COMPKEY {
 #include <conio.h>
 #include <winsock.h>
 
+#if defined(_MSC_VER)
+#ifdef _WIN32
+#pragma comment(lib,    "../../Libraries/openssl/bin-win32/libeay32.lib")
+#endif
+#ifdef _WIN64
+#pragma comment(lib,    "../../Libraries/openssl/bin-win64/libeay32.lib")
+#endif
+#endif
+
 #include "../Core/ServerCore.cpp"
 
 SERVICE_STATUS ss;

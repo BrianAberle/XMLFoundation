@@ -125,6 +125,8 @@
 //	search for "REMOVED WINSOCK2.H" in CSmtp.h
 #if defined(_MSC_VER) && _MSC_VER > 1200 
 
+// however, if <ws2def.h> was previously included outside of our control we cant have type redefinitions
+	#ifndef _WS2DEF_
 				//
 				//////////// begin from <ws2def.h> /////////////////////////////
 				//
@@ -161,6 +163,7 @@
 				//   __ss_align fields is 112
 				} SOCKADDR_STORAGE_LH, *PSOCKADDR_STORAGE_LH, FAR *LPSOCKADDR_STORAGE_LH;
 				//////////// end from <ws2def.h> /////////////////////////////
+	#endif
 #endif
 // ------------------------------------------------------------------------------------------------
 
@@ -222,8 +225,10 @@ using std::string;
 		#if defined(_MSC_VER) && _MSC_VER > 1200 // VC6 and older has _iob so we do not define it there
 			
 			// In VS2012 we MUST use this syntax to define _iob.  This syntax works in VS2013 as well as the VS2015 syntax to define _iob
-			extern "C" { FILE _iob[3] = { __iob_func()[0], __iob_func()[1], __iob_func()[2] }; } 
-
+			#ifndef _NO_IOB__
+				extern "C" { FILE _iob[3] = { __iob_func()[0], __iob_func()[1], __iob_func()[2] }; } 
+				#define _NO_IOB__
+			#endif
 		#endif
 
 	#else
@@ -1327,7 +1332,8 @@ bool CSmtp::ConnectRemoteServer(const char* szServer, const unsigned short nPort
 				delete[] a2;
 
 				//send the response
-				if(strstr(RecvBuf, "charset")>=0) snprintf(SendBuf, BUFFER_SIZE, "charset=utf-8,username=\"%s\"", m_sLogin.c_str());
+				if(strstr(RecvBuf, "charset") /*>=0*/ ) 
+					snprintf(SendBuf, BUFFER_SIZE, "charset=utf-8,username=\"%s\"", m_sLogin.c_str());
 				else snprintf(SendBuf, BUFFER_SIZE, "username=\"%s\"", m_sLogin.c_str());
 				if(!realm.empty()){
 					snprintf(RecvBuf, BUFFER_SIZE, ",realm=\"%s\"", realm.c_str());

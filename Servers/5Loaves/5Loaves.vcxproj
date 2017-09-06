@@ -88,10 +88,10 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SuppressStartupBanner>true</SuppressStartupBanner>					
       <WarningLevel>Level3</WarningLevel>
       <StringPooling>true</StringPooling>
-      <AdditionalIncludeDirectories>../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/Win32;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/osslWin32;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -128,7 +128,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <StringPooling>true</StringPooling>
-      <AdditionalIncludeDirectories>../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/Win32;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/Win64;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -164,7 +164,7 @@
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE;../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/Win32;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE;../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/osslWin32;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_NO_EXCEPT;__NOTRACE_STACK__;_STATIC_LINK_LIB;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -203,7 +203,7 @@
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE;../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/Win32;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Drivers/Perl/ActiveStatePerl5.10/lib/CORE;../../Libraries/XMLFoundation/inc;../../Libraries/XMLFoundation/inc/osslWin64;../../Libraries/XFer/inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_NO_EXCEPT;__NOTRACE_STACK__;_STATIC_LINK_LIB;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
